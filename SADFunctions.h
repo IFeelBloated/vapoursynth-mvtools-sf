@@ -46,93 +46,97 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
 	return sum;
 }
 
-inline double SATDABS(double x) { return (x < 0.0) ? -x : x; }
+#define HADAMARD4(d0, d1, d2, d3, s0, s1, s2, s3) {\
+    SumType2 t0 = s0 + s1;\
+    SumType2 t1 = s0 - s1;\
+    SumType2 t2 = s2 + s3;\
+    SumType2 t3 = s2 - s3;\
+    d0 = t0 + t2;\
+    d2 = t0 - t2;\
+    d1 = t1 + t3;\
+    d3 = t1 - t3;\
+}
 
-template <typename PixelType>
+template <typename SumType, typename SumType2>
+static inline SumType2 abs2(SumType2 a)
+{
+	int bitsPerSum = 8 * sizeof(SumType);
+
+	SumType2 s = ((a >> (bitsPerSum - 1))&(((SumType2)1 << bitsPerSum) + 1))*((SumType)-1);
+	return (a + s) ^ s;
+}
+
+template <typename PixelType, typename SumType, typename SumType2>
 float Real_Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
-	double tmp[4][4];
-	double a0, a1, a2, a3, s01, s23, d01, d23;
-	double sum = 0.0;
+	int bitsPerSum = 8 * sizeof(SumType);
+
+	SumType2 tmp[4][2];
+	SumType2 a0, a1, a2, a3, b0, b1;
+	SumType2 sum = 0;
 
 	for (int i = 0; i < 4; i++) {
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
 
-		a0 = pSrc[0] - pRef[0];
-		a1 = pSrc[1] - pRef[1];
-		a2 = pSrc[2] - pRef[2];
-		a3 = pSrc[3] - pRef[3];
-
-		s01 = a0 + a1; s23 = a2 + a3;
-		d01 = a0 - a1; d23 = a2 - a3;
-
-		tmp[i][0] = s01 + s23;
-		tmp[i][1] = s01 - s23;
-		tmp[i][2] = d01 - d23;
-		tmp[i][3] = d01 + d23;
+		a0 = short (65536 * (pSrc[0] - pRef[0]));
+		a1 = short (65536 * (pSrc[1] - pRef[1]));
+		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
+		a2 = short (65536 * (pSrc[2] - pRef[2]));
+		a3 = short (65536 * (pSrc[3] - pRef[3]));
+		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
+		tmp[i][0] = b0 + b1;
+		tmp[i][1] = b0 - b1;
 
 		pSrc8 += nSrcPitch;
 		pRef8 += nRefPitch;
 	}
 
-	for (int i = 0; i < 4; i++) {
-		s01 = tmp[0][i] + tmp[1][i]; s23 = tmp[2][i] + tmp[3][i];
-		d01 = tmp[0][i] - tmp[1][i]; d23 = tmp[2][i] - tmp[3][i];
-
-		sum += SATDABS(s01 + s23) + SATDABS(s01 - s23) + SATDABS(d01 - d23) + SATDABS(d01 + d23);
+	for (int i = 0; i < 2; i++) {
+		HADAMARD4(a0, a1, a2, a3, tmp[0][i], tmp[1][i], tmp[2][i], tmp[3][i]);
+		a0 = abs2<SumType, SumType2>(a0) +abs2<SumType, SumType2>(a1) +abs2<SumType, SumType2>(a2) +abs2<SumType, SumType2>(a3);
+		sum += ((SumType)a0) + (a0 >> bitsPerSum);
 	}
 
-	return (float)sum;
+	return float ( double (sum >> 1) / 65536);
 }
 
 template <typename PixelType>
 float Satd_4x4_C(const uint8_t *pSrc, intptr_t nSrcPitch, const uint8_t *pRef, intptr_t nRefPitch) {
-	return Real_Satd_4x4_C<PixelType>(pSrc, nSrcPitch, pRef, nRefPitch);
+		return Real_Satd_4x4_C<PixelType, uint32_t, uint64_t>(pSrc, nSrcPitch, pRef, nRefPitch);
 }
 
-template <typename PixelType>
+template <typename PixelType, typename SumType, typename SumType2>
 float Real_Satd_8x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
-	double tmp[8][4];
-	double a0, a1, a2, a3, a4, a5, a6, a7, s01, s23, s45, s67, d01, d23, d45, d67;
-	double sum = 0.0;
+	int bitsPerSum = 8 * sizeof(SumType);
 
-	for (int i = 0; i < 8; i++) {
+	SumType2 tmp[4][4];
+	SumType2 a0, a1, a2, a3;
+	SumType2 sum = 0;
+
+	for (int i = 0; i < 4; i++) {
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
 
-		a0 = pSrc[0] - pRef[0];
-		a1 = pSrc[1] - pRef[1];
-		a2 = pSrc[2] - pRef[2];
-		a3 = pSrc[3] - pRef[3];
-		a4 = pSrc[4] - pRef[4];
-		a5 = pSrc[5] - pRef[5];
-		a6 = pSrc[6] - pRef[6];
-		a7 = pSrc[7] - pRef[7];
-
-		s01 = a0 + a1; s23 = a2 + a3; s45 = a4 + a5; s67 = a6 + a7;
-		d01 = a0 - a1; d23 = a2 - a3; d45 = a4 - a5; d67 = a6 - a7;
-
-		tmp[i][0] = s01 + s23 + s45 + s67;
-		tmp[i][1] = s01 - s23 + s45 - s67;
-		tmp[i][2] = d01 - d23 + d45 - d67;
-		tmp[i][3] = d01 + d23 + d45 + d67;
+		a0 = short (65536 * ((pSrc[0] - pRef[0]))) + ((SumType2)(short (65536 * (pSrc[4] - pRef[4]))) << bitsPerSum);
+		a1 = short (65536 * ((pSrc[1] - pRef[1]))) + ((SumType2)(short (65536 * (pSrc[5] - pRef[5]))) << bitsPerSum);
+		a2 = short (65536 * ((pSrc[2] - pRef[2]))) + ((SumType2)(short (65536 * (pSrc[6] - pRef[6]))) << bitsPerSum);
+		a3 = short (65536 * ((pSrc[3] - pRef[3]))) + ((SumType2)(short (65536 * (pSrc[7] - pRef[7]))) << bitsPerSum);
+		HADAMARD4(tmp[i][0], tmp[i][1], tmp[i][2], tmp[i][3], a0, a1, a2, a3);
 
 		pSrc8 += nSrcPitch;
 		pRef8 += nRefPitch;
 	}
 	for (int i = 0; i < 4; i++) {
-		s01 = tmp[0][i] + tmp[1][i]; s23 = tmp[2][i] + tmp[3][i]; s45 = tmp[4][i] + tmp[5][i]; s67 = tmp[6][i] + tmp[7][i];
-		d01 = tmp[0][i] - tmp[1][i]; d23 = tmp[2][i] - tmp[3][i]; d45 = tmp[4][i] - tmp[5][i]; d67 = tmp[6][i] - tmp[7][i];
-
-		sum += SATDABS(s01 + s23) + SATDABS(s45 + s67) + SATDABS(s01 - s23) + SATDABS(s45 - s67) + SATDABS(d01 - d23) + SATDABS(d45 - d67) + SATDABS(d01 + d23) + SATDABS(d45 + d67);
+		HADAMARD4(a0, a1, a2, a3, tmp[0][i], tmp[1][i], tmp[2][i], tmp[3][i]);
+		sum += abs2<SumType, SumType2>(a0) +abs2<SumType, SumType2>(a1) +abs2<SumType, SumType2>(a2) +abs2<SumType, SumType2>(a3);
 	}
 
-	return (float)sum;
+	return float (double (((((SumType)sum) + (sum >> bitsPerSum)) >> 1)) / 65536);
 }
 
 template <typename PixelType>
 float Satd_8x4_C(const uint8_t *pSrc, intptr_t nSrcPitch, const uint8_t *pRef, intptr_t nRefPitch) {
-	return Real_Satd_8x4_C<PixelType>(pSrc, nSrcPitch, pRef, nRefPitch);
+		return Real_Satd_8x4_C<PixelType, uint32_t, uint64_t>(pSrc, nSrcPitch, pRef, nRefPitch);
 }
 
 // Only handles 4x4, 8x4, 8x8, 8x16, 16x8, and 16x16.
