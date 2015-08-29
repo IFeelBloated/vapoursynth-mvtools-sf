@@ -98,7 +98,6 @@ PlaneOfBlocks::PlaneOfBlocks(int _nBlkX, int _nBlkY, int _nBlkSizeX, int _nBlkSi
 	sads[8][4] = Sad_C<8, 4, float>;
 	lumas[8][4] = Luma_C<8, 4, float>;
 	blits[8][4] = Copy_C<8, 4, float>;
-	satds[8][4] = Satd_C<8, 4, float>;
 
 	sads[8][8] = Sad_C<8, 8, float>;
 	lumas[8][8] = Luma_C<8, 8, float>;
@@ -121,7 +120,6 @@ PlaneOfBlocks::PlaneOfBlocks(int _nBlkX, int _nBlkY, int _nBlkSizeX, int _nBlkSi
 	sads[16][8] = Sad_C<16, 8, float>;
 	lumas[16][8] = Luma_C<16, 8, float>;
 	blits[16][8] = Copy_C<16, 8, float>;
-	satds[16][8] = Satd_C<16, 8, float>;
 
 	sads[16][16] = Sad_C<16, 16, float>;
 	lumas[16][16] = Luma_C<16, 16, float>;
@@ -141,6 +139,7 @@ PlaneOfBlocks::PlaneOfBlocks(int _nBlkX, int _nBlkY, int _nBlkSizeX, int _nBlkSi
 	sads[32][32] = Sad_C<32, 32, float>;
 	lumas[32][32] = Luma_C<32, 32, float>;
 	blits[32][32] = Copy_C<32, 32, float>;
+	satds[32][32] = Satd_C<32, 32, float>;
     
 
 
