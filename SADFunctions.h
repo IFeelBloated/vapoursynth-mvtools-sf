@@ -62,7 +62,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     SumType2 t1 = s0 - s1;\
     SumType2 t2 = s2 + s3;\
     SumType2 t3 = s2 - s3;\
-	SumType2 t4 = s4 + s5;\
+    SumType2 t4 = s4 + s5;\
     SumType2 t5 = s4 - s5;\
     SumType2 t6 = s6 + s7;\
     SumType2 t7 = s6 - s7;\
@@ -70,7 +70,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d2 = t0 - t4;\
     d1 = t1 + t5;\
     d3 = t1 - t5;\
-	d4 = t2 + t6;\
+    d4 = t2 + t6;\
     d5 = t2 - t6;\
     d6 = t3 + t7;\
     d7 = t3 - t7;\
@@ -81,7 +81,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     SumType2 t1 = s0 - s1;\
     SumType2 t2 = s2 + s3;\
     SumType2 t3 = s2 - s3;\
-	SumType2 t4 = s4 + s5;\
+    SumType2 t4 = s4 + s5;\
     SumType2 t5 = s4 - s5;\
     SumType2 t6 = s6 + s7;\
     SumType2 t7 = s6 - s7;\
@@ -89,7 +89,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     SumType2 t9 = s8 - s9;\
     SumType2 t10 = s10 + s11;\
     SumType2 t11 = s10 - s11;\
-	SumType2 t12 = s12 + s13;\
+    SumType2 t12 = s12 + s13;\
     SumType2 t13 = s12 - s13;\
     SumType2 t14 = s14 + s15;\
     SumType2 t15 = s14 - s15;\
@@ -97,7 +97,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d2  = t0 - t8;\
     d1  = t1 + t9;\
     d3  = t1 - t9;\
-	d4  = t2 + t10;\
+    d4  = t2 + t10;\
     d5  = t2 - t10;\
     d6  = t3 + t11;\
     d7  = t3 - t11;\
@@ -105,7 +105,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d9  = t4 - t12;\
     d10 = t5 + t13;\
     d11 = t5 - t13;\
-	d12 = t6 + t14;\
+    d12 = t6 + t14;\
     d13 = t6 - t14;\
     d14 = t7 + t15;\
     d15 = t7 - t15;\
@@ -116,7 +116,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     SumType2 t1 = s0 - s1;\
     SumType2 t2 = s2 + s3;\
     SumType2 t3 = s2 - s3;\
-	SumType2 t4 = s4 + s5;\
+    SumType2 t4 = s4 + s5;\
     SumType2 t5 = s4 - s5;\
     SumType2 t6 = s6 + s7;\
     SumType2 t7 = s6 - s7;\
@@ -124,7 +124,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     SumType2 t9 = s8 - s9;\
     SumType2 t10 = s10 + s11;\
     SumType2 t11 = s10 - s11;\
-	SumType2 t12 = s12 + s13;\
+    SumType2 t12 = s12 + s13;\
     SumType2 t13 = s12 - s13;\
     SumType2 t14 = s14 + s15;\
     SumType2 t15 = s14 - s15;\
@@ -132,7 +132,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     SumType2 t17 = s16 - s17;\
     SumType2 t18 = s18 + s19;\
     SumType2 t19 = s18 - s19;\
-	SumType2 t20 = s20 + s21;\
+    SumType2 t20 = s20 + s21;\
     SumType2 t21 = s20 - s21;\
     SumType2 t22 = s22 + s23;\
     SumType2 t23 = s22 - s23;\
@@ -140,7 +140,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     SumType2 t25 = s24 - s25;\
     SumType2 t26 = s26 + s27;\
     SumType2 t27 = s26 - s27;\
-	SumType2 t28 = s28 + s29;\
+    SumType2 t28 = s28 + s29;\
     SumType2 t29 = s28 - s29;\
     SumType2 t30 = s30 + s31;\
     SumType2 t31 = s30 - s31;\
@@ -148,7 +148,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d2   = t0 - t16;\
     d1   = t1 + t17;\
     d3   = t1 - t17;\
-	d4   = t2 + t18;\
+    d4   = t2 + t18;\
     d5   = t2 - t18;\
     d6   = t3 + t19;\
     d7   = t3 - t19;\
@@ -156,7 +156,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d9   = t4 - t20;\
     d10  = t5 + t21;\
     d11  = t5 - t21;\
-	d12  = t6 + t22;\
+    d12  = t6 + t22;\
     d13  = t6 - t22;\
     d14  = t7 + t23;\
     d15  = t7 - t23;\
@@ -164,7 +164,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d17  = t8 - t24;\
     d18  = t9 + t25;\
     d19  = t9 - t25;\
-	d20  = t10 + t26;\
+    d20  = t10 + t26;\
     d21  = t10 - t26;\
     d22  = t11 + t27;\
     d23  = t11 - t27;\
@@ -172,7 +172,7 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d25  = t12 - t28;\
     d26  = t13 + t29;\
     d27  = t13 - t29;\
-	d28  = t14 + t30;\
+    d28  = t14 + t30;\
     d29  = t14 - t30;\
     d30  = t15 + t31;\
     d31  = t15 - t31;\
