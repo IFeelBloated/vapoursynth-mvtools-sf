@@ -33,5 +33,6 @@ void Merge16PlanesToBig(uint8_t *pel4Plane, int pel4Pitch,
 	const uint8_t *pPlane8, const uint8_t *pPlane9, const uint8_t *pPlane10, const uint8_t * pPlane11,
 	const uint8_t *pPlane12, const uint8_t * pPlane13, const uint8_t *pPlane14, const uint8_t * pPlane15,
 	int width, int height, int pitch);
-
+void MakeVectorSmallMasks(MVClipBalls *mvClip, int nX, int nY, uint8_t *VXSmallY, int pitchVXSmallY, uint8_t *VYSmallY, int pitchVYSmallY);
+void VectorSmallMaskYToHalfUV(uint8_t * VSmallY, int nBlkX, int nBlkY, uint8_t *VSmallUV, int ratioUV);
 #endif
