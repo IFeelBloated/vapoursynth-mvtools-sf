@@ -158,3 +158,58 @@ void Merge16PlanesToBig(uint8_t *pel4Plane, int pel4Pitch,
 	int width, int height, int pitch) {
 		RealMerge16PlanesToBig<float>(pel4Plane, pel4Pitch, pPlane0, pPlane1, pPlane2, pPlane3, pPlane4, pPlane5, pPlane6, pPlane7, pPlane8, pPlane9, pPlane10, pPlane11, pPlane12, pPlane13, pPlane14, pPlane15, width, height, pitch);
 }
+
+void MakeVectorSmallMasks(MVClipBalls *mvClip, int nBlkX, int nBlkY, uint8_t *VXSmallY, int pitchVXSmallY, uint8_t*VYSmallY, int pitchVYSmallY)
+{
+	// make  vector vx and vy small masks
+	// 1. ATTENTION: vectors are assumed SHORT (|vx|, |vy| < 127) !
+	// 2. they will be zeroed if not
+	// 3. added 128 to all values
+	for (int by = 0; by<nBlkY; by++)
+	{
+		for (int bx = 0; bx<nBlkX; bx++)
+		{
+			int i = bx + by*nBlkX;
+			const FakeBlockData &block = mvClip->GetBlock(0, i);
+			int vx = block.GetMV().x;
+			int vy = block.GetMV().y;
+			if (vx>127) vx = 127;
+			else if (vx<-127) vx = -127;
+			if (vy>127) vy = 127;
+			else if (vy<-127) vy = -127;
+			VXSmallY[bx + by*pitchVXSmallY] = vx + 128; // luma
+			VYSmallY[bx + by*pitchVYSmallY] = vy + 128; // luma
+		}
+	}
+}
+
+void VectorSmallMaskYToHalfUV(uint8_t * VSmallY, int nBlkX, int nBlkY, uint8_t *VSmallUV, int ratioUV)
+{
+	if (ratioUV == 2)
+	{
+		// YV12 colorformat
+		for (int by = 0; by<nBlkY; by++)
+		{
+			for (int bx = 0; bx<nBlkX; bx++)
+			{
+				VSmallUV[bx] = ((VSmallY[bx] - 128) >> 1) + 128; // chroma
+			}
+			VSmallY += nBlkX;
+			VSmallUV += nBlkX;
+		}
+	}
+	else // ratioUV==1
+	{
+		// Height YUY2 colorformat
+		for (int by = 0; by<nBlkY; by++)
+		{
+			for (int bx = 0; bx<nBlkX; bx++)
+			{
+				VSmallUV[bx] = VSmallY[bx]; // chroma
+			}
+			VSmallY += nBlkX;
+			VSmallUV += nBlkX;
+		}
+	}
+
+}
