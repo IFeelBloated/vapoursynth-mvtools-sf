@@ -187,6 +187,12 @@ static inline SumType2 abs2(SumType2 a)
 	return (a + s) ^ s;
 }
 
+static inline short f2i16(float a)
+{
+	short b = (a > 0) ? short(32767 * a + 0.5) : short(32767 * a - 0.5);
+    return b;
+}
+
 template <typename PixelType, typename SumType, typename SumType2>
 float Real_Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
 	int bitsPerSum = 8 * sizeof(SumType);
@@ -199,11 +205,11 @@ float Real_Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *p
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
 
-		a0 = short (32767 * (pSrc[0] - pRef[0]) + 0.5f);
-		a1 = short (32767 * (pSrc[1] - pRef[1]) + 0.5f);
+		a0 = f2i16(pSrc[0] - pRef[0]);
+		a1 = f2i16(pSrc[1] - pRef[1]);
 		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = short (32767 * (pSrc[2] - pRef[2]) + 0.5f);
-		a3 = short (32767 * (pSrc[3] - pRef[3]) + 0.5f);
+		a2 = f2i16(pSrc[2] - pRef[2]);
+		a3 = f2i16(pSrc[3] - pRef[3]);
 		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
 		tmp[i][0] = b0 + b1;
 		tmp[i][1] = b0 - b1;
@@ -218,12 +224,12 @@ float Real_Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *p
 		sum += ((SumType)a0) + (a0 >> bitsPerSum);
 	}
 
-	return float (double (sum >> 1) / 32767);
+	return float(double(sum >> 1) / 32767);
 }
 
 template <typename PixelType>
 float Satd_4x4_C(const uint8_t *pSrc, intptr_t nSrcPitch, const uint8_t *pRef, intptr_t nRefPitch) {
-		return Real_Satd_4x4_C<PixelType, long, long long>(pSrc, nSrcPitch, pRef, nRefPitch);
+	return Real_Satd_4x4_C<PixelType, long, long long>(pSrc, nSrcPitch, pRef, nRefPitch);
 }
 
 template <typename PixelType, typename SumType, typename SumType2>
@@ -238,17 +244,17 @@ float Real_Satd_8x8_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *p
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
 
-		a0 = short(32767 * (pSrc[0] - pRef[0]) + 0.5f);
-		a1 = short(32767 * (pSrc[1] - pRef[1]) + 0.5f);
+		a0 = f2i16(pSrc[0] - pRef[0]);
+		a1 = f2i16(pSrc[1] - pRef[1]);
 		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = short(32767 * (pSrc[2] - pRef[2]) + 0.5f);
-		a3 = short(32767 * (pSrc[3] - pRef[3]) + 0.5f);
+		a2 = f2i16(pSrc[2] - pRef[2]);
+		a3 = f2i16(pSrc[3] - pRef[3]);
 		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
-		a4 = short(32767 * (pSrc[4] - pRef[4]) + 0.5f);
-		a5 = short(32767 * (pSrc[5] - pRef[5]) + 0.5f);
+		a4 = f2i16(pSrc[4] - pRef[4]);
+		a5 = f2i16(pSrc[5] - pRef[5]);
 		b2 = (a4 + a5) + ((a4 - a5) << bitsPerSum);
-		a6 = short(32767 * (pSrc[6] - pRef[6]) + 0.5f);
-		a7 = short(32767 * (pSrc[7] - pRef[7]) + 0.5f);
+		a6 = f2i16(pSrc[6] - pRef[6]);
+		a7 = f2i16(pSrc[7] - pRef[7]);
 		b3 = (a6 + a7) + ((a6 - a7) << bitsPerSum);
 		tmp[i][0] = b0 + b2;
 		tmp[i][1] = b0 - b2;
@@ -285,29 +291,29 @@ float Real_Satd_16x16_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t 
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
 
-		a0 = short(32767 * (pSrc[0] - pRef[0]) + 0.5f);
-		a1 = short(32767 * (pSrc[1] - pRef[1]) + 0.5f);
+		a0 = f2i16(pSrc[0] - pRef[0]);
+		a1 = f2i16(pSrc[1] - pRef[1]);
 		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = short(32767 * (pSrc[2] - pRef[2]) + 0.5f);
-		a3 = short(32767 * (pSrc[3] - pRef[3]) + 0.5f);
+		a2 = f2i16(pSrc[2] - pRef[2]);
+		a3 = f2i16(pSrc[3] - pRef[3]);
 		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
-		a4 = short(32767 * (pSrc[4] - pRef[4]) + 0.5f);
-		a5 = short(32767 * (pSrc[5] - pRef[5]) + 0.5f);
+		a4 = f2i16(pSrc[4] - pRef[4]);
+		a5 = f2i16(pSrc[5] - pRef[5]);
 		b2 = (a4 + a5) + ((a4 - a5) << bitsPerSum);
-		a6 = short(32767 * (pSrc[6] - pRef[6]) + 0.5f);
-		a7 = short(32767 * (pSrc[7] - pRef[7]) + 0.5f);
+		a6 = f2i16(pSrc[6] - pRef[6]);
+		a7 = f2i16(pSrc[7] - pRef[7]);
 		b3 = (a6 + a7) + ((a6 - a7) << bitsPerSum);
-		a8 = short(32767 * (pSrc[8] - pRef[8]) + 0.5f);
-		a9 = short(32767 * (pSrc[9] - pRef[9]) + 0.5f);
+		a8 = f2i16(pSrc[8] - pRef[8]);
+		a9 = f2i16(pSrc[9] - pRef[9]);
 		b4 = (a8 + a9) + ((a8 - a9) << bitsPerSum);
-		a10 = short(32767 * (pSrc[10] - pRef[10]) + 0.5f);
-		a11 = short(32767 * (pSrc[11] - pRef[11]) + 0.5f);
+		a10 = f2i16(pSrc[10] - pRef[10]);
+		a11 = f2i16(pSrc[11] - pRef[11]);
 		b5 = (a10 + a11) + ((a10 - a11) << bitsPerSum);
-		a12 = short(32767 * (pSrc[12] - pRef[12]) + 0.5f);
-		a13 = short(32767 * (pSrc[13] - pRef[13]) + 0.5f);
+		a12 = f2i16(pSrc[12] - pRef[12]);
+		a13 = f2i16(pSrc[13] - pRef[13]);
 		b6 = (a12 + a13) + ((a12 - a13) << bitsPerSum);
-		a14 = short(32767 * (pSrc[14] - pRef[14]) + 0.5f);
-		a15 = short(32767 * (pSrc[15] - pRef[15]) + 0.5f);
+		a14 = f2i16(pSrc[14] - pRef[14]);
+		a15 = f2i16(pSrc[15] - pRef[15]);
 		b7 = (a14 + a15) + ((a14 - a15) << bitsPerSum);
 		tmp[i][0] = b0 + b4;
 		tmp[i][1] = b0 - b4;
@@ -348,53 +354,53 @@ float Real_Satd_32x32_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t 
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
 
-		a0 = short(32767 * (pSrc[0] - pRef[0]) + 0.5f);
-		a1 = short(32767 * (pSrc[1] - pRef[1]) + 0.5f);
+		a0 = f2i16(pSrc[0] - pRef[0]);
+		a1 = f2i16(pSrc[1] - pRef[1]);
 		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = short(32767 * (pSrc[2] - pRef[2]) + 0.5f);
-		a3 = short(32767 * (pSrc[3] - pRef[3]) + 0.5f);
+		a2 = f2i16(pSrc[2] - pRef[2]);
+		a3 = f2i16(pSrc[3] - pRef[3]);
 		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
-		a4 = short(32767 * (pSrc[4] - pRef[4]) + 0.5f);
-		a5 = short(32767 * (pSrc[5] - pRef[5]) + 0.5f);
+		a4 = f2i16(pSrc[4] - pRef[4]);
+		a5 = f2i16(pSrc[5] - pRef[5]);
 		b2 = (a4 + a5) + ((a4 - a5) << bitsPerSum);
-		a6 = short(32767 * (pSrc[6] - pRef[6]) + 0.5f);
-		a7 = short(32767 * (pSrc[7] - pRef[7]) + 0.5f);
+		a6 = f2i16(pSrc[6] - pRef[6]);
+		a7 = f2i16(pSrc[7] - pRef[7]);
 		b3 = (a6 + a7) + ((a6 - a7) << bitsPerSum);
-		a8 = short(32767 * (pSrc[8] - pRef[8]) + 0.5f);
-		a9 = short(32767 * (pSrc[9] - pRef[9]) + 0.5f);
+		a8 = f2i16(pSrc[8] - pRef[8]);
+		a9 = f2i16(pSrc[9] - pRef[9]);
 		b4 = (a8 + a9) + ((a8 - a9) << bitsPerSum);
-		a10 = short(32767 * (pSrc[10] - pRef[10]) + 0.5f);
-		a11 = short(32767 * (pSrc[11] - pRef[11]) + 0.5f);
+		a10 = f2i16(pSrc[10] - pRef[10]);
+		a11 = f2i16(pSrc[11] - pRef[11]);
 		b5 = (a10 + a11) + ((a10 - a11) << bitsPerSum);
-		a12 = short(32767 * (pSrc[12] - pRef[12]) + 0.5f);
-		a13 = short(32767 * (pSrc[13] - pRef[13]) + 0.5f);
+		a12 = f2i16(pSrc[12] - pRef[12]);
+		a13 = f2i16(pSrc[13] - pRef[13]);
 		b6 = (a12 + a13) + ((a12 - a13) << bitsPerSum);
-		a14 = short(32767 * (pSrc[14] - pRef[14]) + 0.5f);
-		a15 = short(32767 * (pSrc[15] - pRef[15]) + 0.5f);
+		a14 = f2i16(pSrc[14] - pRef[14]);
+		a15 = f2i16(pSrc[15] - pRef[15]);
 		b7 = (a14 + a15) + ((a14 - a15) << bitsPerSum);
-		a16 = short(32767 * (pSrc[16] - pRef[16]) + 0.5f);
-		a17 = short(32767 * (pSrc[17] - pRef[17]) + 0.5f);
+		a16 = f2i16(pSrc[16] - pRef[16]);
+		a17 = f2i16(pSrc[17] - pRef[17]);
 		b8 = (a16 + a17) + ((a16 - a17) << bitsPerSum);
-		a18 = short(32767 * (pSrc[18] - pRef[18]) + 0.5f);
-		a19 = short(32767 * (pSrc[19] - pRef[19]) + 0.5f);
+		a18 = f2i16(pSrc[18] - pRef[18]);
+		a19 = f2i16(pSrc[19] - pRef[19]);
 		b9 = (a18 + a19) + ((a18 - a19) << bitsPerSum);
-		a20 = short(32767 * (pSrc[20] - pRef[20]) + 0.5f);
-		a21 = short(32767 * (pSrc[21] - pRef[21]) + 0.5f);
+		a20 = f2i16(pSrc[20] - pRef[20]);
+		a21 = f2i16(pSrc[21] - pRef[21]);
 		b10 = (a20 + a21) + ((a20 - a21) << bitsPerSum);
-		a22 = short(32767 * (pSrc[22] - pRef[22]) + 0.5f);
-		a23 = short(32767 * (pSrc[23] - pRef[23]) + 0.5f);
+		a22 = f2i16(pSrc[22] - pRef[22]);
+		a23 = f2i16(pSrc[23] - pRef[23]);
 		b11 = (a22 + a23) + ((a22 - a23) << bitsPerSum);
-		a24 = short(32767 * (pSrc[24] - pRef[24]) + 0.5f);
-		a25 = short(32767 * (pSrc[25] - pRef[25]) + 0.5f);
+		a24 = f2i16(pSrc[24] - pRef[24]);
+		a25 = f2i16(pSrc[25] - pRef[25]);
 		b12 = (a24 + a25) + ((a24 - a25) << bitsPerSum);
-		a26 = short(32767 * (pSrc[26] - pRef[26]) + 0.5f);
-		a27 = short(32767 * (pSrc[27] - pRef[27]) + 0.5f);
+		a26 = f2i16(pSrc[26] - pRef[26]);
+		a27 = f2i16(pSrc[27] - pRef[27]);
 		b13 = (a26 + a27) + ((a26 - a27) << bitsPerSum);
-		a28 = short(32767 * (pSrc[28] - pRef[28]) + 0.5f);
-		a29 = short(32767 * (pSrc[29] - pRef[29]) + 0.5f);
+		a28 = f2i16(pSrc[28] - pRef[28]);
+		a29 = f2i16(pSrc[29] - pRef[29]);
 		b14 = (a28 + a29) + ((a28 - a29) << bitsPerSum);
-		a30 = short(32767 * (pSrc[30] - pRef[30]) + 0.5f);
-		a31 = short(32767 * (pSrc[31] - pRef[31]) + 0.5f);
+		a30 = f2i16(pSrc[30] - pRef[30]);
+		a31 = f2i16(pSrc[31] - pRef[31]);
 		b15 = (a30 + a31) + ((a30 - a31) << bitsPerSum);
 		tmp[i][0] = b0 + b8;
 		tmp[i][1] = b0 - b8;
