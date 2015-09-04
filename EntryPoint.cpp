@@ -24,7 +24,7 @@ VS_EXTERNAL_API(void) VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegiste
 
     mvsuperRegister(registerFunc, plugin);
     mvanalyzeRegister(registerFunc, plugin);
-	mvanalyseRegister(registerFunc, plugin);
+    mvanalyseRegister(registerFunc, plugin);
     mvdegrainsRegister(registerFunc, plugin);
     mvcompensateRegister(registerFunc, plugin);
     mvrecalculateRegister(registerFunc, plugin);
