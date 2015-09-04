@@ -35,4 +35,5 @@ void Merge16PlanesToBig(uint8_t *pel4Plane, int pel4Pitch,
 	int width, int height, int pitch);
 void MakeVectorSmallMasks(MVClipBalls *mvClip, int nX, int nY, uint8_t *VXSmallY, int pitchVXSmallY, uint8_t *VYSmallY, int pitchVYSmallY);
 void VectorSmallMaskYToHalfUV(uint8_t * VSmallY, int nBlkX, int nBlkY, uint8_t *VSmallUV, int ratioUV);
+void Blend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int height, int width, int dst_pitch, int src_pitch, int ref_pitch, int time256);
 #endif
