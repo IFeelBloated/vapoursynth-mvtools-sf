@@ -213,3 +213,27 @@ void VectorSmallMaskYToHalfUV(uint8_t * VSmallY, int nBlkX, int nBlkY, uint8_t *
 	}
 
 }
+
+template <typename PixelType>
+void RealBlend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int height, int width, int dst_pitch, int src_pitch, int ref_pitch, int time256)
+{
+	int h, w;
+	for (h = 0; h<height; h++)
+	{
+		for (w = 0; w<width; w++)
+		{
+			const PixelType *psrc_ = (const PixelType *)psrc;
+			const PixelType *pref_ = (const PixelType *)pref;
+			PixelType *pdst_ = (PixelType *)pdst;
+
+			pdst_[w] = (psrc_[w] * (256 - time256) + pref_[w] * time256) / 256;
+		}
+		pdst += dst_pitch;
+		psrc += src_pitch;
+		pref += ref_pitch;
+	}
+}
+
+void Blend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int height, int width, int dst_pitch, int src_pitch, int ref_pitch, int time256) {
+	RealBlend<float>(pdst, psrc, pref, height, width, dst_pitch, src_pitch, ref_pitch, time256);
+}
