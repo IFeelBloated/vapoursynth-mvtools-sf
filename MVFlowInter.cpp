@@ -231,7 +231,7 @@ static const VSFrameRef *VS_CC mvflowinterGetFrame(int n, int activationReason, 
                     VYSmallYF[nBlkXP*nBlkY +i] = VSMIN(VYSmallYF[nBlkXP*(nBlkY-1) +i],128);
                 }
             }
-            // analyse vectors field to detect occlusion
+            // analyze vectors field to detect occlusion
             //      double occNormB = (256-time256)/(256*ml);
             MakeVectorOcclusionMaskTime(&ballsB, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallB, nBlkXP, (256-time256), nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
             //      double occNormF = time256/(256*ml);
