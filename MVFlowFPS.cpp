@@ -322,7 +322,7 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int n, int activationReason, vo
                     upsizerUV->Resize(VYFullUVB, VPitchUV, VYSmallUVB, nBlkXP);
                 }
             }
-            // analyse vectors field to detect occlusion
+            // analyze vectors field to detect occlusion
             //        double occNormB = (256-time256)/(256*ml);
             //        MakeVectorOcclusionMask(mvClipB, nBlkX, nBlkY, occNormB, 1.0, nPel, MaskSmallB, nBlkXP);
             MakeVectorOcclusionMaskTime(&ballsB, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallB, nBlkXP, (256-time256), nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
@@ -369,7 +369,7 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int n, int activationReason, vo
                     upsizerUV->Resize(VYFullUVF, VPitchUV, VYSmallUVF, nBlkXP);
                 }
             }
-            // analyse vectors field to detect occlusion
+            // analyze vectors field to detect occlusion
             //        double occNormF = time256/(256*ml);
             //        MakeVectorOcclusionMask(mvClipF, nBlkX, nBlkY, occNormF, 1.0, nPel, MaskSmallF, nBlkXP);
             MakeVectorOcclusionMaskTime(&ballsF, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
