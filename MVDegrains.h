@@ -14,12 +14,12 @@ enum VectorOrder {
     Forward2,
     Backward3,
     Forward3,
-	Backward4,
-	Forward4,
-	Backward5,
-	Forward5,
-	Backward6,
-	Forward6
+    Backward4,	
+    Forward4, 
+    Backward5,  
+    Forward5,
+    Backward6,
+    Forward6
 };
 
 
