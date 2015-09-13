@@ -87,12 +87,12 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int n, int activationReason, vo
     MVDegrainData *d = (MVDegrainData *) * instanceData;
 
     if (activationReason == arInitial) {
-		if (radius > 5)
-			vsapi->requestFrameFilter(n, d->vectors[Forward6], frameCtx);
-		if (radius > 4)
-			vsapi->requestFrameFilter(n, d->vectors[Forward5], frameCtx);
-		if (radius > 3)
-			vsapi->requestFrameFilter(n, d->vectors[Forward4], frameCtx);
+	if (radius > 5)
+	    vsapi->requestFrameFilter(n, d->vectors[Forward6], frameCtx);
+	if (radius > 4)
+	    vsapi->requestFrameFilter(n, d->vectors[Forward5], frameCtx);
+	if (radius > 3)
+	    vsapi->requestFrameFilter(n, d->vectors[Forward4], frameCtx);
         if (radius > 2)
             vsapi->requestFrameFilter(n, d->vectors[Forward3], frameCtx);
         if (radius > 1)
@@ -103,30 +103,30 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int n, int activationReason, vo
             vsapi->requestFrameFilter(n, d->vectors[Backward2], frameCtx);
         if (radius > 2)
             vsapi->requestFrameFilter(n, d->vectors[Backward3], frameCtx);
-		if (radius > 3)
-			vsapi->requestFrameFilter(n, d->vectors[Backward4], frameCtx);
-		if (radius > 4)
-			vsapi->requestFrameFilter(n, d->vectors[Backward5], frameCtx);
-		if (radius > 5)
-			vsapi->requestFrameFilter(n, d->vectors[Backward6], frameCtx);
+	if (radius > 3)
+	    vsapi->requestFrameFilter(n, d->vectors[Backward4], frameCtx);
+	if (radius > 4)
+	    vsapi->requestFrameFilter(n, d->vectors[Backward5], frameCtx);
+	if (radius > 5)
+	    vsapi->requestFrameFilter(n, d->vectors[Backward6], frameCtx);
 
-		if (radius > 5) {
-			int offF6 = -1 * d->mvClips[Forward6]->GetDeltaFrame();
-			if (n + offF6 >= 0)
-				vsapi->requestFrameFilter(n + offF6, d->super, frameCtx);
-		}
+	if (radius > 5) {
+	    int offF6 = -1 * d->mvClips[Forward6]->GetDeltaFrame();
+	    if (n + offF6 >= 0)
+		vsapi->requestFrameFilter(n + offF6, d->super, frameCtx);
+	}
 
-		if (radius > 4) {
-			int offF5 = -1 * d->mvClips[Forward5]->GetDeltaFrame();
-			if (n + offF5 >= 0)
-				vsapi->requestFrameFilter(n + offF5, d->super, frameCtx);
-		}
+	if (radius > 4) {
+	    int offF5 = -1 * d->mvClips[Forward5]->GetDeltaFrame();
+	    if (n + offF5 >= 0)
+		vsapi->requestFrameFilter(n + offF5, d->super, frameCtx);
+	}
 
-		if (radius > 3) {
-			int offF4 = -1 * d->mvClips[Forward4]->GetDeltaFrame();
-			if (n + offF4 >= 0)
-				vsapi->requestFrameFilter(n + offF4, d->super, frameCtx);
-		}
+	if (radius > 3) {
+	    int offF4 = -1 * d->mvClips[Forward4]->GetDeltaFrame();
+	    if (n + offF4 >= 0)
+		vsapi->requestFrameFilter(n + offF4, d->super, frameCtx);
+	}
 
         if (radius > 2) {
             int offF3 = -1 * d->mvClips[Forward3]->GetDeltaFrame();
@@ -160,23 +160,23 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int n, int activationReason, vo
                 vsapi->requestFrameFilter(n + offB3, d->super, frameCtx);
         }
 
-		if (radius > 3) {
-			int offB4 = d->mvClips[Backward4]->GetDeltaFrame();
-			if (n + offB4 < d->vi->numFrames || !d->vi->numFrames)
-				vsapi->requestFrameFilter(n + offB4, d->super, frameCtx);
-		}
+	if (radius > 3) {
+	    int offB4 = d->mvClips[Backward4]->GetDeltaFrame();
+	    if (n + offB4 < d->vi->numFrames || !d->vi->numFrames)
+		vsapi->requestFrameFilter(n + offB4, d->super, frameCtx);
+	}
 
-		if (radius > 4) {
-			int offB5 = d->mvClips[Backward5]->GetDeltaFrame();
-			if (n + offB5 < d->vi->numFrames || !d->vi->numFrames)
-				vsapi->requestFrameFilter(n + offB5, d->super, frameCtx);
-		}
+	if (radius > 4) {
+	    int offB5 = d->mvClips[Backward5]->GetDeltaFrame();
+	    if (n + offB5 < d->vi->numFrames || !d->vi->numFrames)
+	        vsapi->requestFrameFilter(n + offB5, d->super, frameCtx);
+	}
 
-		if (radius > 5) {
-			int offB6 = d->mvClips[Backward6]->GetDeltaFrame();
-			if (n + offB6 < d->vi->numFrames || !d->vi->numFrames)
-				vsapi->requestFrameFilter(n + offB6, d->super, frameCtx);
-		}
+	if (radius > 5) {
+	    int offB6 = d->mvClips[Backward6]->GetDeltaFrame();
+	    if (n + offB6 < d->vi->numFrames || !d->vi->numFrames)
+		vsapi->requestFrameFilter(n + offB6, d->super, frameCtx);
+	}
 
         vsapi->requestFrameFilter(n, d->node, frameCtx);
     } else if (activationReason == arAllFramesReady) {
@@ -572,12 +572,12 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
     d.vectors[Forward2] = vsapi->propGetNode(in, "mvfw2", 0, &err);
     d.vectors[Backward3] = vsapi->propGetNode(in, "mvbw3", 0, &err);
     d.vectors[Forward3] = vsapi->propGetNode(in, "mvfw3", 0, &err);
-	d.vectors[Backward4] = vsapi->propGetNode(in, "mvbw4", 0, &err);
-	d.vectors[Forward4] = vsapi->propGetNode(in, "mvfw4", 0, &err);
-	d.vectors[Backward5] = vsapi->propGetNode(in, "mvbw5", 0, &err);
-	d.vectors[Forward5] = vsapi->propGetNode(in, "mvfw5", 0, &err);
-	d.vectors[Backward6] = vsapi->propGetNode(in, "mvbw6", 0, &err);
-	d.vectors[Forward6] = vsapi->propGetNode(in, "mvfw6", 0, &err);
+    d.vectors[Backward4] = vsapi->propGetNode(in, "mvbw4", 0, &err);
+    d.vectors[Forward4] = vsapi->propGetNode(in, "mvfw4", 0, &err);
+    d.vectors[Backward5] = vsapi->propGetNode(in, "mvbw5", 0, &err);
+    d.vectors[Forward5] = vsapi->propGetNode(in, "mvfw5", 0, &err);
+    d.vectors[Backward6] = vsapi->propGetNode(in, "mvbw6", 0, &err);
+    d.vectors[Forward6] = vsapi->propGetNode(in, "mvfw6", 0, &err);
 
     // XXX Yoda had the right idea.
 
@@ -630,41 +630,41 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
                 throw MVException("mvfw3 must have greater delta than mvfw2.");
         }
 
-		if (radius > 3) {
-			if (!d.mvClips[Backward4]->IsBackward())
-				throw MVException("mvbw4 must be generated with isb=True.");
-			if (d.mvClips[Forward4]->IsBackward())
-				throw MVException("mvfw4 must be generated with isb=False.");
+	if (radius > 3) {
+	    if (!d.mvClips[Backward4]->IsBackward())
+		throw MVException("mvbw4 must be generated with isb=True.");
+	    if (d.mvClips[Forward4]->IsBackward())
+		throw MVException("mvfw4 must be generated with isb=False.");
 
-			if (d.mvClips[Backward4]->GetDeltaFrame() <= d.mvClips[Backward3]->GetDeltaFrame())
-				throw MVException("mvbw4 must have greater delta than mvbw3.");
-			if (d.mvClips[Forward4]->GetDeltaFrame() <= d.mvClips[Forward3]->GetDeltaFrame())
-				throw MVException("mvfw4 must have greater delta than mvfw3.");
-		}
+	    if (d.mvClips[Backward4]->GetDeltaFrame() <= d.mvClips[Backward3]->GetDeltaFrame())
+		throw MVException("mvbw4 must have greater delta than mvbw3.");
+	    if (d.mvClips[Forward4]->GetDeltaFrame() <= d.mvClips[Forward3]->GetDeltaFrame())
+		throw MVException("mvfw4 must have greater delta than mvfw3.");
+	}
 
-		if (radius > 4) {
-			if (!d.mvClips[Backward5]->IsBackward())
-				throw MVException("mvbw5 must be generated with isb=True.");
-			if (d.mvClips[Forward5]->IsBackward())
-				throw MVException("mvfw5 must be generated with isb=False.");
+	if (radius > 4) {
+	    if (!d.mvClips[Backward5]->IsBackward())
+		throw MVException("mvbw5 must be generated with isb=True.");
+	    if (d.mvClips[Forward5]->IsBackward())
+		throw MVException("mvfw5 must be generated with isb=False.");
 
-			if (d.mvClips[Backward5]->GetDeltaFrame() <= d.mvClips[Backward4]->GetDeltaFrame())
-				throw MVException("mvbw5 must have greater delta than mvbw4.");
-			if (d.mvClips[Forward5]->GetDeltaFrame() <= d.mvClips[Forward4]->GetDeltaFrame())
-				throw MVException("mvfw5 must have greater delta than mvfw4.");
-		}
+	    if (d.mvClips[Backward5]->GetDeltaFrame() <= d.mvClips[Backward4]->GetDeltaFrame())
+		throw MVException("mvbw5 must have greater delta than mvbw4.");
+	    if (d.mvClips[Forward5]->GetDeltaFrame() <= d.mvClips[Forward4]->GetDeltaFrame())
+		throw MVException("mvfw5 must have greater delta than mvfw4.");
+	}
 
-		if (radius > 5) {
-			if (!d.mvClips[Backward6]->IsBackward())
-				throw MVException("mvbw6 must be generated with isb=True.");
-			if (d.mvClips[Forward6]->IsBackward())
-				throw MVException("mvfw6 must be generated with isb=False.");
+	if (radius > 5) {
+	    if (!d.mvClips[Backward6]->IsBackward())
+		throw MVException("mvbw6 must be generated with isb=True.");
+	    if (d.mvClips[Forward6]->IsBackward())
+		throw MVException("mvfw6 must be generated with isb=False.");
 
-			if (d.mvClips[Backward6]->GetDeltaFrame() <= d.mvClips[Backward5]->GetDeltaFrame())
-				throw MVException("mvbw6 must have greater delta than mvbw5.");
-			if (d.mvClips[Forward6]->GetDeltaFrame() <= d.mvClips[Forward5]->GetDeltaFrame())
-				throw MVException("mvfw6 must have greater delta than mvfw5.");
-		}
+	    if (d.mvClips[Backward6]->GetDeltaFrame() <= d.mvClips[Backward5]->GetDeltaFrame())
+		throw MVException("mvbw6 must have greater delta than mvbw5.");
+	    if (d.mvClips[Forward6]->GetDeltaFrame() <= d.mvClips[Forward5]->GetDeltaFrame())
+		throw MVException("mvfw6 must have greater delta than mvfw5.");
+	}
 
         d.bleh = new MVFilter(d.vectors[Forward1], filter.c_str(), vsapi);
     } catch (MVException &e) {
@@ -680,7 +680,7 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
 
 
     try {
-		const char *vectorNames[12] = { "mvbw", "mvfw", "mvbw2", "mvfw2", "mvbw3", "mvfw3", "mvbw4", "mvfw4", "mvbw5", "mvfw5", "mvbw6", "mvfw6" };
+	const char *vectorNames[12] = { "mvbw", "mvfw", "mvbw2", "mvfw2", "mvbw3", "mvfw3", "mvbw4", "mvfw4", "mvbw5", "mvfw5", "mvbw6", "mvfw6" };
 
         for (int r = 0; r < radius*2; r++)
             d.bleh->CheckSimilarity(d.mvClips[r], vectorNames[r]);
@@ -864,67 +864,67 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
             "thscd1:float:opt;"
             "thscd2:float:opt;"
             , mvdegrainCreate<3>, 0, plugin);
-	registerFunc("Degrain4",
-		"clip:clip;"
-		"super:clip;"
-		"mvbw:clip;"
-		"mvfw:clip;"
-		"mvbw2:clip;"
-		"mvfw2:clip;"
-		"mvbw3:clip;"
-		"mvfw3:clip;"
-		"mvbw4:clip;"
-		"mvfw4:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
-		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
-		"thscd1:float:opt;"
-		"thscd2:float:opt;"
-		, mvdegrainCreate<4>, 0, plugin);
-	registerFunc("Degrain5",
-		"clip:clip;"
-		"super:clip;"
-		"mvbw:clip;"
-		"mvfw:clip;"
-		"mvbw2:clip;"
-		"mvfw2:clip;"
-		"mvbw3:clip;"
-		"mvfw3:clip;"
-		"mvbw4:clip;"
-		"mvfw4:clip;"
-		"mvbw5:clip;"
-		"mvfw5:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
-		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
-		"thscd1:float:opt;"
-		"thscd2:float:opt;"
-		, mvdegrainCreate<5>, 0, plugin);
-	registerFunc("Degrain6",
-		"clip:clip;"
-		"super:clip;"
-		"mvbw:clip;"
-		"mvfw:clip;"
-		"mvbw2:clip;"
-		"mvfw2:clip;"
-		"mvbw3:clip;"
-		"mvfw3:clip;"
-		"mvbw4:clip;"
-		"mvfw4:clip;"
-		"mvbw5:clip;"
-		"mvfw5:clip;"
-		"mvbw6:clip;"
-		"mvfw6:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
-		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
-		"thscd1:float:opt;"
-		"thscd2:float:opt;"
-		, mvdegrainCreate<6>, 0, plugin);
+    registerFunc("Degrain4",
+            "clip:clip;"
+	    "super:clip;"
+	    "mvbw:clip;"
+	    "mvfw:clip;"
+	    "mvbw2:clip;"
+	    "mvfw2:clip;"
+	    "mvbw3:clip;"
+	    "mvfw3:clip;"
+	    "mvbw4:clip;"
+	    "mvfw4:clip;"
+	    "thsad:float:opt;"
+	    "thsadc:float:opt;"
+	    "plane:int:opt;"
+	    "limit:float:opt;"
+	    "limitc:float:opt;"
+	    "thscd1:float:opt;"
+	    "thscd2:float:opt;"
+	    , mvdegrainCreate<4>, 0, plugin);
+    registerFunc("Degrain5",
+	    "clip:clip;"
+	    "super:clip;"
+	    "mvbw:clip;"
+	    "mvfw:clip;"
+	    "mvbw2:clip;"
+	    "mvfw2:clip;"
+	    "mvbw3:clip;"
+	    "mvfw3:clip;"
+	    "mvbw4:clip;"
+	    "mvfw4:clip;"
+	    "mvbw5:clip;"
+	    "mvfw5:clip;"
+	    "thsad:float:opt;"
+	    "thsadc:float:opt;"
+	    "plane:int:opt;"
+	    "limit:float:opt;"
+	    "limitc:float:opt;"
+	    "thscd1:float:opt;"
+	    "thscd2:float:opt;"
+	    , mvdegrainCreate<5>, 0, plugin);
+    registerFunc("Degrain6",
+	    "clip:clip;"
+	    "super:clip;"
+	    "mvbw:clip;"
+	    "mvfw:clip;"
+	    "mvbw2:clip;"
+	    "mvfw2:clip;"
+	    "mvbw3:clip;"
+	    "mvfw3:clip;"
+	    "mvbw4:clip;"
+	    "mvfw4:clip;"
+	    "mvbw5:clip;"
+	    "mvfw5:clip;"
+	    "mvbw6:clip;"
+	    "mvfw6:clip;"
+	    "thsad:float:opt;"
+	    "thsadc:float:opt;"
+	    "plane:int:opt;"
+	    "limit:float:opt;"
+	    "limitc:float:opt;"
+	    "thscd1:float:opt;"
+	    "thscd2:float:opt;"
+	    , mvdegrainCreate<6>, 0, plugin);
 }
