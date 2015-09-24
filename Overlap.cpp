@@ -35,7 +35,7 @@ OverlapWindows::OverlapWindows(int _nx, int _ny, int _ox, int _oy)
     fWin1UVxlast = new float[nx];
     for (int i=0; i<ox; i++)
     {
-        fWin1UVx[i] = cos(M_PI*(i-ox+0.5f)/(ox*2));
+        fWin1UVx[i] = static_cast <float> (cos(M_PI*(i-ox+0.5f)/(ox*2)));
         fWin1UVx[i] = fWin1UVx[i]*fWin1UVx[i];// left window (rised cosine)
         fWin1UVxfirst[i] = 1; // very first window
         fWin1UVxlast[i] = fWin1UVx[i]; // very last
@@ -48,7 +48,7 @@ OverlapWindows::OverlapWindows(int _nx, int _ny, int _ox, int _oy)
     }
     for (int i=nx-ox; i<nx; i++)
     {
-        fWin1UVx[i] = cos(M_PI*(i-nx+ox+0.5f)/(ox*2));
+        fWin1UVx[i] = static_cast <float> (cos(M_PI*(i-nx+ox+0.5f)/(ox*2)));
         fWin1UVx[i] = fWin1UVx[i]*fWin1UVx[i];// right window (falled cosine)
         fWin1UVxfirst[i] = fWin1UVx[i]; // very first window
         fWin1UVxlast[i] = 1; // very last
@@ -59,7 +59,7 @@ OverlapWindows::OverlapWindows(int _nx, int _ny, int _ox, int _oy)
     fWin1UVylast = new float[ny];
     for (int i=0; i<oy; i++)
     {
-        fWin1UVy[i] = cos(M_PI*(i-oy+0.5f)/(oy*2));
+        fWin1UVy[i] = static_cast <float> (cos(M_PI*(i-oy+0.5f)/(oy*2)));
         fWin1UVy[i] = fWin1UVy[i]*fWin1UVy[i];// left window (rised cosine)
         fWin1UVyfirst[i] = 1; // very first window
         fWin1UVylast[i] = fWin1UVy[i]; // very last
@@ -72,7 +72,7 @@ OverlapWindows::OverlapWindows(int _nx, int _ny, int _ox, int _oy)
     }
     for (int i=ny-oy; i<ny; i++)
     {
-        fWin1UVy[i] = cos(M_PI*(i-ny+oy+0.5f)/(oy*2));
+        fWin1UVy[i] = static_cast <float> (cos(M_PI*(i-ny+oy+0.5f)/(oy*2)));
         fWin1UVy[i] = fWin1UVy[i]*fWin1UVy[i];// right window (falled cosine)
         fWin1UVyfirst[i] = fWin1UVy[i]; // very first window
         fWin1UVylast[i] = 1; // very last
