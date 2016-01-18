@@ -1245,8 +1245,8 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
 		return;
 	}
 
-	d.thSAD[0] = d.thSAD[0] * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1; // normalize to block SAD
-	d.thSAD[1] = d.thSAD[2] = d.thSAD[1] * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1; // chroma threshold, normalized to block SAD
+	d.thSAD[0] = static_cast<float>(static_cast<double>(d.thSAD[0]) * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1); // normalize to block SAD
+	d.thSAD[1] = d.thSAD[2] = static_cast<float>(static_cast<double>(d.thSAD[1]) * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1); // chroma threshold, normalized to block SAD
 
 
 
