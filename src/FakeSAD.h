@@ -6,13 +6,13 @@ union fakestuff {
 	float real;
 };
 
-inline static int FakeInt(float a) {
+static inline int FakeInt(float a) {
 	fakestuff tmp;
 	tmp.real = a;
 	return tmp.fake;
 }
 
-inline static float Back2FLT(int a) {
+static inline float Back2FLT(int a) {
 	fakestuff tmp;
 	tmp.fake = a;
 	return tmp.real;
