@@ -1,9 +1,5 @@
 #include "VapourSynth.h"
 
-
-// Extra indirection to keep the parameter lists with the respective filters.
-
-
 void mvsuperRegister(VSRegisterFunction registerFunc, VSPlugin *plugin);
 void mvanalyzeRegister(VSRegisterFunction registerFunc, VSPlugin *plugin);
 void mvanalyseRegister(VSRegisterFunction registerFunc, VSPlugin *plugin);
@@ -18,10 +14,8 @@ void mvflowfpsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin);
 void mvblockfpsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin);
 void mvscdetectionRegister(VSRegisterFunction registerFunc, VSPlugin *plugin);
 
-
 VS_EXTERNAL_API(void) VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction registerFunc, VSPlugin *plugin) {
     configFunc("com.nodame.mvsf", "mvsf", "MVTools Single Precision", VAPOURSYNTH_API_VERSION, 1, plugin);
-
     mvsuperRegister(registerFunc, plugin);
     mvanalyzeRegister(registerFunc, plugin);
     mvanalyseRegister(registerFunc, plugin);
