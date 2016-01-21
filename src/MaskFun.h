@@ -1,27 +1,6 @@
-// Create an overlay mask with the motion vectors
-
-// See legal notice in Copying.txt for more information
-
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA, or visit
-// http://www.gnu.org/copyleft/gpl.html .
-
 #ifndef __MASKFUN__
 #define __MASKFUN__
-
-#include <stdint.h>
-
+#include <cstdint>
 #include "MVClip.h"
 #include "MVFrame.h"
 
@@ -48,4 +27,5 @@ void Create_LUTV(int time256, int *LUTVB, int *LUTVF);
 void FlowInterSimple(uint8_t * pdst, int dst_pitch, const uint8_t *prefB, const uint8_t *prefF, int ref_pitch,
 	uint8_t *VXFullB, uint8_t *VXFullF, uint8_t *VYFullB, uint8_t *VYFullF, uint8_t *MaskB, uint8_t *MaskF,
 	int VPitch, int width, int height, int time256, int nPel, int *LUTVB, int *LUTVF);
+
 #endif
