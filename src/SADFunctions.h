@@ -1,56 +1,11 @@
-// Functions that computes distances between blocks
-
-// See legal notice in Copying.txt for more information
-
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA, or visit
-// http://www.gnu.org/copyleft/gpl.html .
-
 #ifndef __SAD_FUNC__
 #define __SAD_FUNC__
 
-#include <cstdint>
-
-
-typedef float (*SADFunction)(const uint8_t *pSrc, intptr_t nSrcPitch,
-        const uint8_t *pRef, intptr_t nRefPitch);
-
-inline float SADABS(float x) { return (x < 0.f) ? -x : x; }
-
-template<int nBlkWidth, int nBlkHeight, typename PixelType>
-float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
-        intptr_t nRefPitch)
-{
-    float sum = 0.f;
-    for ( int y = 0; y < nBlkHeight; y++ )
-    {
-        for ( int x = 0; x < nBlkWidth; x++ ) {
-            const PixelType *pSrc = (const PixelType *)pSrc8;
-            const PixelType *pRef = (const PixelType *)pRef8;
-            sum += SADABS(pSrc[x] - pRef[x]);
-        }
-        pSrc8 += nSrcPitch;
-        pRef8 += nRefPitch;
-    }
-	return sum;
-}
-
 #define HADAMARD4(d0, d1, d2, d3, s0, s1, s2, s3) {\
-    SumType2 t0 = s0 + s1;\
-    SumType2 t1 = s0 - s1;\
-    SumType2 t2 = s2 + s3;\
-    SumType2 t3 = s2 - s3;\
+    SumType t0 = s0 + s1;\
+    SumType t1 = s0 - s1;\
+    SumType t2 = s2 + s3;\
+    SumType t3 = s2 - s3;\
     d0 = t0 + t2;\
     d2 = t0 - t2;\
     d1 = t1 + t3;\
@@ -58,14 +13,14 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
 }
 
 #define HADAMARD8(d0, d1, d2, d3, d4, d5, d6, d7, s0, s1, s2, s3, s4, s5, s6, s7) {\
-    SumType2 t0 = s0 + s1;\
-    SumType2 t1 = s0 - s1;\
-    SumType2 t2 = s2 + s3;\
-    SumType2 t3 = s2 - s3;\
-    SumType2 t4 = s4 + s5;\
-    SumType2 t5 = s4 - s5;\
-    SumType2 t6 = s6 + s7;\
-    SumType2 t7 = s6 - s7;\
+    SumType t0 = s0 + s1;\
+    SumType t1 = s0 - s1;\
+    SumType t2 = s2 + s3;\
+    SumType t3 = s2 - s3;\
+    SumType t4 = s4 + s5;\
+    SumType t5 = s4 - s5;\
+    SumType t6 = s6 + s7;\
+    SumType t7 = s6 - s7;\
     d0 = t0 + t4;\
     d2 = t0 - t4;\
     d1 = t1 + t5;\
@@ -77,22 +32,22 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
 }
 
 #define HADAMARD16(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15) {\
-    SumType2 t0 = s0 + s1;\
-    SumType2 t1 = s0 - s1;\
-    SumType2 t2 = s2 + s3;\
-    SumType2 t3 = s2 - s3;\
-    SumType2 t4 = s4 + s5;\
-    SumType2 t5 = s4 - s5;\
-    SumType2 t6 = s6 + s7;\
-    SumType2 t7 = s6 - s7;\
-    SumType2 t8 = s8 + s9;\
-    SumType2 t9 = s8 - s9;\
-    SumType2 t10 = s10 + s11;\
-    SumType2 t11 = s10 - s11;\
-    SumType2 t12 = s12 + s13;\
-    SumType2 t13 = s12 - s13;\
-    SumType2 t14 = s14 + s15;\
-    SumType2 t15 = s14 - s15;\
+    SumType t0 = s0 + s1;\
+    SumType t1 = s0 - s1;\
+    SumType t2 = s2 + s3;\
+    SumType t3 = s2 - s3;\
+    SumType t4 = s4 + s5;\
+    SumType t5 = s4 - s5;\
+    SumType t6 = s6 + s7;\
+    SumType t7 = s6 - s7;\
+    SumType t8 = s8 + s9;\
+    SumType t9 = s8 - s9;\
+    SumType t10 = s10 + s11;\
+    SumType t11 = s10 - s11;\
+    SumType t12 = s12 + s13;\
+    SumType t13 = s12 - s13;\
+    SumType t14 = s14 + s15;\
+    SumType t15 = s14 - s15;\
     d0  = t0 + t8;\
     d2  = t0 - t8;\
     d1  = t1 + t9;\
@@ -112,38 +67,38 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
 }
 
 #define HADAMARD32(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16, d17, d18, d19, d20, d21, d22, d23, d24, d25, d26, d27, d28, d29, d30, d31, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21, s22, s23, s24, s25, s26, s27, s28, s29, s30, s31) {\
-    SumType2 t0 = s0 + s1;\
-    SumType2 t1 = s0 - s1;\
-    SumType2 t2 = s2 + s3;\
-    SumType2 t3 = s2 - s3;\
-    SumType2 t4 = s4 + s5;\
-    SumType2 t5 = s4 - s5;\
-    SumType2 t6 = s6 + s7;\
-    SumType2 t7 = s6 - s7;\
-    SumType2 t8 = s8 + s9;\
-    SumType2 t9 = s8 - s9;\
-    SumType2 t10 = s10 + s11;\
-    SumType2 t11 = s10 - s11;\
-    SumType2 t12 = s12 + s13;\
-    SumType2 t13 = s12 - s13;\
-    SumType2 t14 = s14 + s15;\
-    SumType2 t15 = s14 - s15;\
-    SumType2 t16 = s16 + s17;\
-    SumType2 t17 = s16 - s17;\
-    SumType2 t18 = s18 + s19;\
-    SumType2 t19 = s18 - s19;\
-    SumType2 t20 = s20 + s21;\
-    SumType2 t21 = s20 - s21;\
-    SumType2 t22 = s22 + s23;\
-    SumType2 t23 = s22 - s23;\
-    SumType2 t24 = s24 + s25;\
-    SumType2 t25 = s24 - s25;\
-    SumType2 t26 = s26 + s27;\
-    SumType2 t27 = s26 - s27;\
-    SumType2 t28 = s28 + s29;\
-    SumType2 t29 = s28 - s29;\
-    SumType2 t30 = s30 + s31;\
-    SumType2 t31 = s30 - s31;\
+    SumType t0 = s0 + s1;\
+    SumType t1 = s0 - s1;\
+    SumType t2 = s2 + s3;\
+    SumType t3 = s2 - s3;\
+    SumType t4 = s4 + s5;\
+    SumType t5 = s4 - s5;\
+    SumType t6 = s6 + s7;\
+    SumType t7 = s6 - s7;\
+    SumType t8 = s8 + s9;\
+    SumType t9 = s8 - s9;\
+    SumType t10 = s10 + s11;\
+    SumType t11 = s10 - s11;\
+    SumType t12 = s12 + s13;\
+    SumType t13 = s12 - s13;\
+    SumType t14 = s14 + s15;\
+    SumType t15 = s14 - s15;\
+    SumType t16 = s16 + s17;\
+    SumType t17 = s16 - s17;\
+    SumType t18 = s18 + s19;\
+    SumType t19 = s18 - s19;\
+    SumType t20 = s20 + s21;\
+    SumType t21 = s20 - s21;\
+    SumType t22 = s22 + s23;\
+    SumType t23 = s22 - s23;\
+    SumType t24 = s24 + s25;\
+    SumType t25 = s24 - s25;\
+    SumType t26 = s26 + s27;\
+    SumType t27 = s26 - s27;\
+    SumType t28 = s28 + s29;\
+    SumType t29 = s28 - s29;\
+    SumType t30 = s30 + s31;\
+    SumType t31 = s30 - s31;\
     d0   = t0 + t16;\
     d2   = t0 - t16;\
     d1   = t1 + t17;\
@@ -178,263 +133,318 @@ float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch,const uint8_t *pRef8,
     d31  = t15 - t31;\
 }
 
-template <typename SumType, typename SumType2>
-static inline SumType2 abs2(SumType2 a)
-{
-	int bitsPerSum = 8 * sizeof(SumType);
+#include <cstdint>
 
-	SumType2 s = ((a >> (bitsPerSum - 1))&(((SumType2)1 << bitsPerSum) + 1))*((SumType)-1);
-	return (a + s) ^ s;
+typedef float(*SADFunction)(const uint8_t *pSrc, intptr_t nSrcPitch,
+	const uint8_t *pRef, intptr_t nRefPitch);
+
+template<typename PixelType>
+static inline PixelType SADABS(PixelType x) {
+	return (x < 0) ? -x : x;
 }
 
-static inline short f2i16(float a)
-{
-	short b = (a > 0) ? short(32767 * a + 0.5) : short(32767 * a - 0.5);
-    return b;
-}
-
-template <typename PixelType, typename SumType, typename SumType2>
-float Real_Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
-	int bitsPerSum = 8 * sizeof(SumType);
-
-	SumType2 tmp[4][2];
-	SumType2 a0, a1, a2, a3, b0, b1;
-	SumType2 sum = 0;
-
-	for (int i = 0; i < 4; i++) {
-		const PixelType *pSrc = (const PixelType *)pSrc8;
-		const PixelType *pRef = (const PixelType *)pRef8;
-
-		a0 = f2i16(pSrc[0] - pRef[0]);
-		a1 = f2i16(pSrc[1] - pRef[1]);
-		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = f2i16(pSrc[2] - pRef[2]);
-		a3 = f2i16(pSrc[3] - pRef[3]);
-		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
-		tmp[i][0] = b0 + b1;
-		tmp[i][1] = b0 - b1;
-
+template<int nBlkWidth, int nBlkHeight, typename PixelType>
+float Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
+	intptr_t nRefPitch) {
+	double sum = 0.;
+	for (int y = 0; y < nBlkHeight; y++) {
+		for (int x = 0; x < nBlkWidth; x++) {
+			const PixelType *pSrc = (const PixelType *)pSrc8;
+			const PixelType *pRef = (const PixelType *)pRef8;
+			sum += SADABS<double>(static_cast<double>(pSrc[x]) - pRef[x]);
+		}
 		pSrc8 += nSrcPitch;
 		pRef8 += nRefPitch;
 	}
+	return static_cast<float>(sum);
+}
 
-	for (int i = 0; i < 2; i++) {
-		HADAMARD4(a0, a1, a2, a3, tmp[0][i], tmp[1][i], tmp[2][i], tmp[3][i]);
-		a0 = abs2<SumType, SumType2>(a0) +abs2<SumType, SumType2>(a1) +abs2<SumType, SumType2>(a2) +abs2<SumType, SumType2>(a3);
-		sum += ((SumType)a0) + (a0 >> bitsPerSum);
+template <typename PixelType, typename SumType>
+float Real_Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
+	SumType tmp[4][2][2];
+	SumType a0, a1, a2, a3, b0a, b1a, b0b, b1b;
+	SumType sum = 0.;
+	for (int i = 0; i < 4; ++i) {
+		const PixelType *pSrc = (const PixelType *)pSrc8;
+		const PixelType *pRef = (const PixelType *)pRef8;
+		a0 = static_cast<SumType>(pSrc[0]) - pRef[0];
+		a1 = static_cast<SumType>(pSrc[1]) - pRef[1];
+		b0a = a0 + a1;
+		b0b = a0 - a1;
+		a2 = static_cast<SumType>(pSrc[2]) - pRef[2];
+		a3 = static_cast<SumType>(pSrc[3]) - pRef[3];
+		b1a = a2 + a3;
+		b1b = a2 - a3;
+		tmp[i][0][0] = b0a + b1a;
+		tmp[i][1][0] = b0a - b1a;
+		tmp[i][0][1] = b0b + b1b;
+		tmp[i][1][1] = b0b - b1b;
+		pSrc8 += nSrcPitch;
+		pRef8 += nRefPitch;
 	}
-
-	return float(double(sum >> 1) / 32767);
+	for (int i = 0; i < 2; ++i) {
+		HADAMARD4(a0, a1, a2, a3, tmp[0][i][0], tmp[1][i][0], tmp[2][i][0], tmp[3][i][0]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3);
+		sum += a0;
+		HADAMARD4(a0, a1, a2, a3, tmp[0][i][1], tmp[1][i][1], tmp[2][i][1], tmp[3][i][1]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3);
+		sum += a0;
+	}
+	return static_cast<float>(sum / 2.);
 }
 
 template <typename PixelType>
 float Satd_4x4_C(const uint8_t *pSrc, intptr_t nSrcPitch, const uint8_t *pRef, intptr_t nRefPitch) {
-	return Real_Satd_4x4_C<PixelType, long, long long>(pSrc, nSrcPitch, pRef, nRefPitch);
+	return Real_Satd_4x4_C<PixelType, double>(pSrc, nSrcPitch, pRef, nRefPitch);
 }
 
-template <typename PixelType, typename SumType, typename SumType2>
+template <typename PixelType, typename SumType>
 float Real_Satd_8x8_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
-	int bitsPerSum = 8 * sizeof(SumType);
-
-	SumType2 tmp[8][4];
-	SumType2 a0, a1, a2, a3, a4, a5, a6, a7, b0, b1, b2, b3;
-	SumType2 sum = 0;
-
-	for (int i = 0; i < 8; i++) {
+	SumType tmp[8][4][2];
+	SumType a0, a1, a2, a3, a4, a5, a6, a7, b0a, b1a, b2a, b3a, b0b, b1b, b2b, b3b;
+	SumType sum = 0.;
+	for (int i = 0; i < 8; ++i) {
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
-
-		a0 = f2i16(pSrc[0] - pRef[0]);
-		a1 = f2i16(pSrc[1] - pRef[1]);
-		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = f2i16(pSrc[2] - pRef[2]);
-		a3 = f2i16(pSrc[3] - pRef[3]);
-		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
-		a4 = f2i16(pSrc[4] - pRef[4]);
-		a5 = f2i16(pSrc[5] - pRef[5]);
-		b2 = (a4 + a5) + ((a4 - a5) << bitsPerSum);
-		a6 = f2i16(pSrc[6] - pRef[6]);
-		a7 = f2i16(pSrc[7] - pRef[7]);
-		b3 = (a6 + a7) + ((a6 - a7) << bitsPerSum);
-		tmp[i][0] = b0 + b2;
-		tmp[i][1] = b0 - b2;
-		tmp[i][2] = b1 + b3;
-		tmp[i][3] = b1 - b3;
-
+		a0 = static_cast<SumType>(pSrc[0]) - pRef[0];
+		a1 = static_cast<SumType>(pSrc[1]) - pRef[1];
+		b0a = a0 + a1;
+		b0b = a0 - a1;
+		a2 = static_cast<SumType>(pSrc[2]) - pRef[2];
+		a3 = static_cast<SumType>(pSrc[3]) - pRef[3];
+		b1a = a2 + a3;
+		b1b = a2 - a3;
+		a4 = static_cast<SumType>(pSrc[4]) - pRef[4];
+		a5 = static_cast<SumType>(pSrc[5]) - pRef[5];
+		b2a = a4 + a5;
+		b2b = a4 - a5;
+		a6 = static_cast<SumType>(pSrc[6]) - pRef[6];
+		a7 = static_cast<SumType>(pSrc[7]) - pRef[7];
+		b3a = a6 + a7;
+		b3b = a6 - a7;
+		tmp[i][0][0] = b0a + b2a;
+		tmp[i][1][0] = b0a - b2a;
+		tmp[i][2][0] = b1a + b3a;
+		tmp[i][3][0] = b1a - b3a;
+		tmp[i][0][1] = b0b + b2b;
+		tmp[i][1][1] = b0b - b2b;
+		tmp[i][2][1] = b1b + b3b;
+		tmp[i][3][1] = b1b - b3b;
 		pSrc8 += nSrcPitch;
 		pRef8 += nRefPitch;
 	}
-
-	for (int i = 0; i < 4; i++) {
-		HADAMARD8(a0, a1, a2, a3, a4, a5, a6, a7, tmp[0][i], tmp[1][i], tmp[2][i], tmp[3][i], tmp[4][i], tmp[5][i], tmp[6][i], tmp[7][i]);
-		a0 = abs2<SumType, SumType2>(a0) +abs2<SumType, SumType2>(a1) +abs2<SumType, SumType2>(a2) +abs2<SumType, SumType2>(a3) +abs2<SumType, SumType2>(a4) +abs2<SumType, SumType2>(a5) +abs2<SumType, SumType2>(a6) +abs2<SumType, SumType2>(a7);
-		sum += ((SumType)a0) + (a0 >> bitsPerSum);
+	for (int i = 0; i < 4; ++i) {
+		HADAMARD8(a0, a1, a2, a3, a4, a5, a6, a7, tmp[0][i][0], tmp[1][i][0], tmp[2][i][0], tmp[3][i][0], tmp[4][i][0], tmp[5][i][0], tmp[6][i][0], tmp[7][i][0]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3) + SADABS<SumType>(a4) + SADABS<SumType>(a5) + SADABS<SumType>(a6) + SADABS<SumType>(a7);
+		sum += a0;
+		HADAMARD8(a0, a1, a2, a3, a4, a5, a6, a7, tmp[0][i][1], tmp[1][i][1], tmp[2][i][1], tmp[3][i][1], tmp[4][i][1], tmp[5][i][1], tmp[6][i][1], tmp[7][i][1]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3) + SADABS<SumType>(a4) + SADABS<SumType>(a5) + SADABS<SumType>(a6) + SADABS<SumType>(a7);
+		sum += a0;
 	}
-
-	return float(double(sum >> 1) / 32767);
+	return static_cast<float>(sum / 2.);
 }
 
 template <typename PixelType>
 float Satd_8x8_C(const uint8_t *pSrc, intptr_t nSrcPitch, const uint8_t *pRef, intptr_t nRefPitch) {
-	return Real_Satd_8x8_C<PixelType, long, long long>(pSrc, nSrcPitch, pRef, nRefPitch);
+	return Real_Satd_8x8_C<PixelType, double>(pSrc, nSrcPitch, pRef, nRefPitch);
 }
 
-template <typename PixelType, typename SumType, typename SumType2>
+template <typename PixelType, typename SumType>
 float Real_Satd_16x16_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
-	int bitsPerSum = 8 * sizeof(SumType);
-
-	SumType2 tmp[16][8];
-	SumType2 a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, b0, b1, b2, b3, b4, b5, b6, b7;
-	SumType2 sum = 0;
-
-	for (int i = 0; i < 16; i++) {
+	SumType tmp[16][8][2];
+	SumType a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, b0a, b1a, b2a, b3a, b4a, b5a, b6a, b7a, b0b, b1b, b2b, b3b, b4b, b5b, b6b, b7b;
+	SumType sum = 0.;
+	for (int i = 0; i < 16; ++i) {
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
-
-		a0 = f2i16(pSrc[0] - pRef[0]);
-		a1 = f2i16(pSrc[1] - pRef[1]);
-		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = f2i16(pSrc[2] - pRef[2]);
-		a3 = f2i16(pSrc[3] - pRef[3]);
-		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
-		a4 = f2i16(pSrc[4] - pRef[4]);
-		a5 = f2i16(pSrc[5] - pRef[5]);
-		b2 = (a4 + a5) + ((a4 - a5) << bitsPerSum);
-		a6 = f2i16(pSrc[6] - pRef[6]);
-		a7 = f2i16(pSrc[7] - pRef[7]);
-		b3 = (a6 + a7) + ((a6 - a7) << bitsPerSum);
-		a8 = f2i16(pSrc[8] - pRef[8]);
-		a9 = f2i16(pSrc[9] - pRef[9]);
-		b4 = (a8 + a9) + ((a8 - a9) << bitsPerSum);
-		a10 = f2i16(pSrc[10] - pRef[10]);
-		a11 = f2i16(pSrc[11] - pRef[11]);
-		b5 = (a10 + a11) + ((a10 - a11) << bitsPerSum);
-		a12 = f2i16(pSrc[12] - pRef[12]);
-		a13 = f2i16(pSrc[13] - pRef[13]);
-		b6 = (a12 + a13) + ((a12 - a13) << bitsPerSum);
-		a14 = f2i16(pSrc[14] - pRef[14]);
-		a15 = f2i16(pSrc[15] - pRef[15]);
-		b7 = (a14 + a15) + ((a14 - a15) << bitsPerSum);
-		tmp[i][0] = b0 + b4;
-		tmp[i][1] = b0 - b4;
-		tmp[i][2] = b1 + b5;
-		tmp[i][3] = b1 - b5;
-		tmp[i][4] = b2 + b6;
-		tmp[i][5] = b2 - b6;
-		tmp[i][6] = b3 + b7;
-		tmp[i][7] = b3 - b7;
-
+		a0 = static_cast<SumType>(pSrc[0]) - pRef[0];
+		a1 = static_cast<SumType>(pSrc[1]) - pRef[1];
+		b0a = a0 + a1;
+		b0b = a0 - a1;
+		a2 = static_cast<SumType>(pSrc[2]) - pRef[2];
+		a3 = static_cast<SumType>(pSrc[3]) - pRef[3];
+		b1a = a2 + a3;
+		b1b = a2 - a3;
+		a4 = static_cast<SumType>(pSrc[4]) - pRef[4];
+		a5 = static_cast<SumType>(pSrc[5]) - pRef[5];
+		b2a = a4 + a5;
+		b2b = a4 - a5;
+		a6 = static_cast<SumType>(pSrc[6]) - pRef[6];
+		a7 = static_cast<SumType>(pSrc[7]) - pRef[7];
+		b3a = a6 + a7;
+		b3b = a6 - a7;
+		a8 = static_cast<SumType>(pSrc[8]) - pRef[8];
+		a9 = static_cast<SumType>(pSrc[9]) - pRef[9];
+		b4a = a8 + a9;
+		b4b = a8 - a9;
+		a10 = static_cast<SumType>(pSrc[10]) - pRef[10];
+		a11 = static_cast<SumType>(pSrc[11]) - pRef[11];
+		b5a = a10 + a11;
+		b5b = a10 - a11;
+		a12 = static_cast<SumType>(pSrc[12]) - pRef[12];
+		a13 = static_cast<SumType>(pSrc[13]) - pRef[13];
+		b6a = a12 + a13;
+		b6b = a12 - a13;
+		a14 = static_cast<SumType>(pSrc[14]) - pRef[14];
+		a15 = static_cast<SumType>(pSrc[15]) - pRef[15];
+		b7a = a14 + a15;
+		b7b = a14 - a15;
+		tmp[i][0][0] = b0a + b4a;
+		tmp[i][1][0] = b0a - b4a;
+		tmp[i][2][0] = b1a + b5a;
+		tmp[i][3][0] = b1a - b5a;
+		tmp[i][4][0] = b2a + b6a;
+		tmp[i][5][0] = b2a - b6a;
+		tmp[i][6][0] = b3a + b7a;
+		tmp[i][7][0] = b3a - b7a;
+		tmp[i][0][1] = b0b + b4b;
+		tmp[i][1][1] = b0b - b4b;
+		tmp[i][2][1] = b1b + b5b;
+		tmp[i][3][1] = b1b - b5b;
+		tmp[i][4][1] = b2b + b6b;
+		tmp[i][5][1] = b2b - b6b;
+		tmp[i][6][1] = b3b + b7b;
+		tmp[i][7][1] = b3b - b7b;
 		pSrc8 += nSrcPitch;
 		pRef8 += nRefPitch;
 	}
-
-	for (int i = 0; i < 8; i++) {
-		HADAMARD16(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, tmp[0][i], tmp[1][i], tmp[2][i], tmp[3][i], tmp[4][i], tmp[5][i], tmp[6][i], tmp[7][i], tmp[8][i], tmp[9][i], tmp[10][i], tmp[11][i], tmp[12][i], tmp[13][i], tmp[14][i], tmp[15][i]);
-		a0 = abs2<SumType, SumType2>(a0) +abs2<SumType, SumType2>(a1) +abs2<SumType, SumType2>(a2) +abs2<SumType, SumType2>(a3) +abs2<SumType, SumType2>(a4) +abs2<SumType, SumType2>(a5) +abs2<SumType, SumType2>(a6) +abs2<SumType, SumType2>(a7) +abs2<SumType, SumType2>(a8) +abs2<SumType, SumType2>(a9) +abs2<SumType, SumType2>(a10) +abs2<SumType, SumType2>(a11) +abs2<SumType, SumType2>(a12) +abs2<SumType, SumType2>(a13) +abs2<SumType, SumType2>(a14) +abs2<SumType, SumType2>(a15);
-		sum += ((SumType)a0) + (a0 >> bitsPerSum);
+	for (int i = 0; i < 8; ++i) {
+		HADAMARD16(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, tmp[0][i][0], tmp[1][i][0], tmp[2][i][0], tmp[3][i][0], tmp[4][i][0], tmp[5][i][0], tmp[6][i][0], tmp[7][i][0], tmp[8][i][0], tmp[9][i][0], tmp[10][i][0], tmp[11][i][0], tmp[12][i][0], tmp[13][i][0], tmp[14][i][0], tmp[15][i][0]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3) + SADABS<SumType>(a4) + SADABS<SumType>(a5) + SADABS<SumType>(a6) + SADABS<SumType>(a7) + SADABS<SumType>(a8) + SADABS<SumType>(a9) + SADABS<SumType>(a10) + SADABS<SumType>(a11) + SADABS<SumType>(a12) + SADABS<SumType>(a13) + SADABS<SumType>(a14) + SADABS<SumType>(a15);
+		sum += a0;
+		HADAMARD16(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, tmp[0][i][1], tmp[1][i][1], tmp[2][i][1], tmp[3][i][1], tmp[4][i][1], tmp[5][i][1], tmp[6][i][1], tmp[7][i][1], tmp[8][i][1], tmp[9][i][1], tmp[10][i][1], tmp[11][i][1], tmp[12][i][1], tmp[13][i][1], tmp[14][i][1], tmp[15][i][1]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3) + SADABS<SumType>(a4) + SADABS<SumType>(a5) + SADABS<SumType>(a6) + SADABS<SumType>(a7) + SADABS<SumType>(a8) + SADABS<SumType>(a9) + SADABS<SumType>(a10) + SADABS<SumType>(a11) + SADABS<SumType>(a12) + SADABS<SumType>(a13) + SADABS<SumType>(a14) + SADABS<SumType>(a15);
+		sum += a0;
 	}
-
-	return float(double(sum >> 1) / 32767);
+	return static_cast<float>(sum / 2.);
 }
 
 template <typename PixelType>
 float Satd_16x16_C(const uint8_t *pSrc, intptr_t nSrcPitch, const uint8_t *pRef, intptr_t nRefPitch) {
-	return Real_Satd_16x16_C<PixelType, long, long long>(pSrc, nSrcPitch, pRef, nRefPitch);
+	return Real_Satd_16x16_C<PixelType, double>(pSrc, nSrcPitch, pRef, nRefPitch);
 }
 
-template <typename PixelType, typename SumType, typename SumType2>
+template <typename PixelType, typename SumType>
 float Real_Satd_32x32_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8, intptr_t nRefPitch) {
-	int bitsPerSum = 8 * sizeof(SumType);
-
-	SumType2 tmp[32][16];
-	SumType2 a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15;
-	SumType2 sum = 0;
-
-	for (int i = 0; i < 32; i++) {
+	SumType tmp[32][16][2];
+	SumType a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, b0a, b1a, b2a, b3a, b4a, b5a, b6a, b7a, b8a, b9a, b10a, b11a, b12a, b13a, b14a, b15a, b0b, b1b, b2b, b3b, b4b, b5b, b6b, b7b, b8b, b9b, b10b, b11b, b12b, b13b, b14b, b15b;
+	SumType sum = 0.;
+	for (int i = 0; i < 32; ++i) {
 		const PixelType *pSrc = (const PixelType *)pSrc8;
 		const PixelType *pRef = (const PixelType *)pRef8;
-
-		a0 = f2i16(pSrc[0] - pRef[0]);
-		a1 = f2i16(pSrc[1] - pRef[1]);
-		b0 = (a0 + a1) + ((a0 - a1) << bitsPerSum);
-		a2 = f2i16(pSrc[2] - pRef[2]);
-		a3 = f2i16(pSrc[3] - pRef[3]);
-		b1 = (a2 + a3) + ((a2 - a3) << bitsPerSum);
-		a4 = f2i16(pSrc[4] - pRef[4]);
-		a5 = f2i16(pSrc[5] - pRef[5]);
-		b2 = (a4 + a5) + ((a4 - a5) << bitsPerSum);
-		a6 = f2i16(pSrc[6] - pRef[6]);
-		a7 = f2i16(pSrc[7] - pRef[7]);
-		b3 = (a6 + a7) + ((a6 - a7) << bitsPerSum);
-		a8 = f2i16(pSrc[8] - pRef[8]);
-		a9 = f2i16(pSrc[9] - pRef[9]);
-		b4 = (a8 + a9) + ((a8 - a9) << bitsPerSum);
-		a10 = f2i16(pSrc[10] - pRef[10]);
-		a11 = f2i16(pSrc[11] - pRef[11]);
-		b5 = (a10 + a11) + ((a10 - a11) << bitsPerSum);
-		a12 = f2i16(pSrc[12] - pRef[12]);
-		a13 = f2i16(pSrc[13] - pRef[13]);
-		b6 = (a12 + a13) + ((a12 - a13) << bitsPerSum);
-		a14 = f2i16(pSrc[14] - pRef[14]);
-		a15 = f2i16(pSrc[15] - pRef[15]);
-		b7 = (a14 + a15) + ((a14 - a15) << bitsPerSum);
-		a16 = f2i16(pSrc[16] - pRef[16]);
-		a17 = f2i16(pSrc[17] - pRef[17]);
-		b8 = (a16 + a17) + ((a16 - a17) << bitsPerSum);
-		a18 = f2i16(pSrc[18] - pRef[18]);
-		a19 = f2i16(pSrc[19] - pRef[19]);
-		b9 = (a18 + a19) + ((a18 - a19) << bitsPerSum);
-		a20 = f2i16(pSrc[20] - pRef[20]);
-		a21 = f2i16(pSrc[21] - pRef[21]);
-		b10 = (a20 + a21) + ((a20 - a21) << bitsPerSum);
-		a22 = f2i16(pSrc[22] - pRef[22]);
-		a23 = f2i16(pSrc[23] - pRef[23]);
-		b11 = (a22 + a23) + ((a22 - a23) << bitsPerSum);
-		a24 = f2i16(pSrc[24] - pRef[24]);
-		a25 = f2i16(pSrc[25] - pRef[25]);
-		b12 = (a24 + a25) + ((a24 - a25) << bitsPerSum);
-		a26 = f2i16(pSrc[26] - pRef[26]);
-		a27 = f2i16(pSrc[27] - pRef[27]);
-		b13 = (a26 + a27) + ((a26 - a27) << bitsPerSum);
-		a28 = f2i16(pSrc[28] - pRef[28]);
-		a29 = f2i16(pSrc[29] - pRef[29]);
-		b14 = (a28 + a29) + ((a28 - a29) << bitsPerSum);
-		a30 = f2i16(pSrc[30] - pRef[30]);
-		a31 = f2i16(pSrc[31] - pRef[31]);
-		b15 = (a30 + a31) + ((a30 - a31) << bitsPerSum);
-		tmp[i][0] = b0 + b8;
-		tmp[i][1] = b0 - b8;
-		tmp[i][2] = b1 + b9;
-		tmp[i][3] = b1 - b9;
-		tmp[i][4] = b2 + b10;
-		tmp[i][5] = b2 - b10;
-		tmp[i][6] = b3 + b11;
-		tmp[i][7] = b3 - b11;
-		tmp[i][8] = b4 + b12;
-		tmp[i][9] = b4 - b12;
-		tmp[i][10] = b5 + b13;
-		tmp[i][11] = b5 - b13;
-		tmp[i][12] = b6 + b14;
-		tmp[i][13] = b6 - b14;
-		tmp[i][14] = b7 + b15;
-		tmp[i][15] = b7 - b15;
-
+		a0 = static_cast<SumType>(pSrc[0]) - pRef[0];
+		a1 = static_cast<SumType>(pSrc[1]) - pRef[1];
+		b0a = a0 + a1;
+		b0b = a0 - a1;
+		a2 = static_cast<SumType>(pSrc[2]) - pRef[2];
+		a3 = static_cast<SumType>(pSrc[3]) - pRef[3];
+		b1a = a2 + a3;
+		b1b = a2 - a3;
+		a4 = static_cast<SumType>(pSrc[4]) - pRef[4];
+		a5 = static_cast<SumType>(pSrc[5]) - pRef[5];
+		b2a = a4 + a5;
+		b2b = a4 - a5;
+		a6 = static_cast<SumType>(pSrc[6]) - pRef[6];
+		a7 = static_cast<SumType>(pSrc[7]) - pRef[7];
+		b3a = a6 + a7;
+		b3b = a6 - a7;
+		a8 = static_cast<SumType>(pSrc[8]) - pRef[8];
+		a9 = static_cast<SumType>(pSrc[9]) - pRef[9];
+		b4a = a8 + a9;
+		b4b = a8 - a9;
+		a10 = static_cast<SumType>(pSrc[10]) - pRef[10];
+		a11 = static_cast<SumType>(pSrc[11]) - pRef[11];
+		b5a = a10 + a11;
+		b5b = a10 - a11;
+		a12 = static_cast<SumType>(pSrc[12]) - pRef[12];
+		a13 = static_cast<SumType>(pSrc[13]) - pRef[13];
+		b6a = a12 + a13;
+		b6b = a12 - a13;
+		a14 = static_cast<SumType>(pSrc[14]) - pRef[14];
+		a15 = static_cast<SumType>(pSrc[15]) - pRef[15];
+		b7a = a14 + a15;
+		b7b = a14 - a15;
+		a16 = static_cast<SumType>(pSrc[16]) - pRef[16];
+		a17 = static_cast<SumType>(pSrc[17]) - pRef[17];
+		b8a = a16 + a17;
+		b8b = a16 - a17;
+		a18 = static_cast<SumType>(pSrc[18]) - pRef[18];
+		a19 = static_cast<SumType>(pSrc[19]) - pRef[19];
+		b9a = a18 + a19;
+		b9b = a18 - a19;
+		a20 = static_cast<SumType>(pSrc[20]) - pRef[20];
+		a21 = static_cast<SumType>(pSrc[21]) - pRef[21];
+		b10a = a20 + a21;
+		b10b = a20 - a21;
+		a22 = static_cast<SumType>(pSrc[22]) - pRef[22];
+		a23 = static_cast<SumType>(pSrc[23]) - pRef[23];
+		b11a = a22 + a23;
+		b11b = a22 - a23;
+		a24 = static_cast<SumType>(pSrc[24]) - pRef[24];
+		a25 = static_cast<SumType>(pSrc[25]) - pRef[25];
+		b12a = a24 + a25;
+		b12b = a24 - a25;
+		a26 = static_cast<SumType>(pSrc[26]) - pRef[26];
+		a27 = static_cast<SumType>(pSrc[27]) - pRef[27];
+		b13a = a26 + a27;
+		b13b = a26 - a27;
+		a28 = static_cast<SumType>(pSrc[28]) - pRef[28];
+		a29 = static_cast<SumType>(pSrc[29]) - pRef[29];
+		b14a = a28 + a29;
+		b14b = a28 - a29;
+		a30 = static_cast<SumType>(pSrc[30]) - pRef[30];
+		a31 = static_cast<SumType>(pSrc[31]) - pRef[31];
+		b15a = a30 + a31;
+		b15b = a30 - a31;
+		tmp[i][0][0] = b0a + b8a;
+		tmp[i][1][0] = b0a - b8a;
+		tmp[i][2][0] = b1a + b9a;
+		tmp[i][3][0] = b1a - b9a;
+		tmp[i][4][0] = b2a + b10a;
+		tmp[i][5][0] = b2a - b10a;
+		tmp[i][6][0] = b3a + b11a;
+		tmp[i][7][0] = b3a - b11a;
+		tmp[i][8][0] = b4a + b12a;
+		tmp[i][9][0] = b4a - b12a;
+		tmp[i][10][0] = b5a + b13a;
+		tmp[i][11][0] = b5a - b13a;
+		tmp[i][12][0] = b6a + b14a;
+		tmp[i][13][0] = b6a - b14a;
+		tmp[i][14][0] = b7a + b15a;
+		tmp[i][15][0] = b7a - b15a;
+		tmp[i][0][1] = b0b + b8b;
+		tmp[i][1][1] = b0b - b8b;
+		tmp[i][2][1] = b1b + b9b;
+		tmp[i][3][1] = b1b - b9b;
+		tmp[i][4][1] = b2b + b10b;
+		tmp[i][5][1] = b2b - b10b;
+		tmp[i][6][1] = b3b + b11b;
+		tmp[i][7][1] = b3b - b11b;
+		tmp[i][8][1] = b4b + b12b;
+		tmp[i][9][1] = b4b - b12b;
+		tmp[i][10][1] = b5b + b13b;
+		tmp[i][11][1] = b5b - b13b;
+		tmp[i][12][1] = b6b + b14b;
+		tmp[i][13][1] = b6b - b14b;
+		tmp[i][14][1] = b7b + b15b;
+		tmp[i][15][1] = b7b - b15b;
 		pSrc8 += nSrcPitch;
 		pRef8 += nRefPitch;
 	}
-
-	for (int i = 0; i < 16; i++) {
-		HADAMARD32(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, tmp[0][i], tmp[1][i], tmp[2][i], tmp[3][i], tmp[4][i], tmp[5][i], tmp[6][i], tmp[7][i], tmp[8][i], tmp[9][i], tmp[10][i], tmp[11][i], tmp[12][i], tmp[13][i], tmp[14][i], tmp[15][i], tmp[16][i], tmp[17][i], tmp[18][i], tmp[19][i], tmp[20][i], tmp[21][i], tmp[22][i], tmp[23][i], tmp[24][i], tmp[25][i], tmp[26][i], tmp[27][i], tmp[28][i], tmp[29][i], tmp[30][i], tmp[31][i]);
-		a0 = abs2<SumType, SumType2>(a0) +abs2<SumType, SumType2>(a1) +abs2<SumType, SumType2>(a2) +abs2<SumType, SumType2>(a3) +abs2<SumType, SumType2>(a4) +abs2<SumType, SumType2>(a5) +abs2<SumType, SumType2>(a6) +abs2<SumType, SumType2>(a7) +abs2<SumType, SumType2>(a8) +abs2<SumType, SumType2>(a9) +abs2<SumType, SumType2>(a10) +abs2<SumType, SumType2>(a11) +abs2<SumType, SumType2>(a12) +abs2<SumType, SumType2>(a13) +abs2<SumType, SumType2>(a14) +abs2<SumType, SumType2>(a15) +abs2<SumType, SumType2>(a16) +abs2<SumType, SumType2>(a17) +abs2<SumType, SumType2>(a18) +abs2<SumType, SumType2>(a19) +abs2<SumType, SumType2>(a20) +abs2<SumType, SumType2>(a21) +abs2<SumType, SumType2>(a22) +abs2<SumType, SumType2>(a23) +abs2<SumType, SumType2>(a24) +abs2<SumType, SumType2>(a25) +abs2<SumType, SumType2>(a26) +abs2<SumType, SumType2>(a27) +abs2<SumType, SumType2>(a28) +abs2<SumType, SumType2>(a29) +abs2<SumType, SumType2>(a30) +abs2<SumType, SumType2>(a31);
-		sum += ((SumType)a0) + (a0 >> bitsPerSum);
+	for (int i = 0; i < 16; ++i) {
+		HADAMARD32(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, tmp[0][i][0], tmp[1][i][0], tmp[2][i][0], tmp[3][i][0], tmp[4][i][0], tmp[5][i][0], tmp[6][i][0], tmp[7][i][0], tmp[8][i][0], tmp[9][i][0], tmp[10][i][0], tmp[11][i][0], tmp[12][i][0], tmp[13][i][0], tmp[14][i][0], tmp[15][i][0], tmp[16][i][0], tmp[17][i][0], tmp[18][i][0], tmp[19][i][0], tmp[20][i][0], tmp[21][i][0], tmp[22][i][0], tmp[23][i][0], tmp[24][i][0], tmp[25][i][0], tmp[26][i][0], tmp[27][i][0], tmp[28][i][0], tmp[29][i][0], tmp[30][i][0], tmp[31][i][0]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3) + SADABS<SumType>(a4) + SADABS<SumType>(a5) + SADABS<SumType>(a6) + SADABS<SumType>(a7) + SADABS<SumType>(a8) + SADABS<SumType>(a9) + SADABS<SumType>(a10) + SADABS<SumType>(a11) + SADABS<SumType>(a12) + SADABS<SumType>(a13) + SADABS<SumType>(a14) + SADABS<SumType>(a15) + SADABS<SumType>(a16) + SADABS<SumType>(a17) + SADABS<SumType>(a18) + SADABS<SumType>(a19) + SADABS<SumType>(a20) + SADABS<SumType>(a21) + SADABS<SumType>(a22) + SADABS<SumType>(a23) + SADABS<SumType>(a24) + SADABS<SumType>(a25) + SADABS<SumType>(a26) + SADABS<SumType>(a27) + SADABS<SumType>(a28) + SADABS<SumType>(a29) + SADABS<SumType>(a30) + SADABS<SumType>(a31);
+		sum += a0;
+		HADAMARD32(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, tmp[0][i][1], tmp[1][i][1], tmp[2][i][1], tmp[3][i][1], tmp[4][i][1], tmp[5][i][1], tmp[6][i][1], tmp[7][i][1], tmp[8][i][1], tmp[9][i][1], tmp[10][i][1], tmp[11][i][1], tmp[12][i][1], tmp[13][i][1], tmp[14][i][1], tmp[15][i][1], tmp[16][i][1], tmp[17][i][1], tmp[18][i][1], tmp[19][i][1], tmp[20][i][1], tmp[21][i][1], tmp[22][i][1], tmp[23][i][1], tmp[24][i][1], tmp[25][i][1], tmp[26][i][1], tmp[27][i][1], tmp[28][i][1], tmp[29][i][1], tmp[30][i][1], tmp[31][i][1]);
+		a0 = SADABS<SumType>(a0) + SADABS<SumType>(a1) + SADABS<SumType>(a2) + SADABS<SumType>(a3) + SADABS<SumType>(a4) + SADABS<SumType>(a5) + SADABS<SumType>(a6) + SADABS<SumType>(a7) + SADABS<SumType>(a8) + SADABS<SumType>(a9) + SADABS<SumType>(a10) + SADABS<SumType>(a11) + SADABS<SumType>(a12) + SADABS<SumType>(a13) + SADABS<SumType>(a14) + SADABS<SumType>(a15) + SADABS<SumType>(a16) + SADABS<SumType>(a17) + SADABS<SumType>(a18) + SADABS<SumType>(a19) + SADABS<SumType>(a20) + SADABS<SumType>(a21) + SADABS<SumType>(a22) + SADABS<SumType>(a23) + SADABS<SumType>(a24) + SADABS<SumType>(a25) + SADABS<SumType>(a26) + SADABS<SumType>(a27) + SADABS<SumType>(a28) + SADABS<SumType>(a29) + SADABS<SumType>(a30) + SADABS<SumType>(a31);
+		sum += a0;
 	}
-
-	return float(double(sum >> 1) / 32767);
+	return static_cast<float>(sum / 2.);
 }
 
 template <typename PixelType>
 float Satd_32x32_C(const uint8_t *pSrc, intptr_t nSrcPitch, const uint8_t *pRef, intptr_t nRefPitch) {
-	return Real_Satd_32x32_C<PixelType, long, long long>(pSrc, nSrcPitch, pRef, nRefPitch);
+	return Real_Satd_32x32_C<PixelType, double>(pSrc, nSrcPitch, pRef, nRefPitch);
 }
 
 template <int nBlkWidth, int nBlkHeight, typename PixelType>
