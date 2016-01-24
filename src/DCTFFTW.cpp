@@ -35,7 +35,7 @@ void DCTFFTW::Bytes2Float(const uint8_t * srcp8, int src_pitch, float * realdata
 	for (j = 0; j < sizey; j++) {
 		for (i = 0; i < sizex; i += 1) {
 			PixelType *srcp = reinterpret_cast<PixelType *>(const_cast<uint8_t *>(srcp8));
-			realdata[i] = 4294967295.f * srcp[i];
+			realdata[i] = static_cast<float>(4294967295. * srcp[i]);
 		}
 		srcp8 += src_pitch;
 		realdata += floatpitch;
