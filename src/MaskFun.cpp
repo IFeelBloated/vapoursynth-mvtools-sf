@@ -1,9 +1,10 @@
-#define max(a,b) ((a) > (b) ? (a) : (b))
-#define min(a,b) ((a) > (b) ? (b) : (a))
 #include <cstring>
 #include <cmath>
 #include <cstdint>
 #include "MaskFun.h"
+
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) > (b) ? (b) : (a))
 
 template <typename PixelType>
 void RealMerge4PlanesToBig(uint8_t *pel2Plane_u8, int pel2Pitch, const uint8_t *pPlane0_u8, const uint8_t *pPlane1_u8,
