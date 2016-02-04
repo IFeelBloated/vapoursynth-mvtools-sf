@@ -2,7 +2,7 @@
 #define FAKESAD_H
 
 union fakestuff {
-	int fake;
+	int32_t fake;
 	float real;
 };
 
