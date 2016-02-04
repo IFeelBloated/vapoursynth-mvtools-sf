@@ -1,6 +1,9 @@
 #ifndef __OVERLAP__
 #define __OVERLAP__
 
+#include <cmath>
+#include <cstdint>
+
 #ifndef M_PI
 #define M_PI       3.14159265358979323846f
 #endif
@@ -22,9 +25,6 @@
 #define OW_BL 6
 #define OW_BM 7
 #define OW_BR 8
-
-#include <cmath>
-#include <cstdint>
 
 class OverlapWindows {
 	int nx;
