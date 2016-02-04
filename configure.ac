@@ -21,13 +21,13 @@ dnl Workaround found in configure.ac from ffms2.
 dnl Reproducing the error message below, for search engines and people
 dnl looking for a solution...
 
-dnl *** Warning: linker path does not have real file for library -lfftw3f.
+dnl *** Warning: linker path does not have real file for library -lfftw3.
 dnl *** I have the capability to make that library automatically link in when
 dnl *** you link to this library.  But I can only do this if you have a
 dnl *** shared version of the library, which you do not appear to have
 dnl *** because I did check the linker path looking for a file starting
-dnl *** with libfftw3f and none of the candidates passed a file format test
-dnl *** using a file magic. Last file checked: /home/asdf/mingw-w64/i686/mingw/lib/libfftw3f.a
+dnl *** with libfftw3 and none of the candidates passed a file format test
+dnl *** using a file magic. Last file checked: /home/asdf/mingw-w64/i686/mingw/lib/libfftw3.a
 dnl *** The inter-library dependencies that have been dropped here will be
 dnl *** automatically added whenever a program is linked with this library
 dnl *** or is declared to -dlopen it.
@@ -82,7 +82,7 @@ AC_SUBST([ASFLAGS])
 
 PKG_CHECK_MODULES([VapourSynth], [vapoursynth])
 
-PKG_CHECK_MODULES([FFTW3F], [fftw3f])
+PKG_CHECK_MODULES([FFTW3], [fftw3])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

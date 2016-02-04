@@ -1,6 +1,6 @@
 AM_CXXFLAGS = -O2 -std=c++11 -msse2 -mfpmath=sse $(STACKREALIGN) -Wall -Wextra -Wno-unused-parameter -Wshadow
 
-AM_CPPFLAGS = $(VapourSynth_CFLAGS) $(FFTW3F_CFLAGS)
+AM_CPPFLAGS = $(VapourSynth_CFLAGS) $(FFTW3_CFLAGS)
 
 lib_LTLIBRARIES = libmvtoolssf.la
 
@@ -32,4 +32,4 @@ libmvtoolssf_la_SOURCES =	src/DCT.cpp \
 
 libmvtoolssf_la_LDFLAGS = -no-undefined -avoid-version $(PLUGINLDFLAGS)
 
-libmvtoolssf_la_LIBADD = $(FFTW3F_LIBS)
+libmvtoolssf_la_LIBADD = $(FFTW3_LIBS)
