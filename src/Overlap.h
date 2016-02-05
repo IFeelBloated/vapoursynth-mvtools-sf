@@ -5,7 +5,7 @@
 #include <cstdint>
 
 #ifndef M_PI
-#define M_PI       3.14159265358979323846f
+#define M_PI       3.1415926535897932384626433832795
 #endif
 
 #ifndef min
@@ -33,12 +33,12 @@ class OverlapWindows {
 	int32_t oy;
 	int32_t size;
 	int16_t * Overlap9Windows;
-	float *fWin1UVx;
-	float *fWin1UVxfirst;
-	float *fWin1UVxlast;
-	float *fWin1UVy;
-	float *fWin1UVyfirst;
-	float *fWin1UVylast;
+	double *fWin1UVx;
+	double *fWin1UVxfirst;
+	double *fWin1UVxlast;
+	double *fWin1UVy;
+	double *fWin1UVyfirst;
+	double *fWin1UVylast;
 public:
 	OverlapWindows(int32_t _nx, int32_t _ny, int32_t _ox, int32_t _oy);
 	~OverlapWindows();
@@ -58,7 +58,7 @@ void Overlaps_C(uint8_t *pDst8, intptr_t nDstPitch, const uint8_t *pSrc8, intptr
 		for (int32_t i = 0; i<blockWidth; i++) {
 			PixelType2 *pDst = (PixelType2 *)pDst8;
 			const PixelType *pSrc = (const PixelType *)pSrc8;
-			pDst[i] += ((pSrc[i] * pWin[i]) / 64);
+			pDst[i] += ((static_cast<PixelType2>(pSrc[i]) * pWin[i]) / 64);
 		}
 		pDst8 += nDstPitch;
 		pSrc8 += nSrcPitch;
@@ -76,8 +76,7 @@ void ToPixels(uint8_t *pDst8, int32_t nDstPitch, const uint8_t *pSrc8, int32_t n
 		for (int32_t i = 0; i<nWidth; i++) {
 			const PixelType2 *pSrc = (const PixelType2 *)pSrc8;
 			PixelType *pDst = (PixelType *)pDst8;
-			float a = static_cast<float>(pSrc[i] / 32);
-			pDst[i] = min(1.f, a);
+			pDst[i] = min(1.f, static_cast<PixelType>(pSrc[i] / 32));
 		}
 		pDst8 += nDstPitch;
 		pSrc8 += nSrcPitch;
