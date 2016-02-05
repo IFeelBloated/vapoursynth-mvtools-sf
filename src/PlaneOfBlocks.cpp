@@ -515,10 +515,10 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 				else //(deltaX*2>=nStepXold && deltaY*2>=nStepYold )
 					vectorOld = mvClip.GetBlock(0, blkxold2 + blkyold2*nBlkXold).GetMV();
 			}
-
+			
 			// scale vector to new nPel
-			vectorOld.x = (vectorOld.x << nLogPel) >> nLogPelold;
-			vectorOld.y = (vectorOld.y << nLogPel) >> nLogPelold;
+			vectorOld.x = vectorOld.x ? vectorOld.x / abs(vectorOld.x) * ((abs(vectorOld.x) << nLogPel) >> nLogPelold) : 0;
+			vectorOld.y = vectorOld.y ? vectorOld.y / abs(vectorOld.y) * ((abs(vectorOld.y) << nLogPel) >> nLogPelold) : 0;
 
 			predictor = ClipMV(vectorOld); // predictor
 			predictor.sad = FakeInt(static_cast<float>(static_cast<double>(Back2FLT(vectorOld.sad)) * (nBlkSizeX*nBlkSizeY) / (nBlkSizeXold*nBlkSizeYold))); // normalized to new block size
@@ -718,8 +718,8 @@ void PlaneOfBlocks::InterpolatePrediction(const PlaneOfBlocks &pob)
 				vectors[index].y = (v1.y + v2.y + v3.y + v4.y) << 2;
 				temp_sad = (static_cast<double>(Back2FLT(v1.sad)) + Back2FLT(v2.sad) + Back2FLT(v3.sad) + Back2FLT(v4.sad)) * 4;
 			}
-			vectors[index].x = (vectors[index].x >> normFactor) << mulFactor;
-			vectors[index].y = (vectors[index].y >> normFactor) << mulFactor;
+			vectors[index].x = vectors[index].x ? vectors[index].x / abs(vectors[index].x) * ((abs(vectors[index].x) >> normFactor) << mulFactor) : 0;
+			vectors[index].y = vectors[index].y ? vectors[index].y / abs(vectors[index].y) * ((abs(vectors[index].y) >> normFactor) << mulFactor) : 0;
 			vectors[index].sad = FakeInt(static_cast<float>(temp_sad / 16));
 		}
 	}
