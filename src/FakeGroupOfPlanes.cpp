@@ -44,6 +44,6 @@ void FakeGroupOfPlanes::Update(const int32_t *array) {
 	}
 }
 
-bool FakeGroupOfPlanes::IsSceneChange(float nThSCD1, float nThSCD2) const {
+bool FakeGroupOfPlanes::IsSceneChange(double nThSCD1, double nThSCD2) const {
 	return planes[0]->IsSceneChange(nThSCD1, nThSCD2);
 }

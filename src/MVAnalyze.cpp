@@ -8,18 +8,18 @@
 #include "GroupOfPlanes.h"
 #include "MVInterface.h"
 
-typedef struct {
+struct MVAnalyzeData {
 	VSNodeRef *node;
 	VSVideoInfo vi;
 	const VSVideoInfo *supervi;
 	MVAnalysisData analysisData;
 	MVAnalysisData analysisDataDivided;
-	float nLambda;
+	double nLambda;
 	SearchType searchType;
 	SearchType searchTypeCoarse;
 	int32_t nSearchParam;
 	int32_t nPelSearch;
-	float lsad;
+	double lsad;
 	int32_t pnew;
 	int32_t plen;
 	int32_t plevel;
@@ -54,15 +54,15 @@ typedef struct {
 	bool fields;
 	bool tff;
 	int32_t tffexists;
-} MVAnalyzeData;
+};
 
 static void VS_CC mvanalyzeInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVAnalyzeData *d = (MVAnalyzeData *)* instanceData;
+	MVAnalyzeData *d = reinterpret_cast<MVAnalyzeData *>(*instanceData);
 	vsapi->setVideoInfo(&d->vi, 1, node);
 }
 
 static const VSFrameRef *VS_CC mvanalyzeGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVAnalyzeData *d = (MVAnalyzeData *)* instanceData;
+	MVAnalyzeData *d = reinterpret_cast<MVAnalyzeData *>(*instanceData);
 	if (activationReason == arInitial) {
 		int32_t nref;
 		if (d->analysisData.nDeltaFrame > 0) {
@@ -180,13 +180,13 @@ static const VSFrameRef *VS_CC mvanalyzeGetFrame(int32_t n, int32_t activationRe
 		vsapi->freeFrame(src);
 		return dst;
 	}
-	return 0;
+	return nullptr;
 }
 
 static void VS_CC mvanalyzeFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVAnalyzeData *d = (MVAnalyzeData *)instanceData;
+	MVAnalyzeData *d = reinterpret_cast<MVAnalyzeData *>(instanceData);
 	vsapi->freeNode(d->node);
-	free(d);
+	delete d;
 }
 
 static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, VSCore *core, const VSAPI *vsapi) {
@@ -220,12 +220,12 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	d.truemotion = !!vsapi->propGetInt(in, "truemotion", 0, &err);
 	if (err)
 		d.truemotion = 1;
-	d.nLambda = static_cast<float>(vsapi->propGetFloat(in, "lambda", 0, &err));
+	d.nLambda = vsapi->propGetFloat(in, "lambda", 0, &err);
 	if (err)
-		d.nLambda = d.truemotion ? (1000 * d.blksize * d.blksizev / 64) : 0.f;
-	d.lsad = static_cast<float>(vsapi->propGetFloat(in, "lsad", 0, &err));
+		d.nLambda = d.truemotion ? (1000 * d.blksize * d.blksizev / 64) : 0.;
+	d.lsad = vsapi->propGetFloat(in, "lsad", 0, &err);
 	if (err)
-		d.lsad = d.truemotion ? 1200.f : 400.f;
+		d.lsad = d.truemotion ? 1200. : 400.;
 	d.plevel = int64ToIntS(vsapi->propGetInt(in, "plevel", 0, &err));
 	if (err)
 		d.plevel = d.truemotion ? 1 : 0;
@@ -245,9 +245,9 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 		d.overlapv = d.overlap;
 	d.dctmode = int64ToIntS(vsapi->propGetInt(in, "dct", 0, &err));
 	d.divideExtra = int64ToIntS(vsapi->propGetInt(in, "divide", 0, &err));
-	d.badSAD = static_cast<float>(vsapi->propGetFloat(in, "badsad", 0, &err));
+	d.badSAD = vsapi->propGetFloat(in, "badsad", 0, &err);
 	if (err)
-		d.badSAD = 10000.f;
+		d.badSAD = 10000.;
 	d.badrange = int64ToIntS(vsapi->propGetInt(in, "badrange", 0, &err));
 	if (err)
 		d.badrange = 24;
@@ -295,12 +295,28 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 		return;
 	}
 	d.analysisData.nDeltaFrame = d.delta;
+	if (d.plevel < 0 || d.plevel > 2) {
+		vsapi->setError(out, "Analyze: plevel must be between 0 and 2 (inclusive).");
+		return;
+	}
+	if (d.pnew < 0 || d.pnew > 256) {
+		vsapi->setError(out, "Analyze: pnew must be between 0 and 256 (inclusive).");
+		return;
+	}
+	if (d.pzero < 0 || d.pzero > 256) {
+		vsapi->setError(out, "Analyze: pzero must be between 0 and 256 (inclusive).");
+		return;
+	}
+	if (d.pglobal < 0 || d.pglobal > 256) {
+		vsapi->setError(out, "Analyze: pglobal must be between 0 and 256 (inclusive).");
+		return;
+	}
 	if (d.overlap < 0 || d.overlap > d.blksize / 2 ||
 		d.overlapv < 0 || d.overlapv > d.blksizev / 2) {
 		vsapi->setError(out, "Analyze: overlap must be at most half of blksize, overlapv must be at most half of blksizev, and they both need to be at least 0.");
 		return;
 	}
-	if (d.divideExtra && (d.blksize < 8 && d.blksizev < 8)) {
+	if (d.divideExtra && (d.blksize < 8 || d.blksizev < 8)) {
 		vsapi->setError(out, "Analyze: blksize and blksizev must be at least 8 when divide=True.");
 		return;
 	}
@@ -322,9 +338,11 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	d.vi = *d.supervi;
 	if (d.vi.format->colorFamily == cmGray)
 		d.chroma = 0;
+	if (d.vi.format->colorFamily == cmRGB)
+		d.chroma = 1;
 	d.nModeYUV = d.chroma ? YUVPLANES : YPLANE;
-	d.lsad = static_cast<float>(static_cast<double>(d.lsad) / 255.0);
-	d.badSAD = static_cast<float>(static_cast<double>(d.badSAD) / 255.0);
+	d.lsad = d.lsad / 255.;
+	d.badSAD = d.badSAD / 255.;
 	d.lsad = d.lsad * (d.blksize * d.blksizev) / 64;
 	d.badSAD = d.badSAD * (d.blksize * d.blksizev) / 64;
 	d.analysisData.nMotionFlags = 0;
@@ -337,7 +355,7 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 		return;
 	}
 	if (d.divideExtra && (d.overlap % (2 << d.vi.format->subSamplingW) ||
-		d.overlapv % (2 << d.vi.format->subSamplingH))) { // subsampling times 2
+		d.overlapv % (2 << d.vi.format->subSamplingH))) {
 		vsapi->setError(out, "Analyze: overlap and overlapv must be multiples of 2 or 4 when divide=True, depending on the super clip's subsampling.");
 		vsapi->freeNode(d.node);
 		return;
@@ -365,7 +383,7 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	d.nSuperModeYUV = int64ToIntS(vsapi->propGetInt(props, "Super_modeyuv", 0, &evil_err[4]));
 	d.nSuperLevels = int64ToIntS(vsapi->propGetInt(props, "Super_levels", 0, &evil_err[5]));
 	vsapi->freeFrame(evil);
-	for (int32_t i = 0; i < 6; i++)
+	for (int32_t i = 0; i < 6; ++i)
 		if (evil_err[i]) {
 			vsapi->setError(out, "Analyze: required properties not found in first frame of super clip. Maybe clip didn't come from mv.Super? Was the first frame trimmed away?");
 			vsapi->freeNode(d.node);
@@ -423,7 +441,7 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	}
 	d.vi.width = d.vi.height = 0;
 	d.vi.format = vsapi->getFormatPreset(pfGray8, core);
-	data = (MVAnalyzeData *)malloc(sizeof(d));
+	data = new MVAnalyzeData;
 	*data = d;
 	vsapi->createFilter(in, out, "Analyze", mvanalyzeInit, mvanalyzeGetFrame, mvanalyzeFree, fmParallel, 0, data, core);
 }

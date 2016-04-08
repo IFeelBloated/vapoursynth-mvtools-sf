@@ -9,7 +9,7 @@
 #include "MVFilter.h"
 #include "SimpleResize.h"
 
-typedef struct {
+struct MVBlockFPSData {
 	VSNodeRef *node;
 	VSVideoInfo vi;
 	const VSVideoInfo *supervi;
@@ -20,7 +20,7 @@ typedef struct {
 	int32_t mode;
 	int32_t thres;
 	bool blend;
-	float thscd1, thscd2;
+	double thscd1, thscd2;
 	MVClipDicks *mvClipB;
 	MVClipDicks *mvClipF;
 	MVFilter *bleh;
@@ -44,10 +44,10 @@ typedef struct {
 	SimpleResize *upsizerUV;
 	int64_t fa, fb;
 	COPYFunction BLITLUMA;
-} MVBlockFPSData;
+};
 
 static void VS_CC mvblockfpsInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVBlockFPSData *d = (MVBlockFPSData *)* instanceData;
+	MVBlockFPSData *d = reinterpret_cast<MVBlockFPSData *>(*instanceData);
 	vsapi->setVideoInfo(&d->vi, 1, node);
 }
 
@@ -128,8 +128,8 @@ static void RealResultBlock(uint8_t *pDst, int32_t dst_pitch, const uint8_t * pM
 				const PixelType *pMCB_ = (const PixelType *)pMCB;
 				const PixelType *pMCF_ = (const PixelType *)pMCF;
 				PixelType *pDst_ = (PixelType *)pDst;
-				float mca = (pMCB_[w] * time256 + pMCF_[w] * (256 - time256)) / 256;
-				pDst_[w] = mca;
+				double mca = (static_cast<double>(pMCB_[w]) * time256 + pMCF_[w] * (256. - time256)) / 256.;
+				pDst_[w] = static_cast<PixelType>(mca);
 			}
 			pDst += dst_pitch;
 			pMCB += MCB_pitch;
@@ -144,8 +144,8 @@ static void RealResultBlock(uint8_t *pDst, int32_t dst_pitch, const uint8_t * pM
 				const PixelType *pRef_ = (const PixelType *)pRef;
 				const PixelType *pSrc_ = (const PixelType *)pSrc;
 				PixelType *pDst_ = (PixelType *)pDst;
-				float mca = (pMCB_[w] * time256 + pMCF_[w] * (256 - time256)) / 256;
-				float sta = MEDIAN<PixelType>(pRef_[w], pSrc_[w], mca);
+				double mca = (static_cast<double>(pMCB_[w]) * time256 + pMCF_[w] * (256. - time256)) / 256.;
+				PixelType sta = MEDIAN<PixelType>(pRef_[w], pSrc_[w], static_cast<PixelType>(mca));
 				pDst_[w] = sta;
 			}
 			pDst += dst_pitch;
@@ -163,8 +163,8 @@ static void RealResultBlock(uint8_t *pDst, int32_t dst_pitch, const uint8_t * pM
 				const PixelType *pRef_ = (const PixelType *)pRef;
 				const PixelType *pSrc_ = (const PixelType *)pSrc;
 				PixelType *pDst_ = (PixelType *)pDst;
-				float avg = (pRef_[w] * time256 + pSrc_[w] * (256 - time256)) / 256;
-				float dyn = MEDIAN<PixelType>(avg, pMCB_[w], pMCF_[w]);
+				double avg = (static_cast<double>(pRef_[w]) * time256 + pSrc_[w] * (256. - time256)) / 256.;
+				PixelType dyn = MEDIAN<PixelType>(static_cast<PixelType>(avg), pMCB_[w], pMCF_[w]);
 				pDst_[w] = dyn;
 			}
 			pDst += dst_pitch;
@@ -198,11 +198,11 @@ static void RealResultBlock(uint8_t *pDst, int32_t dst_pitch, const uint8_t * pM
 				const PixelType *pRef_ = (const PixelType *)pRef;
 				const PixelType *pSrc_ = (const PixelType *)pSrc;
 				PixelType *pDst_ = (PixelType *)pDst;
-				float f = (maskF[w] * pMCB_[w] + (255 - maskF[w]) * pMCF_[w] + 255) / 256;
-				float b = (maskB[w] * pMCF_[w] + (255 - maskB[w]) * pMCB_[w] + 255) / 256;
-				float avg = (pRef_[w] * time256 + pSrc_[w] * (256 - time256) + 255) / 256;
-				float m = (b * time256 + f * (256 - time256)) / 256;
-				pDst_[w] = (avg * pOcc[w] + m * (255 - pOcc[w]) + 255) / 256;
+				double f = (maskF[w] * static_cast<double>(pMCB_[w]) + (255. - maskF[w]) * pMCF_[w] + 255.) / 256.;
+				double b = (maskB[w] * static_cast<double>(pMCF_[w]) + (255. - maskB[w]) * pMCB_[w] + 255.) / 256.;
+				double avg = (static_cast<double>(pRef_[w]) * time256 + pSrc_[w] * (256. - time256) + 255.) / 256.;
+				double m = (b * time256 + f * (256. - time256)) / 256.;
+				pDst_[w] = static_cast<PixelType>((avg * pOcc[w] + m * (255. - pOcc[w]) + 255.) / 256.);
 			}
 			pDst += dst_pitch;
 			pMCB += MCB_pitch;
@@ -233,7 +233,7 @@ static void ResultBlock(uint8_t *pDst, int32_t dst_pitch, const uint8_t * pMCB, 
 }
 
 static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVBlockFPSData *d = (MVBlockFPSData *)* instanceData;
+	MVBlockFPSData *d = reinterpret_cast<MVBlockFPSData *>(*instanceData);
 	if (activationReason == arInitial) {
 		int32_t off = d->mvClipB->GetDeltaFrame();
 		int32_t nleft = (int32_t)(n * d->fa / d->fb);
@@ -539,11 +539,11 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 				return src;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 static void VS_CC mvblockfpsFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVBlockFPSData *d = (MVBlockFPSData *)instanceData;
+	MVBlockFPSData *d = reinterpret_cast<MVBlockFPSData *>(instanceData);
 	delete d->mvClipB;
 	delete d->mvClipF;
 	delete d->bleh;
@@ -555,7 +555,7 @@ static void VS_CC mvblockfpsFree(void *instanceData, VSCore *core, const VSAPI *
 	vsapi->freeNode(d->mvfw);
 	vsapi->freeNode(d->mvbw);
 	vsapi->freeNode(d->node);
-	free(d);
+	delete d;
 }
 
 static inline void setFPS(VSVideoInfo *vi, int64_t num, int64_t den) {
@@ -617,10 +617,10 @@ static void VS_CC mvblockfpsCreate(const VSMap *in, VSMap *out, void *userData, 
 	d.blend = !!vsapi->propGetInt(in, "blend", 0, &err);
 	if (err)
 		d.blend = 1;
-	d.thscd1 = static_cast<float>(vsapi->propGetFloat(in, "thscd1", 0, &err));
+	d.thscd1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.thscd1 = MV_DEFAULT_SCD1;
-	d.thscd2 = static_cast<float>(vsapi->propGetFloat(in, "thscd2", 0, &err));
+	d.thscd2 = vsapi->propGetFloat(in, "thscd2", 0, &err);
 	if (err)
 		d.thscd2 = MV_DEFAULT_SCD2;
 	if (d.mode < 0 || d.mode > 5) {
@@ -796,7 +796,7 @@ static void VS_CC mvblockfpsCreate(const VSMap *in, VSMap *out, void *userData, 
 	if (d.nSuperModeYUV & UVPLANES)
 		d.upsizerUV = new SimpleResize(d.nWidthPUV, d.nHeightPUV, d.nBlkXP, d.nBlkYP);
 	selectFunctions(&d);
-	data = (MVBlockFPSData *)malloc(sizeof(d));
+	data = new MVBlockFPSData;
 	*data = d;
 	vsapi->createFilter(in, out, "BlockFPS", mvblockfpsInit, mvblockfpsGetFrame, mvblockfpsFree, fmParallel, 0, data, core);
 	VSNodeRef *node = vsapi->propGetNode(out, "clip", 0, nullptr);

@@ -15,7 +15,7 @@ public:
 	~FakeGroupOfPlanes();
 	void Create(int32_t _nBlkSizeX, int32_t _nBlkSizeY, int32_t _nLevelCount, int32_t _nPel, int32_t _nOverlapX, int32_t _nOverlapY, int32_t _yRatioUV, int32_t _nBlkX, int32_t _nBlkY);
 	void Update(const int32_t *array);
-	bool IsSceneChange(float nThSCD1, float nThSCD2) const;
+	bool IsSceneChange(double nThSCD1, double nThSCD2) const;
 	inline const FakePlaneOfBlocks& operator[](const int32_t i) const {
 		return *(planes[i]);
 	}

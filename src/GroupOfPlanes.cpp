@@ -37,7 +37,7 @@ GroupOfPlanes::~GroupOfPlanes() {
 void GroupOfPlanes::SearchMVs(MVGroupOfFrames *pSrcGOF, MVGroupOfFrames *pRefGOF,
 	SearchType searchType, int32_t nSearchParam, int32_t nPelSearch, double nLambda,
 	double lsad, int32_t pnew, int32_t plevel, bool global,
-	int32_t *out, int16_t *outfilebuf, int32_t fieldShift, DCTClass * _DCT,
+	int32_t *out, int32_t *outfilebuf, int32_t fieldShift, DCTClass * _DCT,
 	int32_t pzero, int32_t pglobal, double badSAD, int32_t badrange, bool meander, int32_t *vecPrev, bool tryMany,
 	SearchType coarseSearchType) {
 	int32_t i;
@@ -83,7 +83,7 @@ void GroupOfPlanes::SearchMVs(MVGroupOfFrames *pSrcGOF, MVGroupOfFrames *pRefGOF
 void GroupOfPlanes::RecalculateMVs(MVClipBalls &mvClip, MVGroupOfFrames *pSrcGOF, MVGroupOfFrames *pRefGOF,
 	SearchType searchType, int32_t nSearchParam, double nLambda,
 	int32_t pnew,
-	int32_t *out, int16_t *outfilebuf, int32_t fieldShift, double thSAD, DCTClass * _DCT, int32_t smooth, bool meander) {
+	int32_t *out, int32_t *outfilebuf, int32_t fieldShift, double thSAD, DCTClass * _DCT, int32_t smooth, bool meander) {
 	out[0] = GetArraySize();
 	out[1] = 1;
 	out += 2;

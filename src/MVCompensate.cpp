@@ -5,19 +5,19 @@
 #include "Overlap.h"
 #include "MVClip.h"
 #include "MVFrame.h"
-#include "FakeSAD.h"
+#include "SADFunctions.h"
 
-typedef struct {
+struct MVCompensateData {
 	VSNodeRef *node;
 	const VSVideoInfo *vi;
 	const VSVideoInfo *supervi;
 	VSNodeRef *super;
 	VSNodeRef *vectors;
 	bool scBehavior;
-	float thSAD;
+	double thSAD;
 	bool fields;
-	float nSCD1;
-	float nSCD2;
+	double nSCD1;
+	double nSCD2;
 	bool tff;
 	int32_t tffexists;
 	MVClipDicks *mvClip;
@@ -36,15 +36,15 @@ typedef struct {
 	COPYFunction BLITLUMA;
 	COPYFunction BLITCHROMA;
 	ToPixelsFunction ToPixels;
-} MVCompensateData;
+};
 
 static void VS_CC mvcompensateInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVCompensateData *d = (MVCompensateData *)* instanceData;
+	MVCompensateData *d = reinterpret_cast<MVCompensateData *>(*instanceData);
 	vsapi->setVideoInfo(d->vi, 1, node);
 }
 
 static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVCompensateData *d = (MVCompensateData *)* instanceData;
+	MVCompensateData *d = reinterpret_cast<MVCompensateData *>(*instanceData);
 	if (activationReason == arInitial) {
 		int32_t off, nref;
 		if (d->mvClip->GetDeltaFrame() > 0) {
@@ -95,7 +95,7 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 		const int32_t nBlkSizeY = d->bleh->nBlkSizeY;
 		const int32_t nBlkX = d->bleh->nBlkX;
 		const int32_t nBlkY = d->bleh->nBlkY;
-		const float thSAD = d->thSAD;
+		const double thSAD = d->thSAD;
 		const int32_t dstTempPitch = d->dstTempPitch;
 		const int32_t dstTempPitchUV = d->dstTempPitchUV;
 		const int32_t nSuperModeYUV = d->nSuperModeYUV;
@@ -125,7 +125,7 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 			MVPlaneSet planes[3] = { YPLANE, UPLANE, VPLANE };
 			MVPlane *pPlanes[3] = { 0 };
 			MVPlane *pSrcPlanes[3] = { 0 };
-			for (int32_t plane = 0; plane < d->supervi->format->numPlanes; plane++) {
+			for (int32_t plane = 0; plane < d->supervi->format->numPlanes; ++plane) {
 				pPlanes[plane] = pRefGOF->GetFrame(0)->GetPlane(planes[plane]);
 				pSrcPlanes[plane] = pSrcGOF->GetFrame(0)->GetPlane(planes[plane]);
 				pDstCur[plane] = pDst[plane];
@@ -159,14 +159,14 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 				fieldShift = (paritySrc && !parityRef) ? nPel / 2 : ((parityRef && !paritySrc) ? -(nPel / 2) : 0);
 			}
 			if (nOverlapX == 0 && nOverlapY == 0) {
-				for (int32_t by = 0; by<nBlkY; by++) {
+				for (int32_t by = 0; by<nBlkY; ++by) {
 					int32_t xx = 0;
-					for (int32_t bx = 0; bx<nBlkX; bx++) {
+					for (int32_t bx = 0; bx<nBlkX; ++bx) {
 						int32_t i = by*nBlkX + bx;
 						const FakeBlockData &block = balls.GetBlock(0, i);
 						blx = block.GetX() * nPel + block.GetMV().x;
 						bly = block.GetY() * nPel + block.GetMV().y + fieldShift;
-						if (Back2FLT(block.GetSAD()) < thSAD) {
+						if (_back2flt(block.GetSAD()) < thSAD) {
 							d->BLITLUMA(pDstCur[0] + xx, nDstPitches[0], pPlanes[0]->GetPointer(blx, bly), pPlanes[0]->GetPitch());
 							if (pPlanes[1]) d->BLITCHROMA(pDstCur[1] + (xx >> xSubUV), nDstPitches[1], pPlanes[1]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[1]->GetPitch());
 							if (pPlanes[2]) d->BLITCHROMA(pDstCur[2] + (xx >> xSubUV), nDstPitches[2], pPlanes[2]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[2]->GetPitch());
@@ -213,15 +213,15 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 					int32_t xx = 0;
 					for (int32_t bx = 0; bx<nBlkX; bx++) {
 						int32_t wbx = (bx + nBlkX - 3) / (nBlkX - 2);
-						int16_t *winOver = OverWins->GetWindow(wby + wbx);
-						int16_t *winOverUV = nullptr;
+						int32_t *winOver = OverWins->GetWindow(wby + wbx);
+						int32_t *winOverUV = nullptr;
 						if (nSuperModeYUV & UVPLANES)
 							winOverUV = OverWinsUV->GetWindow(wby + wbx);
 						int32_t i = by*nBlkX + bx;
 						const FakeBlockData &block = balls.GetBlock(0, i);
 						blx = block.GetX() * nPel + block.GetMV().x;
 						bly = block.GetY() * nPel + block.GetMV().y + fieldShift;
-						if (Back2FLT(block.GetSAD()) < thSAD) {
+						if (_back2flt(block.GetSAD()) < thSAD) {
 							d->OVERSLUMA(pDstTemp + xx * 2, dstTempPitch, pPlanes[0]->GetPointer(blx, bly), pPlanes[0]->GetPitch(), winOver, nBlkSizeX);
 							if (pPlanes[1]) d->OVERSCHROMA(pDstTempU + (xx >> xSubUV) * 2, dstTempPitchUV, pPlanes[1]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[1]->GetPitch(), winOverUV, nBlkSizeX >> xSubUV);
 							if (pPlanes[2]) d->OVERSCHROMA(pDstTempV + (xx >> xSubUV) * 2, dstTempPitchUV, pPlanes[2]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[2]->GetPitch(), winOverUV, nBlkSizeX >> xSubUV);
@@ -324,11 +324,11 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 		vsapi->freeFrame(src);
 		return dst;
 	}
-	return 0;
+	return nullptr;
 }
 
 static void VS_CC mvcompensateFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVCompensateData *d = (MVCompensateData *)instanceData;
+	MVCompensateData *d = reinterpret_cast<MVCompensateData *>(instanceData);
 	if (d->bleh->nOverlapX || d->bleh->nOverlapY) {
 		delete d->OverWins;
 		if (d->nSuperModeYUV & UVPLANES)
@@ -339,7 +339,7 @@ static void VS_CC mvcompensateFree(void *instanceData, VSCore *core, const VSAPI
 	vsapi->freeNode(d->super);
 	vsapi->freeNode(d->vectors);
 	vsapi->freeNode(d->node);
-	free(d);
+	delete d;
 }
 
 static void selectFunctions(MVCompensateData *d) {
@@ -401,14 +401,14 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 	d.scBehavior = !!vsapi->propGetInt(in, "scbehavior", 0, &err);
 	if (err)
 		d.scBehavior = 1;
-	d.thSAD = static_cast<float>(vsapi->propGetFloat(in, "thsad", 0, &err));
+	d.thSAD = vsapi->propGetFloat(in, "thsad", 0, &err);
 	if (err)
-		d.thSAD = 10000.f;
+		d.thSAD = 10000.;
 	d.fields = !!vsapi->propGetInt(in, "fields", 0, &err);
-	d.nSCD1 = static_cast<float>(vsapi->propGetFloat(in, "thscd1", 0, &err));
+	d.nSCD1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.nSCD1 = MV_DEFAULT_SCD1;
-	d.nSCD2 = static_cast<float>(vsapi->propGetFloat(in, "thscd2", 0, &err));
+	d.nSCD2 = vsapi->propGetFloat(in, "thscd2", 0, &err);
 	if (err)
 		d.nSCD2 = MV_DEFAULT_SCD2;
 	d.tff = !!vsapi->propGetInt(in, "tff", 0, &err);
@@ -464,7 +464,7 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 		delete d.bleh;
 		return;
 	}
-	d.thSAD = static_cast<float>(static_cast<double>(d.thSAD) * d.mvClip->GetThSCD1() / d.nSCD1);
+	d.thSAD = d.thSAD * d.mvClip->GetThSCD1() / d.nSCD1;
 	d.node = vsapi->propGetNode(in, "clip", 0, 0);
 	d.vi = vsapi->getVideoInfo(d.node);
 	d.dstTempPitch = ((d.bleh->nWidth + 15) / 16) * 16 * 4 * 2;
@@ -486,7 +486,7 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 			d.OverWinsUV = new OverlapWindows(d.bleh->nBlkSizeX / d.bleh->xRatioUV, d.bleh->nBlkSizeY / d.bleh->yRatioUV, d.bleh->nOverlapX / d.bleh->xRatioUV, d.bleh->nOverlapY / d.bleh->yRatioUV);
 	}
 	selectFunctions(&d);
-	data = (MVCompensateData *)malloc(sizeof(d));
+	data = new MVCompensateData;
 	*data = d;
 	vsapi->createFilter(in, out, "Compensate", mvcompensateInit, mvcompensateGetFrame, mvcompensateFree, fmParallel, 0, data, core);
 }

@@ -46,22 +46,21 @@ template <typename PixelType>
 void DCTFFTW::Float2Bytes(uint8_t *dstp8, int32_t dst_pitch, double *realdata) {
 	PixelType *dstp = reinterpret_cast<PixelType *>(dstp8);
 	dst_pitch /= sizeof(PixelType);
-	double pixelMax = 1.0;
-	double pixelHalf = 0.5;
 	int32_t floatpitch = sizex;
 	int32_t i, j;
 	double f = realdata[0] * 0.5;
-	dstp[0] = static_cast<PixelType>(std::min(pixelMax, std::max(0.0, (f / pow(2, dctshift0)) + pixelHalf)));
+	double pixelHalf = 0.5;
+	dstp[0] = static_cast<PixelType>((f / pow(2, dctshift0)) + pixelHalf);
 	for (i = 1; i < sizex; i += 1) {
 		f = realdata[i] * 0.707;
-		dstp[i] = static_cast<PixelType>(std::min(pixelMax, std::max(0.0, (f / pow(2, dctshift)) + pixelHalf)));
+		dstp[i] = static_cast<PixelType>((f / pow(2, dctshift)) + pixelHalf);
 	}
 	dstp += dst_pitch;
 	realdata += floatpitch;
 	for (j = 1; j < sizey; j++) {
 		for (i = 0; i < sizex; i += 1) {
 			f = realdata[i] * 0.707;
-			dstp[i] = static_cast<PixelType>(std::min(pixelMax, std::max(0.0, (f / pow(2, dctshift)) + pixelHalf)));
+			dstp[i] = static_cast<PixelType>((f / pow(2, dctshift)) + pixelHalf);
 		}
 		dstp += dst_pitch;
 		realdata += floatpitch;

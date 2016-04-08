@@ -47,21 +47,21 @@ void SimpleResize::Resize(uint8_t *dstp, int32_t dst_stride, const uint8_t* srcp
 }
 
 void SimpleResize::InitTables(int32_t *offsets, int32_t *weights, int32_t out, int32_t in) {
-	float leftmost = 0.5f;
-	float rightmost = in - 0.5f;
+	double leftmost = 0.5;
+	double rightmost = in - 0.5;
 	int32_t leftmost_idx = std::max((int32_t)leftmost, 0);
 	int32_t rightmost_idx = std::min((int32_t)rightmost, in - 1);
 	for (int32_t i = 0; i < out; i++) {
-		float position = (i + 0.5f) * (float)in / (float)out;
-		float weight;
+		double position = (i + 0.5f) * (double)in / (double)out;
+		double weight;
 		int32_t offset;
 		if (position <= leftmost) {
 			offset = leftmost_idx;
-			weight = 0.0f;
+			weight = 0.;
 		}
 		else if (position >= rightmost) {
 			offset = rightmost_idx - 1;
-			weight = 1.0f;
+			weight = 1.;
 		}
 		else {
 			offset = (int32_t)(position - leftmost);

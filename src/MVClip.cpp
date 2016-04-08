@@ -1,6 +1,6 @@
 #include "MVClip.h"
 
-MVClipDicks::MVClipDicks(VSNodeRef *vectors, float _nSCD1, float _nSCD2, const VSAPI *_vsapi) :
+MVClipDicks::MVClipDicks(VSNodeRef *vectors, double _nSCD1, double _nSCD2, const VSAPI *_vsapi) :
 	vsapi(_vsapi) {
 	char errorMsg[1024];
 	const VSFrameRef *evil = vsapi->getFrame(0, vectors, errorMsg, 1024);
@@ -30,16 +30,15 @@ MVClipDicks::MVClipDicks(VSNodeRef *vectors, float _nSCD1, float _nSCD2, const V
 	nBlkX = pAnalyzeFilter->GetBlkX();
 	nBlkY = pAnalyzeFilter->GetBlkY();
 	nBlkCount = nBlkX * nBlkY;
-	float maxSAD = 8.f * 8.f * 255.f;
+	double maxSAD = 8. * 8. * 255.;
 	if (_nSCD1 > maxSAD)
 		throw MVException(std::string("thscd1 can be at most ").append(std::to_string(maxSAD)).append("."));
 	int32_t referenceBlockSize = 8 * 8;
 	nSCD1 = _nSCD1 * (nBlkSizeX * nBlkSizeY) / referenceBlockSize;
 	if (pAnalyzeFilter->IsChromaMotion())
 		nSCD1 += nSCD1 / (xRatioUV * yRatioUV) * 2;
-	float pixelMax = 1.f;
-	nSCD1 = static_cast<float>((double)nSCD1 * pixelMax / 255.0);
-	nSCD2 = _nSCD2 * nBlkCount / 256;
+	nSCD1 = nSCD1 / 255.;
+	nSCD2 = _nSCD2 * nBlkCount / 256.;
 	vsapi->freeFrame(evil);
 }
 

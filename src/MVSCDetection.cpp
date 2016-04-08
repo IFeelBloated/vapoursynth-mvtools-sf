@@ -3,23 +3,23 @@
 #include "MVClip.h"
 #include "MVFilter.h"
 
-typedef struct {
+struct MVSCDetectionData {
 	VSNodeRef *node;
 	const VSVideoInfo *vi;
 	VSNodeRef *vectors;
-	float thscd1;
-	float thscd2;
+	double thscd1;
+	double thscd2;
 	MVFilter *bleh;
 	MVClipDicks *mvClip;
-} MVSCDetectionData;
+};
 
 static void VS_CC mvscdetectionInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVSCDetectionData *d = (MVSCDetectionData *)* instanceData;
+	MVSCDetectionData *d = reinterpret_cast<MVSCDetectionData *>(*instanceData);
 	vsapi->setVideoInfo(d->vi, 1, node);
 }
 
 static const VSFrameRef *VS_CC mvscdetectionGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVSCDetectionData *d = (MVSCDetectionData *)* instanceData;
+	MVSCDetectionData *d = reinterpret_cast<MVSCDetectionData *>(*instanceData);
 	if (activationReason == arInitial) {
 		vsapi->requestFrameFilter(n, d->vectors, frameCtx);
 		vsapi->requestFrameFilter(n, d->node, frameCtx);
@@ -37,26 +37,26 @@ static const VSFrameRef *VS_CC mvscdetectionGetFrame(int32_t n, int32_t activati
 		vsapi->propSetInt(props, propNames[(int32_t)d->mvClip->IsBackward()], !balls.IsUsable(), paReplace);
 		return dst;
 	}
-	return 0;
+	return nullptr;
 }
 
 static void VS_CC mvscdetectionFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVSCDetectionData *d = (MVSCDetectionData *)instanceData;
+	MVSCDetectionData *d = reinterpret_cast<MVSCDetectionData *>(instanceData);
 	vsapi->freeNode(d->node);
 	vsapi->freeNode(d->vectors);
 	delete d->mvClip;
 	delete d->bleh;
-	free(d);
+	delete d;
 }
 
 static void VS_CC mvscdetectionCreate(const VSMap *in, VSMap *out, void *userData, VSCore *core, const VSAPI *vsapi) {
 	MVSCDetectionData d;
 	MVSCDetectionData *data;
 	int err;
-	d.thscd1 = static_cast <float>(vsapi->propGetFloat(in, "thscd1", 0, &err));
+	d.thscd1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.thscd1 = MV_DEFAULT_SCD1;
-	d.thscd2 = static_cast <float>(vsapi->propGetFloat(in, "thscd2", 0, &err));
+	d.thscd2 = vsapi->propGetFloat(in, "thscd2", 0, &err);
 	if (err)
 		d.thscd2 = MV_DEFAULT_SCD2;
 	d.vectors = vsapi->propGetNode(in, "vectors", 0, nullptr);
@@ -79,7 +79,7 @@ static void VS_CC mvscdetectionCreate(const VSMap *in, VSMap *out, void *userDat
 	}
 	d.node = vsapi->propGetNode(in, "clip", 0, nullptr);
 	d.vi = vsapi->getVideoInfo(d.node);
-	data = (MVSCDetectionData *)malloc(sizeof(d));
+	data = new MVSCDetectionData;
 	*data = d;
 	vsapi->createFilter(in, out, "SCDetection", mvscdetectionInit, mvscdetectionGetFrame, mvscdetectionFree, fmParallel, 0, data, core);
 }

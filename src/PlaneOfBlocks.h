@@ -12,7 +12,6 @@
 #include "SADFunctions.h"
 #include "CommonFunctions.h"
 #include "Variance.h"
-#include "FakeSAD.h"
 #include "DCT.h"
 
 class PlaneOfBlocks {
@@ -246,7 +245,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = FakeInt(static_cast<float>(sad + saduv));
+			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
 		}
 	}
 	inline void CheckMV(int32_t vx, int32_t vy) {
@@ -263,7 +262,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = FakeInt(static_cast<float>(sad + saduv));
+			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
 		}
 	}
 	inline void CheckMV2(int32_t vx, int32_t vy, int32_t *dir, int32_t val) {
@@ -280,7 +279,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = FakeInt(static_cast<float>(sad + saduv));
+			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
 			*dir = val;
 		}
 	}
@@ -296,7 +295,7 @@ class PlaneOfBlocks {
 			cost += saduv + ((penaltyNew*saduv) / 256);
 			if (cost >= nMinCost) return;
 			nMinCost = cost;
-			bestMV.sad = FakeInt(static_cast<float>(sad + saduv));
+			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
 			*dir = val;
 		}
 	}
@@ -358,7 +357,7 @@ public:
 	void CrossSearch(int32_t start, int32_t x_max, int32_t y_max, int32_t mvx, int32_t mvy);
 	void UMHSearch(int32_t i_me_range, int32_t omx, int32_t omy);
 	void SearchMVs(MVFrame *_pSrcFrame, MVFrame *_pRefFrame, SearchType st,
-		int32_t stp, double _lambda, double _lSAD, int32_t _pennew, int32_t _plevel, int32_t *out, VECTOR *globalMVec, int16_t * outfilebuf, int32_t _fieldShiftCur,
+		int32_t stp, double _lambda, double _lSAD, int32_t _pennew, int32_t _plevel, int32_t *out, VECTOR *globalMVec, int32_t * outfilebuf, int32_t _fieldShiftCur,
 		DCTClass * _DCT, double *_meanLumaChange, int32_t _divideExtra,
 		int32_t _pzero, int32_t _pglobal, double badSAD, int32_t badrange, bool meander, int32_t *vecPrev, bool tryMany);
 	void InterpolatePrediction(const PlaneOfBlocks &pob);
@@ -370,7 +369,7 @@ public:
 	inline int32_t GetnBlkY() { return nBlkY; }
 	void RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MVFrame *_pRefFrame, SearchType st,
 		int32_t stp, double _lambda, int32_t _pennew,
-		int32_t *out, int16_t *outfilebuf, int32_t _fieldShiftCur, double thSAD, DCTClass *_DCT,
+		int32_t *out, int32_t *outfilebuf, int32_t _fieldShiftCur, double thSAD, DCTClass *_DCT,
 		int32_t _divideExtra, int32_t smooth, bool meander);
 };
 

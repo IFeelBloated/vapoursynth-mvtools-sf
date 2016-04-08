@@ -5,10 +5,6 @@
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
 
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
-
 #include <cstdint>
 
 template <typename PixelType>
@@ -321,10 +317,9 @@ void VerticalWiener(uint8_t *pDst8, const uint8_t *pSrc8, int32_t nDstPitch,
 	for (int32_t j = 2; j < nHeight - 4; j++) {
 		for (int32_t i = 0; i < nWidth; i++)
 		{
-			pDst[i] = static_cast<PixelType>(min(1., max(0.,
-				((pSrc[i - nSrcPitch * 2])
+			pDst[i] = static_cast<PixelType>(((pSrc[i - nSrcPitch * 2])
 					+ (-(pSrc[i - nSrcPitch]) + (static_cast<double>(pSrc[i]) * 4.) + (pSrc[i + nSrcPitch] * 4.) - (pSrc[i + nSrcPitch * 2])) * 5.
-					+ (pSrc[i + nSrcPitch * 3])) / 32)));
+					+ (pSrc[i + nSrcPitch * 3])) / 32);
 		}
 		pDst += nDstPitch;
 		pSrc += nSrcPitch;
@@ -351,8 +346,8 @@ void HorizontalWiener(uint8_t *pDst8, const uint8_t *pSrc8, int32_t nDstPitch,
 		pDst[0] = (pSrc[0] + pSrc[1]) / 2;
 		pDst[1] = (pSrc[1] + pSrc[2]) / 2;
 		for (int32_t i = 2; i < nWidth - 4; i++) {
-			pDst[i] = static_cast<PixelType>(min(1., max(0., ((pSrc[i - 2]) + (-(pSrc[i - 1]) + (static_cast<double>(pSrc[i]) * 4.)
-				+ (pSrc[i + 1] * 4.) - (pSrc[i + 2])) * 5. + (pSrc[i + 3])) / 32)));
+			pDst[i] = static_cast<PixelType>(((pSrc[i - 2]) + (-(pSrc[i - 1]) + (static_cast<double>(pSrc[i]) * 4.)
+				+ (pSrc[i + 1] * 4.) - (pSrc[i + 2])) * 5. + (pSrc[i + 3])) / 32);
 		}
 		for (int32_t i = nWidth - 4; i < nWidth - 1; i++)
 			pDst[i] = static_cast<PixelType>((static_cast<double>(pSrc[i]) + pSrc[i + 1]) / 2);
@@ -382,12 +377,11 @@ void DiagonalWiener(uint8_t *pDst8, const uint8_t *pSrc8, int32_t nDstPitch,
 		for (int32_t i = 0; i < 2; i++)
 			pDst[i] = static_cast<PixelType>((static_cast<double>(pSrc[i]) + pSrc[i + 1] + pSrc[i + nSrcPitch] + pSrc[i + nSrcPitch + 1]) / 4);
 		for (int32_t i = 2; i < nWidth - 4; i++) {
-			pDst[i] = static_cast<PixelType>(min(1., max(0.,
-				((pSrc[i - 2 - nSrcPitch * 2]) + (-(pSrc[i - 1 - nSrcPitch]) + (static_cast<double>(pSrc[i]) * 4.)
+			pDst[i] = static_cast<PixelType>(((pSrc[i - 2 - nSrcPitch * 2]) + (-(pSrc[i - 1 - nSrcPitch]) + (static_cast<double>(pSrc[i]) * 4.)
 					+ (pSrc[i + 1 + nSrcPitch] * 4.) - (pSrc[i + 2 + nSrcPitch * 2] * 4.)) * 5. + (pSrc[i + 3 + nSrcPitch * 3])
 					+ (pSrc[i + 3 - nSrcPitch * 2]) + (-(pSrc[i + 2 - nSrcPitch]) + (pSrc[i + 1] * 4.)
 						+ (pSrc[i + nSrcPitch] * 4.) - (pSrc[i - 1 + nSrcPitch * 2])) * 5. + (pSrc[i - 2 + nSrcPitch * 3])
-					) / 64)));
+					) / 64);
 		}
 		for (int32_t i = nWidth - 4; i < nWidth - 1; i++)
 			pDst[i] = static_cast<PixelType>((static_cast<double>(pSrc[i]) + pSrc[i + 1] + pSrc[i + nSrcPitch] + pSrc[i + nSrcPitch + 1]) / 4);
@@ -423,8 +417,7 @@ void VerticalBicubic(uint8_t *pDst8, const uint8_t *pSrc8, int32_t nDstPitch,
 	}
 	for (int32_t j = 1; j < nHeight - 3; j++) {
 		for (int32_t i = 0; i < nWidth; i++)
-			pDst[i] = static_cast<PixelType>(min(1., max(0.,
-				(-pSrc[i - nSrcPitch] - static_cast<double>(pSrc[i + nSrcPitch * 2]) + (static_cast<double>(pSrc[i]) + pSrc[i + nSrcPitch]) * 9.) / 16)));
+			pDst[i] = static_cast<PixelType>((-pSrc[i - nSrcPitch] - static_cast<double>(pSrc[i + nSrcPitch * 2]) + (static_cast<double>(pSrc[i]) + pSrc[i + nSrcPitch]) * 9.) / 16);
 		pDst += nDstPitch;
 		pSrc += nSrcPitch;
 	}
@@ -449,8 +442,7 @@ void HorizontalBicubic(uint8_t *pDst8, const uint8_t *pSrc8, int32_t nDstPitch,
 	for (int32_t j = 0; j < nHeight; j++) {
 		pDst[0] = static_cast<PixelType>((static_cast<double>(pSrc[0]) + pSrc[1]) / 2);
 		for (int32_t i = 1; i < nWidth - 3; i++)
-			pDst[i] = static_cast<PixelType>(min(1., max(0.,
-				(-(pSrc[i - 1] + static_cast<double>(pSrc[i + 2])) + (static_cast<double>(pSrc[i]) + pSrc[i + 1]) * 9.) / 16)));
+			pDst[i] = static_cast<PixelType>((-(pSrc[i - 1] + static_cast<double>(pSrc[i + 2])) + (static_cast<double>(pSrc[i]) + pSrc[i + 1]) * 9.) / 16);
 		for (int32_t i = nWidth - 3; i < nWidth - 1; i++)
 			pDst[i] = static_cast<PixelType>((static_cast<double>(pSrc[i]) + pSrc[i + 1]) / 2);
 		pDst[nWidth - 1] = pSrc[nWidth - 1];
@@ -478,10 +470,9 @@ void DiagonalBicubic(uint8_t *pDst8, const uint8_t *pSrc8, int32_t nDstPitch,
 		for (int32_t i = 0; i < 1; i++)
 			pDst[i] = static_cast<PixelType>((static_cast<double>(pSrc[i]) + pSrc[i + 1] + pSrc[i + nSrcPitch] + pSrc[i + nSrcPitch + 1]) / 4);
 		for (int32_t i = 1; i < nWidth - 3; i++)
-			pDst[i] = static_cast<PixelType>(min(1., max(0.,
-				(-pSrc[i - 1 - nSrcPitch] - static_cast<double>(pSrc[i + 2 + nSrcPitch * 2]) + (static_cast<double>(pSrc[i]) + pSrc[i + 1 + nSrcPitch]) * 9.
+			pDst[i] = static_cast<PixelType>((-pSrc[i - 1 - nSrcPitch] - static_cast<double>(pSrc[i + 2 + nSrcPitch * 2]) + (static_cast<double>(pSrc[i]) + pSrc[i + 1 + nSrcPitch]) * 9.
 					- pSrc[i - 1 + nSrcPitch * 2] - pSrc[i + 2 - nSrcPitch] + (pSrc[i + 1] + pSrc[i + nSrcPitch]) * 9.
-					) / 32)));
+					) / 32);
 		for (int32_t i = nWidth - 3; i < nWidth - 1; i++)
 			pDst[i] = static_cast<PixelType>((static_cast<double>(pSrc[i]) + pSrc[i + 1] + pSrc[i + nSrcPitch] + pSrc[i + nSrcPitch + 1]) / 4);
 		pDst[nWidth - 1] = static_cast<PixelType>((static_cast<double>(pSrc[nWidth - 1]) + pSrc[nWidth + nSrcPitch - 1]) / 2);
@@ -516,10 +507,6 @@ void Average2(uint8_t *pDst8, const uint8_t *pSrc18, const uint8_t *pSrc28,
 		pSrc2 += nPitch;
 	}
 }
-
-#ifdef min
-#undef min
-#endif
 
 #ifdef max
 #undef max

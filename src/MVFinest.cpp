@@ -2,7 +2,7 @@
 #include "VSHelper.h"
 #include "MaskFun.h"
 
-typedef struct {
+struct MVFinestData {
 	VSNodeRef *super;
 	VSVideoInfo vi;
 	int32_t nWidth;
@@ -15,15 +15,15 @@ typedef struct {
 	int32_t nPel;
 	int32_t xRatioUV;
 	int32_t yRatioUV;
-} MVFinestData;
+};
 
 static void VS_CC mvfinestInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVFinestData *d = (MVFinestData *)* instanceData;
+	MVFinestData *d = reinterpret_cast<MVFinestData *>(*instanceData);
 	vsapi->setVideoInfo(&d->vi, 1, node);
 }
 
 static const VSFrameRef *VS_CC mvfinestGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVFinestData *d = (MVFinestData *)* instanceData;
+	MVFinestData *d = reinterpret_cast<MVFinestData *>(*instanceData);
 	if (activationReason == arInitial)
 		vsapi->requestFrameFilter(n, d->super, frameCtx);
 	else if (activationReason == arAllFramesReady) {
@@ -106,13 +106,13 @@ static const VSFrameRef *VS_CC mvfinestGetFrame(int32_t n, int32_t activationRea
 		vsapi->freeFrame(ref);
 		return dst;
 	}
-	return 0;
+	return nullptr;
 }
 
 static void VS_CC mvfinestFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVFinestData *d = (MVFinestData *)instanceData;
+	MVFinestData *d = reinterpret_cast<MVFinestData *>(instanceData);
 	vsapi->freeNode(d->super);
-	free(d);
+	delete d;
 }
 
 static void VS_CC mvfinestCreate(const VSMap *in, VSMap *out, void *userData, VSCore *core, const VSAPI *vsapi) {
@@ -149,7 +149,7 @@ static void VS_CC mvfinestCreate(const VSMap *in, VSMap *out, void *userData, VS
 	d.yRatioUV = 1 << d.vi.format->subSamplingH;
 	d.vi.width = (d.nWidth + 2 * d.nSuperHPad) * d.nSuperPel;
 	d.vi.height = (d.nHeight + 2 * d.nSuperVPad) * d.nSuperPel;
-	data = (MVFinestData *)malloc(sizeof(d));
+	data = new MVFinestData;
 	*data = d;
 	vsapi->createFilter(in, out, "Finest", mvfinestInit, mvfinestGetFrame, mvfinestFree, fmParallel, 0, data, core);
 }

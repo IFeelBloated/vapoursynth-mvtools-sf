@@ -7,16 +7,16 @@
 #include "MVInterface.h"
 #include "Overlap.h"
 
-typedef struct {
+struct MVDegrainData {
 	VSNodeRef *node;
 	const VSVideoInfo *vi;
 	VSNodeRef *super;
 	VSNodeRef *vectors[48];
-	float thSAD[3];
+	double thSAD[3];
 	int32_t YUVplanes;
-	float nLimit[3];
-	float nSCD1;
-	float nSCD2;
+	double nLimit[3];
+	double nSCD1;
+	double nSCD2;
 	MVClipDicks *mvClips[48];
 	MVFilter *bleh;
 	int32_t nSuperHPad;
@@ -41,16 +41,16 @@ typedef struct {
 	int32_t nWidth_B[3];
 	int32_t nHeight_B[3];
 	OverlapWindows *OverWins[3];
-} MVDegrainData;
+};
 
 static void VS_CC mvdegrainInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVDegrainData *d = (MVDegrainData *)* instanceData;
+	MVDegrainData *d = reinterpret_cast<MVDegrainData *>(*instanceData);
 	vsapi->setVideoInfo(d->vi, 1, node);
 }
 
 template <int32_t radius>
 static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVDegrainData *d = (MVDegrainData *)* instanceData;
+	MVDegrainData *d = reinterpret_cast<MVDegrainData *>(*instanceData);
 	if (activationReason == arInitial) {
 		if (radius > 23)
 			vsapi->requestFrameFilter(n, d->vectors[Forward24], frameCtx);
@@ -435,8 +435,8 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 		const int32_t *nBlkSizeY = d->nBlkSizeY;
 		const int32_t *nWidth_B = d->nWidth_B;
 		const int32_t *nHeight_B = d->nHeight_B;
-		const float *thSAD = d->thSAD;
-		const float *nLimit = d->nLimit;
+		const double *thSAD = d->thSAD;
+		const double *nLimit = d->nLimit;
 		MVGroupOfFrames *pRefGOF[radius * 2];
 		for (int32_t r = 0; r < radius * 2; r++)
 			pRefGOF[r] = new MVGroupOfFrames(d->nSuperLevels, nWidth[0], nHeight[0], d->nSuperPel, d->nSuperHPad, d->nSuperVPad, d->nSuperModeYUV, xRatioUV, yRatioUV);
@@ -504,7 +504,7 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 					int32_t xx = 0;
 					for (int32_t bx = 0; bx < nBlkX; bx++) {
 						int32_t wbx = (bx + nBlkX - 3) / (nBlkX - 2);
-						int16_t *winOver = OverWins[plane]->GetWindow(wby + wbx);
+						int32_t *winOver = OverWins[plane]->GetWindow(wby + wbx);
 						int32_t i = by * nBlkX + bx;
 						const uint8_t *pointers[radius * 2];
 						int32_t strides[radius * 2];
@@ -531,7 +531,7 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 						pSrc[plane] + nSrcPitches[plane] * nHeight_B[plane], nSrcPitches[plane],
 						nWidth[plane] * 4, nHeight[plane] - nHeight_B[plane]);
 			}
-			if (nLimit[plane] < 1.f)
+			if (nLimit[plane] < 1.)
 				d->LimitChanges(pDst[plane], nDstPitches[plane],
 					pSrc[plane], nSrcPitches[plane],
 					nWidth[plane], nHeight[plane], nLimit[plane]);
@@ -549,12 +549,12 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 		vsapi->freeFrame(src);
 		return dst;
 	}
-	return 0;
+	return nullptr;
 }
 
 template <int32_t radius>
 static void VS_CC mvdegrainFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVDegrainData *d = (MVDegrainData *)instanceData;
+	MVDegrainData *d = reinterpret_cast<MVDegrainData *>(instanceData);
 	if (d->nOverlapX[0] || d->nOverlapY[0]) {
 		delete d->OverWins[0];
 		if (d->vi->format->colorFamily != cmGray)
@@ -567,7 +567,7 @@ static void VS_CC mvdegrainFree(void *instanceData, VSCore *core, const VSAPI *v
 	vsapi->freeNode(d->super);
 	vsapi->freeNode(d->node);
 	delete d->bleh;
-	free(d);
+	delete d;
 }
 
 template <int32_t radius>
@@ -631,19 +631,43 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
 	MVDegrainData d;
 	MVDegrainData *data;
 	int err;
-	d.thSAD[0] = static_cast<float>(vsapi->propGetFloat(in, "thsad", 0, &err));
-	if (err)
-		d.thSAD[0] = 400.f;
-	d.thSAD[1] = d.thSAD[2] = static_cast<float>(vsapi->propGetFloat(in, "thsadc", 0, &err));
-	if (err)
-		d.thSAD[1] = d.thSAD[2] = d.thSAD[0];
+	const int m = vsapi->propNumElements(in, "thsad");
+	const int n = vsapi->propNumElements(in, "limit");
+	for (int i = 0; i < 3; ++i) {
+		if (m == -1)
+			d.thSAD[0] = d.thSAD[1] = d.thSAD[2] = 400.;
+		else
+			if (i < m)
+				d.thSAD[i] = vsapi->propGetFloat(in, "thsad", i, nullptr);
+			else
+				d.thSAD[i] = d.thSAD[i - 1];
+		if (n == -1)
+			d.nLimit[0] = d.nLimit[1] = d.nLimit[2] = 1.;
+		else
+			if (i < n) {
+				d.nLimit[i] = vsapi->propGetFloat(in, "limit", i, nullptr);
+				if (d.nLimit[i] < 0. || d.nLimit[i] > 1.) {
+					vsapi->setError(out, (filter + ": limit must be between 0.0 and " + std::to_string(1.0) + " (inclusive).").c_str());
+					vsapi->freeNode(d.super);
+					vsapi->freeNode(d.node);
+					for (int32_t r = 0; r < radius * 2; ++r) {
+						vsapi->freeNode(d.vectors[r]);
+						delete d.mvClips[r];
+					}
+					delete d.bleh;
+					return;
+				}
+			}
+			else
+				d.nLimit[i] = d.nLimit[i - 1];
+	}
 	int32_t plane = int64ToIntS(vsapi->propGetInt(in, "plane", 0, &err));
 	if (err)
 		plane = 4;
-	d.nSCD1 = static_cast<float>(vsapi->propGetFloat(in, "thscd1", 0, &err));
+	d.nSCD1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.nSCD1 = MV_DEFAULT_SCD1;
-	d.nSCD2 = static_cast<float>(vsapi->propGetFloat(in, "thscd2", 0, &err));
+	d.nSCD2 = vsapi->propGetFloat(in, "thscd2", 0, &err);
 	if (err)
 		d.nSCD2 = MV_DEFAULT_SCD2;
 	if (plane < 0 || plane > 4) {
@@ -1002,8 +1026,8 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
 		delete d.bleh;
 		return;
 	}
-	d.thSAD[0] = static_cast<float>(static_cast<double>(d.thSAD[0]) * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1);
-	d.thSAD[1] = d.thSAD[2] = static_cast<float>(static_cast<double>(d.thSAD[1]) * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1);
+	d.thSAD[0] = d.thSAD[0] * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1;
+	d.thSAD[1] = d.thSAD[2] = d.thSAD[1] * d.mvClips[Backward1]->GetThSCD1() / d.nSCD1;
 	d.node = vsapi->propGetNode(in, "clip", 0, 0);
 	d.vi = vsapi->getVideoInfo(d.node);
 	const VSVideoInfo *supervi = vsapi->getVideoInfo(d.super);
@@ -1019,39 +1043,10 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
 		delete d.bleh;
 		return;
 	}
-	float pixelMax = 1.f;
-	d.nLimit[0] = static_cast<float>(vsapi->propGetFloat(in, "limit", 0, &err));
-	if (err)
-		d.nLimit[0] = pixelMax;
-	d.nLimit[1] = d.nLimit[2] = static_cast<float>(vsapi->propGetFloat(in, "limitc", 0, &err));
-	if (err)
-		d.nLimit[1] = d.nLimit[2] = d.nLimit[0];
-	if (d.nLimit[0] < 0 || d.nLimit[0] > pixelMax) {
-		vsapi->setError(out, (filter + ": limit must be between 0 and " + std::to_string(pixelMax) + " (inclusive).").c_str());
-		vsapi->freeNode(d.super);
-		vsapi->freeNode(d.node);
-		for (int32_t r = 0; r < radius * 2; r++) {
-			vsapi->freeNode(d.vectors[r]);
-			delete d.mvClips[r];
-		}
-		delete d.bleh;
-		return;
-	}
-	if (d.nLimit[1] < 0 || d.nLimit[1] > pixelMax) {
-		vsapi->setError(out, (filter + ": limitc must be between 0 and " + std::to_string(pixelMax) + " (inclusive).").c_str());
-		vsapi->freeNode(d.super);
-		vsapi->freeNode(d.node);
-		for (int32_t r = 0; r < radius * 2; r++) {
-			vsapi->freeNode(d.vectors[r]);
-			delete d.mvClips[r];
-		}
-		delete d.bleh;
-		return;
-	}
 	d.dstTempPitch = ((d.bleh->nWidth + 15) / 16) * 16 * 4 * 2;
-	d.process[0] = !!(d.YUVplanes & YPLANE);
-	d.process[1] = !!(d.YUVplanes & UPLANE & d.nSuperModeYUV);
-	d.process[2] = !!(d.YUVplanes & VPLANE & d.nSuperModeYUV);
+	d.process[0] = d.vi->format->colorFamily == cmRGB ? true : !!(d.YUVplanes & YPLANE);
+	d.process[1] = d.vi->format->colorFamily == cmRGB ? true : !!(d.YUVplanes & UPLANE & d.nSuperModeYUV);
+	d.process[2] = d.vi->format->colorFamily == cmRGB ? true : !!(d.YUVplanes & VPLANE & d.nSuperModeYUV);
 	d.xSubUV = d.vi->format->subSamplingW;
 	d.ySubUV = d.vi->format->subSamplingH;
 	d.nWidth[0] = d.bleh->nWidth;
@@ -1078,7 +1073,7 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
 		}
 	}
 	selectFunctions<radius>(&d);
-	data = (MVDegrainData *)malloc(sizeof(d));
+	data = new MVDegrainData;
 	*data = d;
 	vsapi->createFilter(in, out, filter.c_str(), mvdegrainInit, mvdegrainGetFrame<radius>, mvdegrainFree<radius>, fmParallel, 0, data, core);
 }
@@ -1089,11 +1084,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"super:clip;"
 		"mvbw:clip;"
 		"mvfw:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<1>, 0, plugin);
@@ -1104,11 +1097,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw:clip;"
 		"mvbw2:clip;"
 		"mvfw2:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<2>, 0, plugin);
@@ -1121,11 +1112,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw2:clip;"
 		"mvbw3:clip;"
 		"mvfw3:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<3>, 0, plugin);
@@ -1140,11 +1129,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw3:clip;"
 		"mvbw4:clip;"
 		"mvfw4:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<4>, 0, plugin);
@@ -1161,11 +1148,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw4:clip;"
 		"mvbw5:clip;"
 		"mvfw5:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<5>, 0, plugin);
@@ -1184,11 +1169,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw5:clip;"
 		"mvbw6:clip;"
 		"mvfw6:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<6>, 0, plugin);
@@ -1209,11 +1192,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw6:clip;"
 		"mvbw7:clip;"
 		"mvfw7:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<7>, 0, plugin);
@@ -1236,11 +1217,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw7:clip;"
 		"mvbw8:clip;"
 		"mvfw8:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<8>, 0, plugin);
@@ -1265,11 +1244,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw8:clip;"
 		"mvbw9:clip;"
 		"mvfw9:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<9>, 0, plugin);
@@ -1296,11 +1273,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw9:clip;"
 		"mvbw10:clip;"
 		"mvfw10:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<10>, 0, plugin);
@@ -1329,11 +1304,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw10:clip;"
 		"mvbw11:clip;"
 		"mvfw11:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<11>, 0, plugin);
@@ -1364,11 +1337,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw11:clip;"
 		"mvbw12:clip;"
 		"mvfw12:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<12>, 0, plugin);
@@ -1401,11 +1372,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw12:clip;"
 		"mvbw13:clip;"
 		"mvfw13:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<13>, 0, plugin);
@@ -1440,11 +1409,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw13:clip;"
 		"mvbw14:clip;"
 		"mvfw14:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<14>, 0, plugin);
@@ -1481,11 +1448,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw14:clip;"
 		"mvbw15:clip;"
 		"mvfw15:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<15>, 0, plugin);
@@ -1524,11 +1489,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw15:clip;"
 		"mvbw16:clip;"
 		"mvfw16:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<16>, 0, plugin);
@@ -1569,11 +1532,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw16:clip;"
 		"mvbw17:clip;"
 		"mvfw17:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<17>, 0, plugin);
@@ -1616,11 +1577,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw17:clip;"
 		"mvbw18:clip;"
 		"mvfw18:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<18>, 0, plugin);
@@ -1665,11 +1624,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw18:clip;"
 		"mvbw19:clip;"
 		"mvfw19:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<19>, 0, plugin);
@@ -1716,11 +1673,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw19:clip;"
 		"mvbw20:clip;"
 		"mvfw20:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<20>, 0, plugin);
@@ -1769,11 +1724,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw20:clip;"
 		"mvbw21:clip;"
 		"mvfw21:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<21>, 0, plugin);
@@ -1824,11 +1777,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw21:clip;"
 		"mvbw22:clip;"
 		"mvfw22:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<22>, 0, plugin);
@@ -1881,11 +1832,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw22:clip;"
 		"mvbw23:clip;"
 		"mvfw23:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<23>, 0, plugin);
@@ -1940,11 +1889,9 @@ void mvdegrainsRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"mvfw23:clip;"
 		"mvbw24:clip;"
 		"mvfw24:clip;"
-		"thsad:float:opt;"
-		"thsadc:float:opt;"
+		"thsad:float[]:opt;"
 		"plane:int:opt;"
-		"limit:float:opt;"
-		"limitc:float:opt;"
+		"limit:float[]:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		, mvdegrainCreate<24>, 0, plugin);

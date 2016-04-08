@@ -184,7 +184,7 @@ inline void ByteOccMask(uint8_t *occMask, int32_t occlusion, double occnorm, dou
 }
 
 void MakeVectorOcclusionMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, double dMaskNormFactor, double fGamma, int32_t nPel, uint8_t * occMask, int32_t occMaskPitch, int32_t time256, int32_t blkSizeX, int32_t blkSizeY) {
-	memset(occMask, 0, nBlkX * nBlkY);
+	memset(occMask, 0, occMaskPitch * nBlkY);
 	int32_t time4096X = time256 * 16 / blkSizeX;
 	int32_t time4096Y = time256 * 16 / blkSizeY;
 	double occnorm = 10 / dMaskNormFactor / nPel;

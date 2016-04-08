@@ -8,17 +8,17 @@
 #include "MVFilter.h"
 #include "SimpleResize.h"
 
-typedef struct {
+struct MVFlowBlurData {
 	VSNodeRef *node;
 	const VSVideoInfo *vi;
 	VSNodeRef *finest;
 	VSNodeRef *super;
 	VSNodeRef *mvbw;
 	VSNodeRef *mvfw;
-	float blur;
+	double blur;
 	int32_t prec;
-	float thscd1;
-	float thscd2;
+	double thscd1;
+	double thscd2;
 	MVClipDicks *mvClipB;
 	MVClipDicks *mvClipF;
 	MVFilter *bleh;
@@ -32,10 +32,10 @@ typedef struct {
 	int32_t blur256;
 	SimpleResize *upsizer;
 	SimpleResize *upsizerUV;
-} MVFlowBlurData;
+};
 
 static void VS_CC mvflowblurInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVFlowBlurData *d = (MVFlowBlurData *)* instanceData;
+	MVFlowBlurData *d = reinterpret_cast<MVFlowBlurData *>(*instanceData);
 	vsapi->setVideoInfo(d->vi, 1, node);
 }
 
@@ -50,7 +50,7 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 	if (nPel == 1) {
 		for (int32_t h = 0; h<height; h++) {
 			for (int32_t w = 0; w<width; w++) {
-				float bluredsum = pref[w];
+				double bluredsum = pref[w];
 				int32_t vxF0 = ((VXFullF[w] - 128)*blur256);
 				int32_t vyF0 = ((VYFullF[w] - 128)*blur256);
 				int32_t mF = (std::max(abs(vxF0), abs(vyF0)) / prec) >> 8;
@@ -60,7 +60,7 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 					int32_t vxF = vxF0;
 					int32_t vyF = vyF0;
 					for (int32_t i = 0; i<mF; i++) {
-						float dstF = pref[(vyF >> 8)*ref_pitch + (vxF >> 8) + w];
+						double dstF = pref[(vyF >> 8)*ref_pitch + (vxF >> 8) + w];
 						bluredsum += dstF;
 						vxF += vxF0;
 						vyF += vyF0;
@@ -76,13 +76,13 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 					int32_t vyB = vyB0;
 					for (int32_t i = 0; i<mB; i++)
 					{
-						float dstB = pref[(vyB >> 8)*ref_pitch + (vxB >> 8) + w];
+						double dstB = pref[(vyB >> 8)*ref_pitch + (vxB >> 8) + w];
 						bluredsum += dstB;
 						vxB += vxB0;
 						vyB += vyB0;
 					}
 				}
-				pdst[w] = bluredsum / (mF + mB + 1);
+				pdst[w] = static_cast<PixelType>(bluredsum / (mF + mB + 1));
 			}
 			pdst += dst_pitch;
 			pref += ref_pitch;
@@ -98,7 +98,7 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 		{
 			for (int32_t w = 0; w<width; w++)
 			{
-				float bluredsum = pref[w << 1];
+				double bluredsum = pref[w << 1];
 				int32_t vxF0 = ((VXFullF[w] - 128)*blur256);
 				int32_t vyF0 = ((VYFullF[w] - 128)*blur256);
 				int32_t mF = (std::max(abs(vxF0), abs(vyF0)) / prec) >> 8;
@@ -110,7 +110,7 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 					int32_t vyF = vyF0;
 					for (int32_t i = 0; i<mF; i++)
 					{
-						float dstF = pref[(vyF >> 8)*ref_pitch + (vxF >> 8) + (w << 1)];
+						double dstF = pref[(vyF >> 8)*ref_pitch + (vxF >> 8) + (w << 1)];
 						bluredsum += dstF;
 						vxF += vxF0;
 						vyF += vyF0;
@@ -127,13 +127,13 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 					int32_t vyB = vyB0;
 					for (int32_t i = 0; i<mB; i++)
 					{
-						float dstB = pref[(vyB >> 8)*ref_pitch + (vxB >> 8) + (w << 1)];
+						double dstB = pref[(vyB >> 8)*ref_pitch + (vxB >> 8) + (w << 1)];
 						bluredsum += dstB;
 						vxB += vxB0;
 						vyB += vyB0;
 					}
 				}
-				pdst[w] = bluredsum / (mF + mB + 1);
+				pdst[w] = static_cast<PixelType>(bluredsum / (mF + mB + 1));
 			}
 			pdst += dst_pitch;
 			pref += (ref_pitch << 1);
@@ -149,7 +149,7 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 		{
 			for (int32_t w = 0; w<width; w++)
 			{
-				float bluredsum = pref[w << 2];
+				double bluredsum = pref[w << 2];
 				int32_t vxF0 = ((VXFullF[w] - 128)*blur256);
 				int32_t vyF0 = ((VYFullF[w] - 128)*blur256);
 				int32_t mF = (std::max(abs(vxF0), abs(vyF0)) / prec) >> 8;
@@ -161,7 +161,7 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 					int32_t vyF = vyF0;
 					for (int32_t i = 0; i<mF; i++)
 					{
-						float dstF = pref[(vyF >> 8)*ref_pitch + (vxF >> 8) + (w << 2)];
+						double dstF = pref[(vyF >> 8)*ref_pitch + (vxF >> 8) + (w << 2)];
 						bluredsum += dstF;
 						vxF += vxF0;
 						vyF += vyF0;
@@ -178,13 +178,13 @@ static void RealFlowBlur(uint8_t * pdst8, int32_t dst_pitch, const uint8_t *pref
 					int32_t vyB = vyB0;
 					for (int32_t i = 0; i<mB; i++)
 					{
-						float dstB = pref[(vyB >> 8)*ref_pitch + (vxB >> 8) + (w << 2)];
+						double dstB = pref[(vyB >> 8)*ref_pitch + (vxB >> 8) + (w << 2)];
 						bluredsum += dstB;
 						vxB += vxB0;
 						vyB += vyB0;
 					}
 				}
-				pdst[w] = bluredsum / (mF + mB + 1);
+				pdst[w] = static_cast<PixelType>(bluredsum / (mF + mB + 1));
 			}
 			pdst += dst_pitch;
 			pref += (ref_pitch << 2);
@@ -205,8 +205,7 @@ static void FlowBlur(uint8_t * pdst, int32_t dst_pitch, const uint8_t *pref, int
 
 
 static const VSFrameRef *VS_CC mvflowblurGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVFlowBlurData *d = (MVFlowBlurData *)* instanceData;
-
+	MVFlowBlurData *d = reinterpret_cast<MVFlowBlurData *>(*instanceData);
 	if (activationReason == arInitial) {
 		int32_t off = d->mvClipB->GetDeltaFrame(); // integer offset of reference frame
 
@@ -378,12 +377,12 @@ static const VSFrameRef *VS_CC mvflowblurGetFrame(int32_t n, int32_t activationR
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 
 static void VS_CC mvflowblurFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVFlowBlurData *d = (MVFlowBlurData *)instanceData;
+	MVFlowBlurData *d = reinterpret_cast<MVFlowBlurData *>(instanceData);
 
 	delete d->mvClipB;
 	delete d->mvClipF;
@@ -399,7 +398,7 @@ static void VS_CC mvflowblurFree(void *instanceData, VSCore *core, const VSAPI *
 	vsapi->freeNode(d->mvfw);
 	vsapi->freeNode(d->mvbw);
 	vsapi->freeNode(d->node);
-	free(d);
+	delete d;
 }
 
 
@@ -409,38 +408,35 @@ static void VS_CC mvflowblurCreate(const VSMap *in, VSMap *out, void *userData, 
 
 	int err;
 
-	d.blur = (float)vsapi->propGetFloat(in, "blur", 0, &err);
+	d.blur = vsapi->propGetFloat(in, "blur", 0, &err);
 	if (err)
-		d.blur = 50.0f;
+		d.blur = 50.;
 
 	d.prec = int64ToIntS(vsapi->propGetInt(in, "prec", 0, &err));
 	if (err)
 		d.prec = 1;
 
-	d.thscd1 = static_cast<float>(vsapi->propGetFloat(in, "thscd1", 0, &err));
+	d.thscd1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.thscd1 = MV_DEFAULT_SCD1;
 
-	d.thscd2 = static_cast<float>(vsapi->propGetFloat(in, "thscd2", 0, &err));
+	d.thscd2 = vsapi->propGetFloat(in, "thscd2", 0, &err);
 	if (err)
 		d.thscd2 = MV_DEFAULT_SCD2;
 
 
-	if (d.blur < 0.0f || d.blur > 200.0f) {
+	if (d.blur < 0. || d.blur > 200.) {
 		vsapi->setError(out, "FlowBlur: blur must be between 0 and 200 % (inclusive).");
 		return;
 	}
+
 
 	if (d.prec < 1) {
 		vsapi->setError(out, "FlowBlur: prec must be at least 1.");
 		return;
 	}
-
-	d.blur256 = (int32_t)(d.blur * 256.0f / 200.0f);
-
-
+	d.blur256 = static_cast<int32_t>(d.blur * 256. / 200.);
 	d.super = vsapi->propGetNode(in, "super", 0, nullptr);
-
 	char errorMsg[1024];
 	const VSFrameRef *evil = vsapi->getFrame(0, d.super, errorMsg, 1024);
 	if (!evil) {
@@ -619,7 +615,7 @@ static void VS_CC mvflowblurCreate(const VSMap *in, VSMap *out, void *userData, 
 	d.upsizer = new SimpleResize(d.bleh->nWidth, d.bleh->nHeight, d.bleh->nBlkX, d.bleh->nBlkY);
 	if (d.vi->format->colorFamily != cmGray)
 		d.upsizerUV = new SimpleResize(d.nWidthUV, d.nHeightUV, d.bleh->nBlkX, d.bleh->nBlkY);
-	data = (MVFlowBlurData *)malloc(sizeof(d));
+	data = new MVFlowBlurData;
 	*data = d;
 	vsapi->createFilter(in, out, "FlowBlur", mvflowblurInit, mvflowblurGetFrame, mvflowblurFree, fmParallel, 0, data, core);
 }

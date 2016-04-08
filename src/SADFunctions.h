@@ -135,6 +135,14 @@
 
 #include <cstdint>
 
+static inline int32_t _fakeint(float a) {
+	return reinterpret_cast<int32_t &>(a);
+}
+
+static inline float _back2flt(int32_t a) {
+	return reinterpret_cast<float &>(a);
+}
+
 typedef double(*SADFunction)(const uint8_t *pSrc, intptr_t nSrcPitch,
 	const uint8_t *pRef, intptr_t nRefPitch);
 

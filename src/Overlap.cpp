@@ -56,17 +56,17 @@ OverlapWindows::OverlapWindows(int32_t _nx, int32_t _ny, int32_t _ox, int32_t _o
 	}
 
 
-	Overlap9Windows = new int16_t[size * 9];
+	Overlap9Windows = new int32_t[size * 9];
 
-	int16_t *winOverUVTL = Overlap9Windows;
-	int16_t *winOverUVTM = Overlap9Windows + size;
-	int16_t *winOverUVTR = Overlap9Windows + size * 2;
-	int16_t *winOverUVML = Overlap9Windows + size * 3;
-	int16_t *winOverUVMM = Overlap9Windows + size * 4;
-	int16_t *winOverUVMR = Overlap9Windows + size * 5;
-	int16_t *winOverUVBL = Overlap9Windows + size * 6;
-	int16_t *winOverUVBM = Overlap9Windows + size * 7;
-	int16_t *winOverUVBR = Overlap9Windows + size * 8;
+	int32_t *winOverUVTL = Overlap9Windows;
+	int32_t *winOverUVTM = Overlap9Windows + size;
+	int32_t *winOverUVTR = Overlap9Windows + size * 2;
+	int32_t *winOverUVML = Overlap9Windows + size * 3;
+	int32_t *winOverUVMM = Overlap9Windows + size * 4;
+	int32_t *winOverUVMR = Overlap9Windows + size * 5;
+	int32_t *winOverUVBL = Overlap9Windows + size * 6;
+	int32_t *winOverUVBM = Overlap9Windows + size * 7;
+	int32_t *winOverUVBR = Overlap9Windows + size * 8;
 
 	for (int32_t j = 0; j<ny; j++)
 	{

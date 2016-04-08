@@ -8,18 +8,18 @@
 #include "MVInterface.h"
 #include "SimpleResize.h"
 
-typedef struct {
+struct MVFlowInterData {
 	VSNodeRef *node;
 	const VSVideoInfo *vi;
 	VSNodeRef *finest;
 	VSNodeRef *super;
 	VSNodeRef *mvbw;
 	VSNodeRef *mvfw;
-	float time;
-	float ml;
+	double time;
+	double ml;
 	bool blend;
-	float thscd1;
-	float thscd2;
+	double thscd1;
+	double thscd2;
 	MVClipDicks *mvClipB;
 	MVClipDicks *mvClipF;
 	MVFilter *bleh;
@@ -41,15 +41,15 @@ typedef struct {
 	int32_t *LUTVF;
 	SimpleResize *upsizer;
 	SimpleResize *upsizerUV;
-} MVFlowInterData;
+};
 
 static void VS_CC mvflowinterInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVFlowInterData *d = (MVFlowInterData *)* instanceData;
+	MVFlowInterData *d = reinterpret_cast<MVFlowInterData *>(*instanceData);
 	vsapi->setVideoInfo(d->vi, 1, node);
 }
 
 static const VSFrameRef *VS_CC mvflowinterGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVFlowInterData *d = (MVFlowInterData *)* instanceData;
+	MVFlowInterData *d = reinterpret_cast<MVFlowInterData *>(*instanceData);
 
 	if (activationReason == arInitial) {
 		int32_t off = d->mvClipB->GetDeltaFrame(); // integer offset of reference frame
@@ -119,7 +119,7 @@ static const VSFrameRef *VS_CC mvflowinterGetFrame(int32_t n, int32_t activation
 				nSrcPitches[i] = vsapi->getStride(src, i);
 			}
 
-			const float ml = d->ml;
+			const double ml = d->ml;
 			const int32_t xRatioUV = d->bleh->xRatioUV;
 			const int32_t yRatioUV = d->bleh->yRatioUV;
 			const int32_t nBlkX = d->bleh->nBlkX;
@@ -443,12 +443,12 @@ static const VSFrameRef *VS_CC mvflowinterGetFrame(int32_t n, int32_t activation
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 
 static void VS_CC mvflowinterFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVFlowInterData *d = (MVFlowInterData *)instanceData;
+	MVFlowInterData *d = reinterpret_cast<MVFlowInterData *>(instanceData);
 
 	delete d->mvClipB;
 	delete d->mvClipF;
@@ -467,7 +467,7 @@ static void VS_CC mvflowinterFree(void *instanceData, VSCore *core, const VSAPI 
 	vsapi->freeNode(d->mvfw);
 	vsapi->freeNode(d->mvbw);
 	vsapi->freeNode(d->node);
-	free(d);
+	delete d;
 }
 
 
@@ -477,38 +477,38 @@ static void VS_CC mvflowinterCreate(const VSMap *in, VSMap *out, void *userData,
 
 	int err;
 
-	d.time = (float)vsapi->propGetFloat(in, "time", 0, &err);
+	d.time = vsapi->propGetFloat(in, "time", 0, &err);
 	if (err)
-		d.time = 50.0f;
+		d.time = 50.;
 
-	d.ml = (float)vsapi->propGetFloat(in, "ml", 0, &err);
+	d.ml = vsapi->propGetFloat(in, "ml", 0, &err);
 	if (err)
-		d.ml = 100.0f;
+		d.ml = 100.;
 
 	d.blend = !!vsapi->propGetInt(in, "blend", 0, &err);
 	if (err)
 		d.blend = 1;
 
-	d.thscd1 = static_cast<float>(vsapi->propGetFloat(in, "thscd1", 0, &err));
+	d.thscd1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.thscd1 = MV_DEFAULT_SCD1;
 
-	d.thscd2 = static_cast<float>(vsapi->propGetFloat(in, "thscd2", 0, &err));
+	d.thscd2 = vsapi->propGetFloat(in, "thscd2", 0, &err);
 	if (err)
 		d.thscd2 = MV_DEFAULT_SCD2;
 
 
-	if (d.time < 0.0f || d.time > 100.0f) {
+	if (d.time < 0. || d.time > 100.) {
 		vsapi->setError(out, "FlowInter: time must be between 0 and 100 % (inclusive).");
 		return;
 	}
 
-	if (d.ml <= 0.0f) {
+	if (d.ml <= 0.) {
 		vsapi->setError(out, "FlowInter: ml must be greater than 0.");
 		return;
 	}
 
-	d.time256 = (int32_t)(d.time * 256.0f / 100.0f);
+	d.time256 = (int32_t)(d.time * 256. / 100.);
 
 
 	d.super = vsapi->propGetNode(in, "super", 0, nullptr);
@@ -685,7 +685,7 @@ static void VS_CC mvflowinterCreate(const VSMap *in, VSMap *out, void *userData,
 	d.LUTVB = new int32_t[256];
 	d.LUTVF = new int32_t[256];
 	Create_LUTV(d.time256, d.LUTVB, d.LUTVF);
-	data = (MVFlowInterData *)malloc(sizeof(d));
+	data = new MVFlowInterData;
 	*data = d;
 	vsapi->createFilter(in, out, "FlowInter", mvflowinterInit, mvflowinterGetFrame, mvflowinterFree, fmParallel, 0, data, core);
 }

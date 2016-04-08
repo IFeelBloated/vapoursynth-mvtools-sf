@@ -8,7 +8,7 @@
 #include "MVFilter.h"
 #include "SimpleResize.h"
 
-typedef struct {
+struct MVFlowFPSData {
 	VSNodeRef *node;
 	VSVideoInfo vi;
 	VSNodeRef *finest;
@@ -19,7 +19,7 @@ typedef struct {
 	int32_t maskmode;
 	double ml;
 	bool blend;
-	float thscd1, thscd2;
+	double thscd1, thscd2;
 	MVClipDicks *mvClipB;
 	MVClipDicks *mvClipF;
 	MVFilter *bleh;
@@ -80,15 +80,15 @@ typedef struct {
 	SimpleResize *upsizerUV;
 	int64_t fa, fb;
 	int32_t nleftLast, nrightLast;
-} MVFlowFPSData;
+};
 
 static void VS_CC mvflowfpsInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
-	MVFlowFPSData *d = (MVFlowFPSData *)* instanceData;
+	MVFlowFPSData *d = reinterpret_cast<MVFlowFPSData *>(*instanceData);
 	vsapi->setVideoInfo(&d->vi, 1, node);
 }
 
 static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
-	MVFlowFPSData *d = (MVFlowFPSData *)* instanceData;
+	MVFlowFPSData *d = reinterpret_cast<MVFlowFPSData *>(*instanceData);
 
 	if (activationReason == arInitial) {
 		int32_t off = d->mvClipB->GetDeltaFrame(); // integer offset of reference frame
@@ -96,7 +96,7 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 		int32_t nleft = (int32_t)(n * d->fa / d->fb);
 		int32_t nright = nleft + off;
 
-		int32_t time256 = int32_t((double(n) * double(d->fa) / double(d->fb) - nleft) * 256 + 0.5);
+		int32_t time256 = (int32_t)((double(n) * double(d->fa) / double(d->fb) - nleft) * 256 + 0.5);
 		if (off > 1)
 			time256 = time256 / off;
 
@@ -130,10 +130,10 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 	else if (activationReason == arAllFramesReady) {
 		int32_t nleft = (int32_t)(n * d->fa / d->fb);
 		// intermediate product may be very large! Now I know how to multiply int64
-		int32_t time256 = int32_t((double(n)*double(d->fa) / double(d->fb) - nleft) * 256 + 0.5);
+		int32_t time256 = (int32_t)((double(n)*double(d->fa) / double(d->fb) - nleft) * 256 + 0.5);
 
 		int32_t off = d->mvClipB->GetDeltaFrame(); // integer offset of reference frame
-											   // usually off must be = 1
+												   // usually off must be = 1
 		if (off > 1)
 			time256 = time256 / off;
 
@@ -487,12 +487,12 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 
 static void VS_CC mvflowfpsFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVFlowFPSData *d = (MVFlowFPSData *)instanceData;
+	MVFlowFPSData *d = reinterpret_cast<MVFlowFPSData *>(instanceData);
 
 	delete[] d->VXFullYB;
 	delete[] d->VYFullYB;
@@ -561,7 +561,7 @@ static void VS_CC mvflowfpsFree(void *instanceData, VSCore *core, const VSAPI *v
 	vsapi->freeNode(d->mvfw);
 	vsapi->freeNode(d->mvbw);
 	vsapi->freeNode(d->node);
-	free(d);
+	delete d;
 }
 
 
@@ -610,14 +610,13 @@ static void VS_CC mvflowfpsCreate(const VSMap *in, VSMap *out, void *userData, V
 	if (err)
 		d.blend = 1;
 
-	d.thscd1 = static_cast<float>(vsapi->propGetFloat(in, "thscd1", 0, &err));
+	d.thscd1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.thscd1 = MV_DEFAULT_SCD1;
 
-	d.thscd2 = static_cast<float>(vsapi->propGetFloat(in, "thscd2", 0, &err));
+	d.thscd2 = vsapi->propGetFloat(in, "thscd2", 0, &err);
 	if (err)
 		d.thscd2 = MV_DEFAULT_SCD2;
-
 
 
 	if (d.maskmode < 0 || d.maskmode > 2) {
@@ -958,7 +957,7 @@ static void VS_CC mvflowfpsCreate(const VSMap *in, VSMap *out, void *userData, V
 	d.nrightLast = -1000;
 
 
-	data = (MVFlowFPSData *)malloc(sizeof(d));
+	data = new MVFlowFPSData;
 	*data = d;
 
 	// Can't use fmParallel because of nleftLast/nrightLast.

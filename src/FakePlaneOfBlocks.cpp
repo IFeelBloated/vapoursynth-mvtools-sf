@@ -1,5 +1,5 @@
 #include "FakePlaneOfBlocks.h"
-#include "FakeSAD.h"
+#include "SADFunctions.h"
 #include "CommonFunctions.h"
 
 FakePlaneOfBlocks::FakePlaneOfBlocks(int32_t sizeX, int32_t sizeY, int32_t lv, int32_t pel, int32_t _nOverlapX, int32_t _nOverlapY, int32_t _nBlkX, int32_t _nBlkY) {
@@ -34,9 +34,9 @@ void FakePlaneOfBlocks::Update(const int32_t *array) {
 	}
 }
 
-bool FakePlaneOfBlocks::IsSceneChange(float nTh1, float nTh2) const {
+bool FakePlaneOfBlocks::IsSceneChange(double nTh1, double nTh2) const {
 	int32_t sum = 0;
 	for (int32_t i = 0; i < nBlkCount; i++)
-		sum += (Back2FLT(blocks[i].GetSAD()) > nTh1) ? 1 : 0;
+		sum += (_back2flt(blocks[i].GetSAD()) > nTh1) ? 1 : 0;
 	return (sum > nTh2);
 }

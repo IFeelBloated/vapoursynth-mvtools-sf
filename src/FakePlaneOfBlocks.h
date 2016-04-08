@@ -21,7 +21,7 @@ public:
 	FakePlaneOfBlocks(int32_t sizex, int32_t sizey, int32_t lv, int32_t pel, int32_t overlapx, int32_t overlapy, int32_t nBlkX, int32_t nBlkY);
 	~FakePlaneOfBlocks();
 	void Update(const int32_t *array);
-	bool IsSceneChange(float nTh1, float nTh2) const;
+	bool IsSceneChange(double nTh1, double nTh2) const;
 	inline bool IsInFrame(int32_t i) const {
 		return ((i >= 0) && (i < nBlkCount));
 	}
