@@ -336,6 +336,11 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	d.node = vsapi->propGetNode(in, "super", 0, 0);
 	d.supervi = vsapi->getVideoInfo(d.node);
 	d.vi = *d.supervi;
+	if (!isConstantFormat(&d.vi) || d.vi.format->bitsPerSample < 32 || d.vi.format->sampleType != stFloat) {
+		vsapi->setError(out, "Analyze: input clip must be single precision fp, with constant dimensions.");
+		vsapi->freeNode(d.node);
+		return;
+	}
 	if (d.vi.format->colorFamily == cmGray)
 		d.chroma = 0;
 	if (d.vi.format->colorFamily == cmRGB)

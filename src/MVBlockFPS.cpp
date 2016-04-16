@@ -780,6 +780,17 @@ static void VS_CC mvblockfpsCreate(const VSMap *in, VSMap *out, void *userData, 
 		delete d.mvClipF;
 		return;
 	}
+	if (!isConstantFormat(&d.vi) || d.vi.format->bitsPerSample < 32 || d.vi.format->sampleType != stFloat) {
+		vsapi->setError(out, "BlockFPS: input clip must be single precision fp, with constant dimensions.");
+		vsapi->freeNode(d.super);
+		vsapi->freeNode(d.mvfw);
+		vsapi->freeNode(d.mvbw);
+		vsapi->freeNode(d.node);
+		delete d.bleh;
+		delete d.mvClipB;
+		delete d.mvClipF;
+		return;
+	}
 	d.nBlkXP = (d.bleh->nBlkX * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX < d.bleh->nWidth) ? d.bleh->nBlkX + 1 : d.bleh->nBlkX;
 	d.nBlkYP = (d.bleh->nBlkY * (d.bleh->nBlkSizeY - d.bleh->nOverlapY) + d.bleh->nOverlapY < d.bleh->nHeight) ? d.bleh->nBlkY + 1 : d.bleh->nBlkY;
 	d.nWidthP = d.nBlkXP * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX;

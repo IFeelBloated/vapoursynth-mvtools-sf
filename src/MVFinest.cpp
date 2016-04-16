@@ -120,6 +120,11 @@ static void VS_CC mvfinestCreate(const VSMap *in, VSMap *out, void *userData, VS
 	MVFinestData *data;
 	d.super = vsapi->propGetNode(in, "super", 0, 0);
 	d.vi = *vsapi->getVideoInfo(d.super);
+	if (!isConstantFormat(&d.vi) || d.vi.format->bitsPerSample < 32 || d.vi.format->sampleType != stFloat) {
+		vsapi->setError(out, "Finest: input clip must be single precision fp, with constant dimensions.");
+		vsapi->freeNode(d.super);
+		return;
+	}
 	char errorMsg[1024];
 	const VSFrameRef *evil = vsapi->getFrame(0, d.super, errorMsg, 1024);
 	if (!evil) {

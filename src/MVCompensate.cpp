@@ -480,6 +480,15 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 		delete d.bleh;
 		return;
 	}
+	if (!isConstantFormat(d.vi) || d.vi->format->bitsPerSample < 32 || d.vi->format->sampleType != stFloat) {
+		vsapi->setError(out, "Compensate: input clip must be single precision fp, with constant dimensions.");
+		vsapi->freeNode(d.super);
+		vsapi->freeNode(d.vectors);
+		vsapi->freeNode(d.node);
+		delete d.mvClip;
+		delete d.bleh;
+		return;
+	}
 	if (d.bleh->nOverlapX || d.bleh->nOverlapY) {
 		d.OverWins = new OverlapWindows(d.bleh->nBlkSizeX, d.bleh->nBlkSizeY, d.bleh->nOverlapX, d.bleh->nOverlapY);
 		if (d.nSuperModeYUV & UVPLANES)

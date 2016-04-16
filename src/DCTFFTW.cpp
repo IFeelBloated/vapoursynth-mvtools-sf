@@ -49,18 +49,17 @@ void DCTFFTW::Float2Bytes(uint8_t *dstp8, int32_t dst_pitch, double *realdata) {
 	int32_t floatpitch = sizex;
 	int32_t i, j;
 	double f = realdata[0] * 0.5;
-	double pixelHalf = 0.5;
-	dstp[0] = static_cast<PixelType>((f / pow(2, dctshift0)) + pixelHalf);
+	dstp[0] = static_cast<PixelType>(f / pow(2, dctshift0));
 	for (i = 1; i < sizex; i += 1) {
 		f = realdata[i] * 0.707;
-		dstp[i] = static_cast<PixelType>((f / pow(2, dctshift)) + pixelHalf);
+		dstp[i] = static_cast<PixelType>(f / pow(2, dctshift));
 	}
 	dstp += dst_pitch;
 	realdata += floatpitch;
 	for (j = 1; j < sizey; j++) {
 		for (i = 0; i < sizex; i += 1) {
 			f = realdata[i] * 0.707;
-			dstp[i] = static_cast<PixelType>((f / pow(2, dctshift)) + pixelHalf);
+			dstp[i] = static_cast<PixelType>(f / pow(2, dctshift));
 		}
 		dstp += dst_pitch;
 		realdata += floatpitch;

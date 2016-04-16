@@ -606,6 +606,20 @@ static void VS_CC mvflowblurCreate(const VSMap *in, VSMap *out, void *userData, 
 		delete d.mvClipF;
 		return;
 	}
+
+	if (!isConstantFormat(d.vi) || d.vi->format->bitsPerSample < 32 || d.vi->format->sampleType != stFloat) {
+		vsapi->setError(out, "FlowBlur: input clip must be single precision fp, with constant dimensions.");
+		vsapi->freeNode(d.super);
+		vsapi->freeNode(d.finest);
+		vsapi->freeNode(d.mvfw);
+		vsapi->freeNode(d.mvbw);
+		vsapi->freeNode(d.node);
+		delete d.bleh;
+		delete d.mvClipB;
+		delete d.mvClipF;
+		return;
+	}
+
 	d.nHeightUV = d.bleh->nHeight / d.bleh->yRatioUV;
 	d.nWidthUV = d.bleh->nWidth / d.bleh->xRatioUV;
 	d.nHPaddingUV = d.bleh->nHPadding / d.bleh->xRatioUV;

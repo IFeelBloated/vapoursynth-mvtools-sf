@@ -813,8 +813,8 @@ void PlaneOfBlocks::FetchPredictors()
 
 		// if there are no other planes, predictor is the median
 		if (smallestPlane) predictor = predictors[0];
-		nLambda = nLambda*LSAD / (LSAD + (predictor.sad >> 1))*LSAD / (LSAD + (predictor.sad >> 1));
-		//nLambda = nLambda*LSAD / (LSAD + (_back2flt(predictor.sad) / 2))*LSAD / (LSAD + (_back2flt(predictor.sad) / 2));
+		nLambda = nLambda *LSAD / (LSAD + (predictor.sad >> 1))
+			      * LSAD / (LSAD + (predictor.sad >> 1));
 }
 
 

@@ -141,6 +141,11 @@ static void VS_CC mvsuperCreate(const VSMap *in, VSMap *out, void *userData, VSC
 	d.vi = *vsapi->getVideoInfo(d.node);
 	d.nWidth = d.vi.width;
 	d.nHeight = d.vi.height;
+	if (!isConstantFormat(&d.vi) || d.vi.format->bitsPerSample < 32 || d.vi.format->sampleType != stFloat) {
+		vsapi->setError(out, "Super: input clip must be single precision fp, with constant dimensions.");
+		vsapi->freeNode(d.node);
+		return;
+	}
 	if (d.vi.format->colorFamily == cmGray)
 		d.chroma = 0;
 	if (d.vi.format->colorFamily == cmRGB)

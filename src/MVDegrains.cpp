@@ -1036,7 +1036,18 @@ static void VS_CC mvdegrainCreate(const VSMap *in, VSMap *out, void *userData, V
 		vsapi->setError(out, (filter + ": wrong source or super clip frame size.").c_str());
 		vsapi->freeNode(d.super);
 		vsapi->freeNode(d.node);
-		for (int32_t r = 0; r < radius * 2; r++) {
+		for (int r = 0; r < radius * 2; ++r) {
+			vsapi->freeNode(d.vectors[r]);
+			delete d.mvClips[r];
+		}
+		delete d.bleh;
+		return;
+	}
+	if (!isConstantFormat(d.vi) || d.vi->format->bitsPerSample < 32 || d.vi->format->sampleType != stFloat) {
+		vsapi->setError(out, (filter + ": input clip must be single precision fp, with constant dimensions.").c_str());
+		vsapi->freeNode(d.super);
+		vsapi->freeNode(d.node);
+		for (int r = 0; r < radius * 2; ++r) {
 			vsapi->freeNode(d.vectors[r]);
 			delete d.mvClips[r];
 		}
