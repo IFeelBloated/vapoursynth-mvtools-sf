@@ -119,7 +119,7 @@ static const VSFrameRef *VS_CC mvanalyzeGetFrame(int32_t n, int32_t activationRe
 			return nullptr;
 		}
 		if (d->tffexists)
-			srctff = d->tff && (n % 2 == 0);
+			srctff = !!(static_cast<int>(d->tff) ^ (n % 2));
 		for (int32_t plane = 0; plane < d->supervi->format->numPlanes; plane++) {
 			pSrc[plane] = vsapi->getReadPtr(src, plane);
 			nSrcPitch[plane] = vsapi->getStride(src, plane);
@@ -148,7 +148,7 @@ static const VSFrameRef *VS_CC mvanalyzeGetFrame(int32_t n, int32_t activationRe
 				return nullptr;
 			}
 			if (d->tffexists)
-				reftff = d->tff && (nref % 2 == 0);
+				reftff = !!(static_cast<int>(d->tff) ^ (nref % 2));
 			int32_t fieldShift = 0;
 			if (d->fields && d->analysisData.nPel > 1 && (d->analysisData.nDeltaFrame % 2))
 				fieldShift = (srctff && !reftff) ? d->analysisData.nPel / 2 : ((reftff && !srctff) ? -(d->analysisData.nPel / 2) : 0);
@@ -257,7 +257,7 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	d.tryMany = !!vsapi->propGetInt(in, "trymany", 0, &err);
 	d.fields = !!vsapi->propGetInt(in, "fields", 0, &err);
 	d.tff = !!vsapi->propGetInt(in, "tff", 0, &err);
-	d.tffexists = err;
+	d.tffexists = !err;
 	if (d.search < 0 || d.search > 7) {
 		vsapi->setError(out, "Analyze: search must be between 0 and 7 (inclusive).");
 		return;

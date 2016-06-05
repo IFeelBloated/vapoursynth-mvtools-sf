@@ -145,6 +145,8 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 					vsapi->freeFrame(ref);
 					return nullptr;
 				}
+				if (d->tffexists)
+					paritySrc = !!(static_cast<int>(d->tff) ^ (n % 2));
 				props = vsapi->getFramePropsRO(ref);
 				bool parityRef = !!vsapi->propGetInt(props, "_Field", 0, &err);
 				if (err && !d->tffexists) {
@@ -156,6 +158,8 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 					vsapi->freeFrame(ref);
 					return nullptr;
 				}
+				if (d->tffexists)
+					parityRef = !!(static_cast<int>(d->tff) ^ (nref % 2));
 				fieldShift = (paritySrc && !parityRef) ? nPel / 2 : ((parityRef && !paritySrc) ? -(nPel / 2) : 0);
 			}
 			if (nOverlapX == 0 && nOverlapY == 0) {
@@ -412,7 +416,7 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 	if (err)
 		d.nSCD2 = MV_DEFAULT_SCD2;
 	d.tff = !!vsapi->propGetInt(in, "tff", 0, &err);
-	d.tffexists = err;
+	d.tffexists = !err;
 	d.super = vsapi->propGetNode(in, "super", 0, nullptr);
 	char errorMsg[1024];
 	const VSFrameRef *evil = vsapi->getFrame(0, d.super, errorMsg, 1024);

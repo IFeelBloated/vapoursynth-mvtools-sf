@@ -12,6 +12,7 @@
 struct MVBlockFPSData {
 	VSNodeRef *node;
 	VSVideoInfo vi;
+	const VSVideoInfo *oldvi;
 	const VSVideoInfo *supervi;
 	VSNodeRef *super;
 	VSNodeRef *mvbw;
@@ -242,23 +243,23 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 		if (off > 1)
 			time256 = time256 / off;
 		if (time256 == 0) {
-			vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->vi.numFrames - 1) : nleft, d->node, frameCtx);
+			vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->oldvi->numFrames - 1) : nleft, d->node, frameCtx);
 			return 0;
 		}
 		else if (time256 == 256) {
-			vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nright, d->vi.numFrames - 1) : nright, d->node, frameCtx);
+			vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nright, d->oldvi->numFrames - 1) : nright, d->node, frameCtx);
 			return 0;
 		}
-		if ((nleft < d->vi.numFrames && nright < d->vi.numFrames) || !d->vi.numFrames) {
+		if ((nleft < d->oldvi->numFrames && nright < d->vi.numFrames) || !d->oldvi->numFrames) {
 			vsapi->requestFrameFilter(nright, d->mvfw, frameCtx);
 			vsapi->requestFrameFilter(nleft, d->mvbw, frameCtx);
 
 			vsapi->requestFrameFilter(nleft, d->super, frameCtx);
 			vsapi->requestFrameFilter(nright, d->super, frameCtx);
 		}
-		vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->vi.numFrames - 1) : nleft, d->node, frameCtx);
+		vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->oldvi->numFrames - 1) : nleft, d->node, frameCtx);
 		if (d->blend)
-			vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nright, d->vi.numFrames - 1) : nright, d->node, frameCtx);
+			vsapi->requestFrameFilter(d->vi.numFrames ? VSMIN(nright, d->oldvi->numFrames - 1) : nright, d->node, frameCtx);
 
 	}
 	else if (activationReason == arAllFramesReady) {
@@ -269,14 +270,14 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 			time256 = time256 / off;
 		int32_t nright = nleft + off;
 		if (time256 == 0)
-			return vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->vi.numFrames - 1) : nleft, d->node, frameCtx);
+			return vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->oldvi->numFrames - 1) : nleft, d->node, frameCtx);
 		else if (time256 == 256)
-			return vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nright, d->vi.numFrames - 1) : nright, d->node, frameCtx);
+			return vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nright, d->oldvi->numFrames - 1) : nright, d->node, frameCtx);
 		MVClipBalls ballsF(d->mvClipF, vsapi);
 		MVClipBalls ballsB(d->mvClipB, vsapi);
 		bool isUsableF = false;
 		bool isUsableB = false;
-		if ((nleft < d->vi.numFrames && nright < d->vi.numFrames) || !d->vi.numFrames) {
+		if ((nleft < d->oldvi->numFrames && nright < d->oldvi->numFrames) || !d->vi.numFrames) {
 			const VSFrameRef *mvF = vsapi->getFrameFilter(nright, d->mvfw, frameCtx);
 			ballsF.Update(mvF);
 			isUsableF = ballsF.IsUsable();
@@ -511,12 +512,12 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 			return dst;
 		}
 		else {
-			const VSFrameRef *src = vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->vi.numFrames - 1) : nleft, d->node, frameCtx);
+			const VSFrameRef *src = vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nleft, d->oldvi->numFrames - 1) : nleft, d->node, frameCtx);
 			if (blend) {
 				uint8_t *pDst[3];
 				const uint8_t *pRef[3], *pSrc[3];
 				int32_t nDstPitches[3], nRefPitches[3], nSrcPitches[3];
-				const VSFrameRef *ref = vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nright, d->vi.numFrames - 1) : nright, d->node, frameCtx);
+				const VSFrameRef *ref = vsapi->getFrameFilter(d->vi.numFrames ? VSMIN(nright, d->oldvi->numFrames - 1) : nright, d->node, frameCtx);
 				VSFrameRef *dst = vsapi->newVideoFrame(d->vi.format, d->vi.width, d->vi.height, src, core);
 				for (int32_t i = 0; i < d->vi.format->numPlanes; i++) {
 					pDst[i] = vsapi->getWritePtr(dst, i);
@@ -733,7 +734,8 @@ static void VS_CC mvblockfpsCreate(const VSMap *in, VSMap *out, void *userData, 
 		return;
 	}
 	d.node = vsapi->propGetNode(in, "clip", 0, 0);
-	d.vi = *vsapi->getVideoInfo(d.node);
+	d.oldvi = vsapi->getVideoInfo(d.node);
+	d.vi = *d.oldvi;
 	if (d.vi.fpsNum == 0 || d.vi.fpsDen == 0) {
 		vsapi->setError(out, "BlockFPS: The input clip must have a frame rate. Invoke AssumeFPS if necessary.");
 		vsapi->freeNode(d.super);
