@@ -16,6 +16,7 @@ struct MVCompensateData {
 	bool scBehavior;
 	double thSAD;
 	bool fields;
+	int32_t time256;
 	double nSCD1;
 	double nSCD2;
 	bool tff;
@@ -104,6 +105,7 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 		const int32_t nVPadding = d->bleh->nVPadding;
 		const int32_t scBehavior = d->scBehavior;
 		const int32_t fields = d->fields;
+		const int32_t time256 = d->time256;
 		int32_t nWidth_B = nBlkX*(nBlkSizeX - nOverlapX) + nOverlapX;
 		int32_t nHeight_B = nBlkY*(nBlkSizeY - nOverlapY) + nOverlapY;
 		int32_t ySubUV = (yRatioUV == 2) ? 1 : 0;
@@ -168,8 +170,8 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 					for (int32_t bx = 0; bx<nBlkX; ++bx) {
 						int32_t i = by*nBlkX + bx;
 						const FakeBlockData &block = balls.GetBlock(0, i);
-						blx = block.GetX() * nPel + block.GetMV().x;
-						bly = block.GetY() * nPel + block.GetMV().y + fieldShift;
+						blx = static_cast<int32_t>(block.GetX() * nPel + static_cast<int64_t>(block.GetMV().x) * time256 / 256);
+						bly = static_cast<int32_t>(block.GetY() * nPel + static_cast<int64_t>(block.GetMV().y) * time256 / 256 + fieldShift);
 						if (_back2flt(block.GetSAD()) < thSAD) {
 							d->BLITLUMA(pDstCur[0] + xx, nDstPitches[0], pPlanes[0]->GetPointer(blx, bly), pPlanes[0]->GetPitch());
 							if (pPlanes[1]) d->BLITCHROMA(pDstCur[1] + (xx >> xSubUV), nDstPitches[1], pPlanes[1]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[1]->GetPitch());
@@ -223,8 +225,8 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 							winOverUV = OverWinsUV->GetWindow(wby + wbx);
 						int32_t i = by*nBlkX + bx;
 						const FakeBlockData &block = balls.GetBlock(0, i);
-						blx = block.GetX() * nPel + block.GetMV().x;
-						bly = block.GetY() * nPel + block.GetMV().y + fieldShift;
+						blx = static_cast<int32_t>(block.GetX() * nPel + static_cast<int64_t>(block.GetMV().x) * time256 / 256);
+						bly = static_cast<int32_t>(block.GetY() * nPel + static_cast<int64_t>(block.GetMV().y) * time256 / 256 + fieldShift);
 						if (_back2flt(block.GetSAD()) < thSAD) {
 							d->OVERSLUMA(pDstTemp + xx * 2, dstTempPitch, pPlanes[0]->GetPointer(blx, bly), pPlanes[0]->GetPitch(), winOver, nBlkSizeX);
 							if (pPlanes[1]) d->OVERSCHROMA(pDstTempU + (xx >> xSubUV) * 2, dstTempPitchUV, pPlanes[1]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[1]->GetPitch(), winOverUV, nBlkSizeX >> xSubUV);
@@ -409,6 +411,9 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 	if (err)
 		d.thSAD = 10000.;
 	d.fields = !!vsapi->propGetInt(in, "fields", 0, &err);
+	double time = vsapi->propGetFloat(in, "time", 0, &err);
+	if (err)
+		time = 100.;
 	d.nSCD1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 	if (err)
 		d.nSCD1 = MV_DEFAULT_SCD1;
@@ -417,6 +422,10 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 		d.nSCD2 = MV_DEFAULT_SCD2;
 	d.tff = !!vsapi->propGetInt(in, "tff", 0, &err);
 	d.tffexists = !err;
+	if (time < 0. || time > 100.) {
+		vsapi->setError(out, "Compensate: time must be between 0.0 and 100.0 (inclusive).");
+		return;
+	}
 	d.super = vsapi->propGetNode(in, "super", 0, nullptr);
 	char errorMsg[1024];
 	const VSFrameRef *evil = vsapi->getFrame(0, d.super, errorMsg, 1024);
@@ -498,6 +507,7 @@ static void VS_CC mvcompensateCreate(const VSMap *in, VSMap *out, void *userData
 		if (d.nSuperModeYUV & UVPLANES)
 			d.OverWinsUV = new OverlapWindows(d.bleh->nBlkSizeX / d.bleh->xRatioUV, d.bleh->nBlkSizeY / d.bleh->yRatioUV, d.bleh->nOverlapX / d.bleh->xRatioUV, d.bleh->nOverlapY / d.bleh->yRatioUV);
 	}
+	d.time256 = static_cast<int32_t>(time * 256. / 100.);
 	selectFunctions(&d);
 	data = new MVCompensateData;
 	*data = d;
@@ -512,6 +522,7 @@ void mvcompensateRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"scbehavior:int:opt;"
 		"thsad:float:opt;"
 		"fields:int:opt;"
+		"time:float:opt;"
 		"thscd1:float:opt;"
 		"thscd2:float:opt;"
 		"tff:int:opt;"

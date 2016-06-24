@@ -39,12 +39,12 @@ def RestoreVect (store, log):
     vectors      = core.std.Trim (vectors, 1)
     return vectors
 
-def Compensate (clip, super, vectors, scbehavior=1, thsad=10000.0, fields=False, thscd1=400.0, thscd2=130.0, tff=None, tr=3, cclip=None):
+def Compensate (clip, super, vectors, scbehavior=1, thsad=10000.0, fields=False, time=100.0, thscd1=400.0, thscd2=130.0, tff=None, tr=3, cclip=None):
     core         = vs.get_core ()
     cclip        = clip if cclip is None else cclip
     def comp (delta):
         mv       = core.std.SelectEvery (vectors, 2*tr, delta)
-        mc       = core.mvsf.Compensate (clip, super, mv, scbehavior=scbehavior, thsad=thsad, fields=fields, thscd1=thscd1, thscd2=thscd2, tff=tff)
+        mc       = core.mvsf.Compensate (clip, super, mv, scbehavior=scbehavior, thsad=thsad, fields=fields, time=time, thscd1=thscd1, thscd2=thscd2, tff=tff)
         return mc
     bcomp        = [comp (i) for i in range (0, tr)]
     fcomp        = [comp (i) for i in range (tr, 2*tr)]
