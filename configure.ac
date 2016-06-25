@@ -1,4 +1,4 @@
-AC_INIT([MVToolsSF], [1], [https://github.com/IFeelBloated/vapoursynth-mvtools-sf], [MVToolsSF], [https://github.com/IFeelBloated/vapoursynth-mvtools-sf])
+AC_INIT([MVToolsSF], [3], [https://github.com/IFeelBloated/vapoursynth-mvtools-sf], [MVToolsSF], [https://github.com/IFeelBloated/vapoursynth-mvtools-sf])
 
 : ${CXXFLAGS=""}
 
