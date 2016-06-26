@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -O2 -std=c++11 -msse2 -mfpmath=sse $(STACKREALIGN) -Wall -Wextra -Wno-unused-parameter -Wshadow
+AM_CXXFLAGS = -O2 -std=c++14 -msse2 -mfpmath=sse $(STACKREALIGN) -Wall -Wextra -Wno-unused-parameter -Wshadow
 
 AM_CPPFLAGS = $(VapourSynth_CFLAGS) $(FFTW3_CFLAGS)
 
@@ -27,8 +27,7 @@ libmvtoolssf_la_SOURCES =	src/DCT.cpp \
 						src/MVSCDetection.cpp \
 						src/MVSuper.cpp \
 						src/Overlap.cpp \
-						src/PlaneOfBlocks.cpp \
-						src/SimpleResize.cpp
+						src/PlaneOfBlocks.cpp
 
 libmvtoolssf_la_LDFLAGS = -no-undefined -avoid-version $(PLUGINLDFLAGS)
 
