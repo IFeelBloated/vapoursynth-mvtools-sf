@@ -141,7 +141,7 @@ void PlaneOfBlocks::SearchMVs(MVFrame *_pSrcFrame, MVFrame *_pRefFrame,
 		dctmode = 0;
 	else
 		dctmode = DCT->dctmode;
-	dctweight16 = min(16, abs(*pmeanLumaChange) / (nBlkSizeX*nBlkSizeY)); //equal dct and spatial weights for meanLumaChange=8 (empirical)
+	dctweight16 = min(16, std::abs(*pmeanLumaChange) / (nBlkSizeX*nBlkSizeY)); //equal dct and spatial weights for meanLumaChange=8 (empirical)
 #endif
 	badSAD = _badSAD;
 	badrange = _badrange;
@@ -339,7 +339,7 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 		dctmode = 0;
 	else
 		dctmode = DCT->dctmode;
-	dctweight16 = 8.;//min(16,abs(*pmeanLumaChange)/(nBlkSizeX*nBlkSizeY)); //equal dct and spatial weights for meanLumaChange=8 (empirical)
+	dctweight16 = 8.;//min(16,std::abs(*pmeanLumaChange)/(nBlkSizeX*nBlkSizeY)); //equal dct and spatial weights for meanLumaChange=8 (empirical)
 #endif
 	zeroMVfieldShifted.x = 0;
 	zeroMVfieldShifted.y = fieldShift;
