@@ -52,6 +52,19 @@ def Compensate (clip, super, vectors, scbehavior=1, thsad=10000.0, fields=False,
     compmulti    = core.std.Interleave (compmulti)
     return compmulti
 
+def Flow (clip, super, vectors, time=100.0, mode=0, fields=False, thscd1=400.0, thscd2=130.0, tff=None, tr=3, cclip=None):
+    core         = vs.get_core ()
+    cclip        = clip if cclip is None else cclip
+    def flow (delta):
+        mv       = core.std.SelectEvery (vectors, 2*tr, delta)
+        mc       = core.mvsf.Flow (clip, super, mv, time=time, mode=mode, fields=fields, thscd1=thscd1, thscd2=thscd2, tff=tff)
+        return mc
+    bflow        = [flow (i) for i in range (0, tr)]
+    fflow        = [flow (i) for i in range (tr, 2*tr)]
+    flowmulti    = bflow + [cclip] + fflow
+    flowmulti    = core.std.Interleave (flowmulti)
+    return flowmulti
+
 def DegrainN (clip, super, mvmulti, tr=3, thsad=400.0, plane=4, limit=1.0, thscd1=400.0, thscd2=130.0):
     core         = vs.get_core ()
     def bvn (n):
