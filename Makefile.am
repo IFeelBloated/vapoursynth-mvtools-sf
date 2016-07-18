@@ -19,6 +19,7 @@ libmvtoolssf_la_SOURCES =	src/DCT.cpp \
 						src/MVDegrains.cpp \
 						src/MVFilter.cpp \
 						src/MVFinest.cpp \
+						src/MVFlow.cpp \
 						src/MVFlowBlur.cpp \
 						src/MVFlowFPS.cpp \
 						src/MVFlowInter.cpp \
