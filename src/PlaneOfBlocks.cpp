@@ -812,9 +812,10 @@ void PlaneOfBlocks::FetchPredictors()
 		}
 
 		// if there are no other planes, predictor is the median
-		if (smallestPlane) predictor = predictors[0];
-		nLambda = nLambda *LSAD / (LSAD + (predictor.sad >> 1))
-			      * LSAD / (LSAD + (predictor.sad >> 1));
+		if (smallestPlane) 
+			predictor = predictors[0];
+		auto coeff = LSAD / (LSAD + _back2flt(predictor.sad) / 2.);
+		nLambda *= coeff * coeff;
 }
 
 

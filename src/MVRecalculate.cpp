@@ -336,6 +336,7 @@ static void VS_CC mvrecalculateCreate(const VSMap *in, VSMap *out, void *userDat
 	d.analysisData.isBackward = pAnalyzeFilter->IsBackward();
 	vsapi->freeFrame(evil);
 	d.thSAD = d.thSAD / 255.;
+	d.nLambda /= 255.;
 	int32_t referenceBlockSize = 8 * 8;
 	d.thSAD = d.thSAD * (d.analysisData.nBlkSizeX * d.analysisData.nBlkSizeY) / referenceBlockSize;
 	if (d.chroma)

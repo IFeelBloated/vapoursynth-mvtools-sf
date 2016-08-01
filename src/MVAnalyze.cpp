@@ -347,6 +347,7 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 		d.chroma = 1;
 	d.nModeYUV = d.chroma ? YUVPLANES : YPLANE;
 	d.lsad = d.lsad / 255.;
+	d.nLambda /= 255.;
 	d.badSAD = d.badSAD / 255.;
 	d.lsad = d.lsad * (d.blksize * d.blksizev) / 64;
 	d.badSAD = d.badSAD * (d.blksize * d.blksizev) / 64;
