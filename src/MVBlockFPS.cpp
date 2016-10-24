@@ -726,7 +726,7 @@ static void selectFunctions(MVBlockFPSData *d) {
 	const int32_t yRatioUV = d->bleh->yRatioUV;
 	const int32_t nBlkSizeX = d->bleh->nBlkSizeX;
 	const int32_t nBlkSizeY = d->bleh->nBlkSizeY;
-	OverlapsFunction overs[33][33];
+	static OverlapsFunction overs[257][257];
 	overs[2][2] = Overlaps_C<2, 2, double, float>;
 	overs[2][4] = Overlaps_C<2, 4, double, float>;
 	overs[4][2] = Overlaps_C<4, 2, double, float>;
@@ -746,6 +746,18 @@ static void selectFunctions(MVBlockFPSData *d) {
 	overs[32][8] = Overlaps_C<32, 8, double, float>;
 	overs[32][16] = Overlaps_C<32, 16, double, float>;
 	overs[32][32] = Overlaps_C<32, 32, double, float>;
+	overs[32][64] = Overlaps_C<32, 64, double, float>;
+	overs[64][16] = Overlaps_C<64, 16, double, float>;
+	overs[64][32] = Overlaps_C<64, 32, double, float>;
+	overs[64][64] = Overlaps_C<64, 64, double, float>;
+	overs[64][128] = Overlaps_C<64, 128, double, float>;
+	overs[128][32] = Overlaps_C<128, 32, double, float>;
+	overs[128][64] = Overlaps_C<128, 64, double, float>;
+	overs[128][128] = Overlaps_C<128, 128, double, float>;
+	overs[128][256] = Overlaps_C<128, 256, double, float>;
+	overs[256][64] = Overlaps_C<256, 64, double, float>;
+	overs[256][128] = Overlaps_C<256, 128, double, float>;
+	overs[256][256] = Overlaps_C<256, 256, double, float>;
 	d->ToPixels = ToPixels<double, float>;
 	d->OVERSLUMA = overs[nBlkSizeX][nBlkSizeY];
 	d->OVERSCHROMA = overs[nBlkSizeX / xRatioUV][nBlkSizeY / yRatioUV];

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include "MVFrame.h"
-#include "SADFunctions.h"
+#include "SADFunctions.hpp"
 
 enum VectorOrder {
 	Backward1 = 0,

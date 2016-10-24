@@ -10,7 +10,7 @@
 #include "MVFrame.h"
 #include "Interpolation.h"
 #include "CopyCode.h"
-#include "SADFunctions.h"
+#include "SADFunctions.hpp"
 #include "CommonFunctions.h"
 #include "Variance.h"
 #include "DCT.h"

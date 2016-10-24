@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include "MaskFun.h"
-#include "SADFunctions.h"
+#include "SADFunctions.hpp"
 
 template <typename PixelType>
 void RealMerge4PlanesToBig(uint8_t *pel2Plane_u8, int32_t pel2Pitch, const uint8_t *pPlane0_u8, const uint8_t *pPlane1_u8,

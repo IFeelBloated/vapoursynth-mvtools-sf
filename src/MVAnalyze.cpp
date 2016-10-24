@@ -283,15 +283,22 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	}
 	d.analysisData.nBlkSizeX = d.blksize;
 	d.analysisData.nBlkSizeY = d.blksizev;
-	if ((d.analysisData.nBlkSizeX != 4 || d.analysisData.nBlkSizeY != 4) &&
+	if ((d.analysisData.nBlkSizeX != 2 || d.analysisData.nBlkSizeY != 2) &&
+		(d.analysisData.nBlkSizeX != 4 || d.analysisData.nBlkSizeY != 4) &&
 		(d.analysisData.nBlkSizeX != 8 || d.analysisData.nBlkSizeY != 4) &&
 		(d.analysisData.nBlkSizeX != 8 || d.analysisData.nBlkSizeY != 8) &&
 		(d.analysisData.nBlkSizeX != 16 || d.analysisData.nBlkSizeY != 2) &&
 		(d.analysisData.nBlkSizeX != 16 || d.analysisData.nBlkSizeY != 8) &&
 		(d.analysisData.nBlkSizeX != 16 || d.analysisData.nBlkSizeY != 16) &&
 		(d.analysisData.nBlkSizeX != 32 || d.analysisData.nBlkSizeY != 32) &&
-		(d.analysisData.nBlkSizeX != 32 || d.analysisData.nBlkSizeY != 16)) {
-		vsapi->setError(out, "Analyze: the block size must be 4x4, 8x4, 8x8, 16x2, 16x8, 16x16, 32x16, or 32x32.");
+		(d.analysisData.nBlkSizeX != 32 || d.analysisData.nBlkSizeY != 16) &&
+		(d.analysisData.nBlkSizeX != 64 || d.analysisData.nBlkSizeY != 32) &&
+		(d.analysisData.nBlkSizeX != 64 || d.analysisData.nBlkSizeY != 64) &&
+		(d.analysisData.nBlkSizeX != 128 || d.analysisData.nBlkSizeY != 64) &&
+		(d.analysisData.nBlkSizeX != 128 || d.analysisData.nBlkSizeY != 128) &&
+		(d.analysisData.nBlkSizeX != 256 || d.analysisData.nBlkSizeY != 128) &&
+		(d.analysisData.nBlkSizeX != 256 || d.analysisData.nBlkSizeY != 256)) {
+		vsapi->setError(out, "Analyze: the block size must be 2x2, 4x4, 8x4, 8x8, 16x2, 16x8, 16x16, 32x16, 32x32, 64x32, 64x64, 128x64, 128x128, 256x128, or 256x256.");
 		return;
 	}
 	d.analysisData.nDeltaFrame = d.delta;
