@@ -209,7 +209,7 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 			vsapi->requestFrameFilter(VSMIN(nright, d->oldvi->numFrames - 1), d->node, frameCtx);
 			return 0;
 		}
-		if ((nleft < d->oldvi->numFrames && nright < d->oldvi->numFrames) || !d->oldvi->numFrames) {
+		if (nleft < d->oldvi->numFrames && nright < d->oldvi->numFrames) {
 			vsapi->requestFrameFilter(nright, d->mvfw, frameCtx);
 			vsapi->requestFrameFilter(nleft, d->mvbw, frameCtx);
 
