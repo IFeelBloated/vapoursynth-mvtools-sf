@@ -5,11 +5,12 @@
 #define ALIGN_SOURCEBLOCK 16
 #define ALLOW_DCT
 #include <cstdlib>
+#include <cmath>
 #include "MVClip.h"
 #include "MVFrame.h"
 #include "Interpolation.h"
 #include "CopyCode.h"
-#include "SADFunctions.h"
+#include "SADFunctions.hpp"
 #include "CommonFunctions.h"
 #include "Variance.h"
 #include "DCT.h"
@@ -147,7 +148,7 @@ class PlaneOfBlocks {
 			{
 				float *dctSrc16 = (float *)dctSrc;
 				float *dctRef16 = (float *)dctRef;
-				sad = (SAD(dctSrc, dctpitch, dctRef, dctpitch) + abs(dctSrc16[0] - dctRef16[0]) * 3) * nBlkSizeX / 2;
+				sad = (SAD(dctSrc, dctpitch, dctRef, dctpitch) + std::abs(dctSrc16[0] - dctRef16[0]) * 3) * nBlkSizeX / 2;
 			}
 			break;
 		case 2:
@@ -158,7 +159,7 @@ class PlaneOfBlocks {
 				{
 					float *dctSrc16 = (float *)dctSrc;
 					float *dctRef16 = (float *)dctRef;
-					dctsad = (SAD(dctSrc, dctpitch, dctRef, dctpitch) + abs(dctSrc16[0] - dctRef16[0]) * 3)*nBlkSizeX / 2;
+					dctsad = (SAD(dctSrc, dctpitch, dctRef, dctpitch) + std::abs(dctSrc16[0] - dctRef16[0]) * 3)*nBlkSizeX / 2;
 				}
 				sad = (sad*(16 - dctweight16) + dctsad*dctweight16) / 16;
 			}
@@ -166,7 +167,7 @@ class PlaneOfBlocks {
 		case 3:
 			refLuma = LUMA(pRef0, nRefPitch[0]);
 			sad = SAD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
-			if (abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
+			if (std::abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
 				DCT->DCTBytes2D(pRef0, nRefPitch[0], dctRef, dctpitch);
 				double dctsad = SAD(dctSrc, dctpitch, dctRef, dctpitch)*nBlkSizeX / 2;
 				sad = sad / 2 + dctsad / 2;
@@ -175,7 +176,7 @@ class PlaneOfBlocks {
 		case 4:
 			refLuma = LUMA(pRef0, nRefPitch[0]);
 			sad = SAD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
-			if (abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
+			if (std::abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
 				DCT->DCTBytes2D(pRef0, nRefPitch[0], dctRef, dctpitch);
 				double dctsad = SAD(dctSrc, dctpitch, dctRef, dctpitch)*nBlkSizeX / 2;
 				sad = sad / 4 + dctsad / 2 + dctsad / 4;
@@ -194,7 +195,7 @@ class PlaneOfBlocks {
 		case 7:
 			refLuma = LUMA(pRef0, nRefPitch[0]);
 			sad = SAD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
-			if (abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
+			if (std::abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
 				double dctsad = SATD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
 				sad = sad / 2 + dctsad / 2;
 			}
@@ -202,7 +203,7 @@ class PlaneOfBlocks {
 		case 8:
 			refLuma = LUMA(pRef0, nRefPitch[0]);
 			sad = SAD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
-			if (abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
+			if (std::abs(srcLuma - refLuma) > (srcLuma + refLuma) / 32) {
 				double dctsad = SATD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
 				sad = sad / 4 + dctsad / 2 + dctsad / 4;
 			}
@@ -218,7 +219,7 @@ class PlaneOfBlocks {
 		case 10:
 			refLuma = LUMA(pRef0, nRefPitch[0]);
 			sad = SAD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
-			if (abs(srcLuma - refLuma) > (srcLuma + refLuma) / 16) {
+			if (std::abs(srcLuma - refLuma) > (srcLuma + refLuma) / 16) {
 				double dctsad = SATD(pSrc[0], nSrcPitch[0], pRef0, nRefPitch[0]);
 				sad = sad / 2 + dctsad / 4 + sad / 4;
 			}

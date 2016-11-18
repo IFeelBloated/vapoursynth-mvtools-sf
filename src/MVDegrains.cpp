@@ -552,7 +552,7 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 	return nullptr;
 }
 
-template <int32_t radius>
+template <int radius>
 static void VS_CC mvdegrainFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
 	MVDegrainData *d = reinterpret_cast<MVDegrainData *>(instanceData);
 	if (d->nOverlapX[0] || d->nOverlapY[0]) {
@@ -570,14 +570,14 @@ static void VS_CC mvdegrainFree(void *instanceData, VSCore *core, const VSAPI *v
 	delete d;
 }
 
-template <int32_t radius>
+template <int radius>
 static void selectFunctions(MVDegrainData *d) {
 	const int32_t xRatioUV = d->bleh->xRatioUV;
 	const int32_t yRatioUV = d->bleh->yRatioUV;
 	const int32_t nBlkSizeX = d->bleh->nBlkSizeX;
 	const int32_t nBlkSizeY = d->bleh->nBlkSizeY;
-	OverlapsFunction overs[33][33];
-	DenoiseFunction degs[33][33];
+	static OverlapsFunction overs[257][257];
+	static DenoiseFunction degs[257][257];
 	overs[2][2] = Overlaps_C<2, 2, double, float>;
 	degs[2][2] = Degrain_C<radius, 2, 2, float>;
 	overs[2][4] = Overlaps_C<2, 4, double, float>;
@@ -616,6 +616,30 @@ static void selectFunctions(MVDegrainData *d) {
 	degs[32][16] = Degrain_C<radius, 32, 16, float>;
 	overs[32][32] = Overlaps_C<32, 32, double, float>;
 	degs[32][32] = Degrain_C<radius, 32, 32, float>;
+	overs[32][64] = Overlaps_C<32, 64, double, float>;
+	degs[32][64] = Degrain_C<radius, 32, 64, float>;
+	overs[64][16] = Overlaps_C<64, 16, double, float>;
+	degs[64][16] = Degrain_C<radius, 64, 16, float>;
+	overs[64][32] = Overlaps_C<64, 32, double, float>;
+	degs[64][32] = Degrain_C<radius, 64, 32, float>;
+	overs[64][64] = Overlaps_C<64, 64, double, float>;
+	degs[64][64] = Degrain_C<radius, 64, 64, float>;
+	overs[64][128] = Overlaps_C<64, 128, double, float>;
+	degs[64][128] = Degrain_C<radius, 64, 128, float>;
+	overs[128][32] = Overlaps_C<128, 32, double, float>;
+	degs[128][32] = Degrain_C<radius, 128, 32, float>;
+	overs[128][64] = Overlaps_C<128, 64, double, float>;
+	degs[128][64] = Degrain_C<radius, 128, 64, float>;
+	overs[128][128] = Overlaps_C<128, 128, double, float>;
+	degs[128][128] = Degrain_C<radius, 128, 128, float>;
+	overs[128][256] = Overlaps_C<128, 256, double, float>;
+	degs[128][256] = Degrain_C<radius, 128, 256, float>;
+	overs[256][64] = Overlaps_C<256, 64, double, float>;
+	degs[256][64] = Degrain_C<radius, 256, 64, float>;
+	overs[256][128] = Overlaps_C<256, 128, double, float>;
+	degs[256][128] = Degrain_C<radius, 256, 128, float>;
+	overs[256][256] = Overlaps_C<256, 256, double, float>;
+	degs[256][256] = Degrain_C<radius, 256, 256, float>;
 	d->LimitChanges = LimitChanges_C<float>;
 	d->ToPixels = ToPixels<double, float>;
 	d->OVERS[0] = overs[nBlkSizeX][nBlkSizeY];

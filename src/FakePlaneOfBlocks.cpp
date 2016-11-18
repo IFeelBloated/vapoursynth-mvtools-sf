@@ -1,5 +1,5 @@
 #include "FakePlaneOfBlocks.h"
-#include "SADFunctions.h"
+#include "SADFunctions.hpp"
 #include "CommonFunctions.h"
 
 FakePlaneOfBlocks::FakePlaneOfBlocks(int32_t sizeX, int32_t sizeY, int32_t lv, int32_t pel, int32_t _nOverlapX, int32_t _nOverlapY, int32_t _nBlkX, int32_t _nBlkY) {
