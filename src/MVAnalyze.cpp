@@ -273,8 +273,11 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 	if (d.dctmode >= 5 && !((d.blksize == 4 && d.blksizev == 4) ||
 		(d.blksize == 8 && d.blksizev == 8) ||
 		(d.blksize == 16 && d.blksizev == 16) ||
-		(d.blksize == 32 && d.blksizev == 32))) {
-		vsapi->setError(out, "Analyze: dct 5..10 can only work with 4x4, 8x8, 16x16, and 32x32 blocks.");
+		(d.blksize == 32 && d.blksizev == 32) ||
+		(d.blksize == 64 && d.blksizev == 64) ||
+		(d.blksize == 128 && d.blksizev == 128) ||
+		(d.blksize == 256 && d.blksizev == 256))) {
+		vsapi->setError(out, "Analyze: dct 5..10 can only work with square blocks.");
 		return;
 	}
 	if (d.divideExtra < 0 || d.divideExtra > 2) {

@@ -6,15 +6,15 @@
 struct dual_double final {
 	double msb = 0.;
 	double lsb = 0.;
-	auto lsb2msb()->dual_double & {
+	auto &lsb2msb() {
 		msb = lsb;
 		return *this;
 	}
-	auto msb2lsb()->dual_double & {
+	auto &msb2lsb() {
 		lsb = msb;
 		return *this;
 	}
-	auto abs()->dual_double & {
+	auto &abs() {
 		msb = std::abs(msb);
 		lsb = std::abs(lsb);
 		return *this;
@@ -24,25 +24,29 @@ struct dual_double final {
 		lsb = val;
 	}
 	dual_double(const dual_double &) = default;
+	dual_double(dual_double &&) = default;
 	auto operator=(const dual_double &)->dual_double & = default;
+	auto operator=(dual_double &&)->dual_double & = default;
 	~dual_double() = default;
 	auto operator+=(const dual_double &val) {
 		msb += val.msb;
 		lsb += val.lsb;
 	}
+	auto operator-=(const dual_double &val) {
+		msb -= val.msb;
+		lsb -= val.lsb;
+	}
 };
 
-static auto operator+(const dual_double &a, const dual_double &b) {
+static inline auto operator+(const dual_double &a, const dual_double &b) {
 	auto tmp = a;
-	tmp.msb += b.msb;
-	tmp.lsb += b.lsb;
+	tmp += b;
 	return tmp;
 }
 
-static auto operator-(const dual_double &a, const dual_double &b) {
+static inline auto operator-(const dual_double &a, const dual_double &b) {
 	auto tmp = a;
-	tmp.msb -= b.msb;
-	tmp.lsb -= b.lsb;
+	tmp -= b;
 	return tmp;
 }
 

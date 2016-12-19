@@ -30,10 +30,10 @@ MVClipDicks::MVClipDicks(VSNodeRef *vectors, double _nSCD1, double _nSCD2, const
 	nBlkX = pAnalyzeFilter->GetBlkX();
 	nBlkY = pAnalyzeFilter->GetBlkY();
 	nBlkCount = nBlkX * nBlkY;
-	auto maxSAD = 256. * 256. * 255.;
+	constexpr auto maxSAD = 256. * 256. * 255.;
 	if (_nSCD1 > maxSAD)
 		throw MVException(std::string("thscd1 can be at most ").append(std::to_string(maxSAD)).append("."));
-	auto referenceBlockSize = 8 * 8;
+	constexpr auto referenceBlockSize = 8 * 8;
 	nSCD1 = _nSCD1 * (nBlkSizeX * nBlkSizeY) / referenceBlockSize;
 	if (pAnalyzeFilter->IsChromaMotion())
 		nSCD1 += nSCD1 / (xRatioUV * yRatioUV) * 2;
