@@ -1,8 +1,8 @@
 #include "VapourSynth.h"
 #include "VSHelper.h"
 #include "CommonFunctions.h"
-#include "MaskFun.h"
-#include "MVFilter.h"
+#include "MaskFun.hpp"
+#include "MVFilter.hpp"
 #include "SimpleResize.hpp"
 
 typedef auto (*FlowFunction)(uint8_t *, int32_t, const uint8_t *, int32_t, int32_t *, int32_t, int32_t *, int32_t, int32_t, int32_t, int32_t, int32_t)->void;

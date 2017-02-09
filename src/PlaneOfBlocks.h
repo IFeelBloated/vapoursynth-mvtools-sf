@@ -3,17 +3,16 @@
 #define MAX_PREDICTOR 20
 #define ALIGN_PLANES 64
 #define ALIGN_SOURCEBLOCK 16
-#define ALLOW_DCT
 #include <cstdlib>
 #include <cmath>
 #include "MVClip.h"
 #include "MVFrame.h"
 #include "Interpolation.h"
-#include "CopyCode.h"
+#include "CopyCode.hpp"
 #include "SADFunctions.hpp"
 #include "CommonFunctions.h"
-#include "Variance.h"
-#include "DCT.h"
+#include "Variance.hpp"
+#include "DCT.hpp"
 
 class PlaneOfBlocks {
 	int32_t nBlkX;

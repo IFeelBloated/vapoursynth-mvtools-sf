@@ -1,5 +1,4 @@
-#ifndef __SAD_FUNC__
-#define __SAD_FUNC__
+#pragma once
 #include <cstdint>
 #include <cmath>
 
@@ -20,8 +19,8 @@ struct dual_double final {
 		return *this;
 	}
 	dual_double() = default;
-	dual_double(double val) {
-		lsb = val;
+	constexpr dual_double(long double val) {
+		lsb = static_cast<decltype(lsb)>(val);
 	}
 	dual_double(const dual_double &) = default;
 	dual_double(dual_double &&) = default;
@@ -37,6 +36,10 @@ struct dual_double final {
 		lsb -= val.lsb;
 	}
 };
+
+constexpr auto operator""_dual(long double val) {
+	return dual_double{ val };
+}
 
 static inline auto operator+(const dual_double &a, const dual_double &b) {
 	auto tmp = a;
@@ -58,7 +61,7 @@ static inline auto _back2flt(int32_t a) {
 	return reinterpret_cast<float &>(a);
 }
 
-typedef auto(*SADFunction)(const uint8_t *pSrc, intptr_t nSrcPitch,
+typedef auto (*SADFunction)(const uint8_t *pSrc, intptr_t nSrcPitch,
 	const uint8_t *pRef, intptr_t nRefPitch)->double;
 
 template<int nBlkWidth, int nBlkHeight, typename PixelType>
@@ -91,8 +94,8 @@ auto Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
 template <typename PixelType>
 auto Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
 	intptr_t nRefPitch) {
-	dual_double tmp[4][2];
-	dual_double a0, a1, a2, a3, b0, b1;
+	decltype(0._dual) tmp[4][2];
+	auto a0 = 0._dual, a1 = 0._dual, a2 = 0._dual, a3 = 0._dual, b0 = 0._dual, b1 = 0._dual;
 	auto sum = 0.;
 	for (auto i = 0; i < 4; ++i) {
 		auto pSrc = reinterpret_cast<const PixelType *>(pSrc8);
@@ -119,9 +122,9 @@ auto Satd_4x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
 template <typename PixelType>
 auto Satd_8x4_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
 	intptr_t nRefPitch) {
-	dual_double tmp[4][4];
-	dual_double a0, a1, a2, a3;
-	dual_double sum;
+	decltype(0._dual) tmp[4][4];
+	auto a0 = 0._dual, a1 = 0._dual, a2 = 0._dual, a3 = 0._dual;
+	auto sum = 0._dual;
 	for (auto i = 0; i < 4; ++i) {
 		auto pSrc = reinterpret_cast<const PixelType *>(pSrc8);
 		auto pRef = reinterpret_cast<const PixelType *>(pRef8);
@@ -167,5 +170,3 @@ auto Satd_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
 		return sum;
 	}
 }
-
-#endif

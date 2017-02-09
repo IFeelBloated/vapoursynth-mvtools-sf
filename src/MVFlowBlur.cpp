@@ -4,8 +4,8 @@
 #include <cstring>
 #include "VapourSynth.h"
 #include "VSHelper.h"
-#include "MaskFun.h"
-#include "MVFilter.h"
+#include "MaskFun.hpp"
+#include "MVFilter.hpp"
 #include "SimpleResize.hpp"
 
 struct MVFlowBlurData {

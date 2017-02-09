@@ -4,7 +4,7 @@
 #include <string>
 #include "VapourSynth.h"
 #include "VSHelper.h"
-#include "DCTFFTW.h"
+#include "DCTFFTW.hpp"
 #include "GroupOfPlanes.h"
 #include "MVInterface.h"
 

@@ -9,14 +9,15 @@
 #define MOTION_USE_CHROMA_MOTION    0x00000008
 #define MOTION_USE_SSD              0x00000010
 #define MOTION_USE_SATD             0x00000020
-#define MV_DEFAULT_SCD1             400.f
-#define MV_DEFAULT_SCD2             130.f
 #define MVANALYSIS_DATA_VERSION 5
 #include <cstdint>
 #include <cstdio>
 #include <stdexcept>
 #include <string>
 #include "VapourSynth.h"
+
+constexpr auto MV_DEFAULT_SCD1 = 400.;
+constexpr auto MV_DEFAULT_SCD2 = 130.;
 
 struct VECTOR {
 	int32_t x;

@@ -1,7 +1,7 @@
 #include "VapourSynth.h"
 #include "VSHelper.h"
 #include "MVClip.h"
-#include "MVFilter.h"
+#include "MVFilter.hpp"
 
 struct MVSCDetectionData {
 	VSNodeRef *node;

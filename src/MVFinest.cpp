@@ -1,6 +1,6 @@
 #include "VapourSynth.h"
 #include "VSHelper.h"
-#include "MaskFun.h"
+#include "MaskFun.hpp"
 
 struct MVFinestData {
 	VSNodeRef *super;

@@ -4,10 +4,10 @@
 #include "Overlap.h"
 #include "VapourSynth.h"
 #include "VSHelper.h"
-#include "CopyCode.h"
+#include "CopyCode.hpp"
 #include "CommonFunctions.h"
-#include "MaskFun.h"
-#include "MVFilter.h"
+#include "MaskFun.hpp"
+#include "MVFilter.hpp"
 #include "SimpleResize.hpp"
 
 struct MVBlockFPSData {

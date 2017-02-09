@@ -176,13 +176,11 @@ void PlaneOfBlocks::SearchMVs(MVFrame *_pSrcFrame, MVFrame *_pRefFrame,
 	int32_t divideExtra, int32_t _pzero, int32_t _pglobal, double _badSAD, int32_t _badrange, bool meander, int32_t *vecPrev, bool _tryMany)
 {
 	DCT = _DCT;
-#ifdef ALLOW_DCT
 	if (DCT == 0)
 		dctmode = 0;
 	else
 		dctmode = DCT->dctmode;
 	dctweight16 = min(16, std::abs(*pmeanLumaChange) / (nBlkSizeX*nBlkSizeY)); //equal dct and spatial weights for meanLumaChange=8 (empirical)
-#endif
 	badSAD = _badSAD;
 	badrange = _badrange;
 	zeroMVfieldShifted.x = 0;
@@ -374,13 +372,11 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 	int32_t *outfilebuf, int32_t fieldShift, double thSAD, DCTClass *_DCT, int32_t divideExtra, int32_t smooth, bool meander)
 {
 	DCT = _DCT;
-#ifdef ALLOW_DCT
 	if (DCT == 0)
 		dctmode = 0;
 	else
 		dctmode = DCT->dctmode;
 	dctweight16 = 8.;//min(16,std::abs(*pmeanLumaChange)/(nBlkSizeX*nBlkSizeY)); //equal dct and spatial weights for meanLumaChange=8 (empirical)
-#endif
 	zeroMVfieldShifted.x = 0;
 	zeroMVfieldShifted.y = fieldShift;
 	globalMVPredictor.x = 0;//nPel*globalMVec->x;// there is no global
@@ -568,7 +564,6 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 			bestMV.sad = predictor.sad;
 
 			// update SAD
-#ifdef ALLOW_DCT
 			if (dctmode != 0) // DCT method (luma only - currently use normal spatial SAD chroma)
 			{
 				// make dct of source block
@@ -577,7 +572,6 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 			}
 			if (dctmode >= 3) // most use it and it should be fast anyway //if (dctmode == 3 || dctmode == 4) // check it
 				srcLuma = LUMA(pSrc[0], nSrcPitch[0]);
-#endif
 
 			double saduv = (chroma) ? SADCHROMA(pSrc[1], nSrcPitch[1], GetRefBlockU(predictor.x, predictor.y), nRefPitch[1])
 				+ SADCHROMA(pSrc[2], nSrcPitch[2], GetRefBlockV(predictor.x, predictor.y), nRefPitch[2]) : 0.f;
@@ -917,7 +911,7 @@ void PlaneOfBlocks::PseudoEPZSearch()
 
 	double sad;
 	double saduv;
-#ifdef ALLOW_DCT
+
 	if (dctmode != 0) // DCT method (luma only - currently use normal spatial SAD chroma)
 	{
 		// make dct of source block
@@ -926,7 +920,7 @@ void PlaneOfBlocks::PseudoEPZSearch()
 	}
 	if (dctmode >= 3) // most use it and it should be fast anyway //if (dctmode == 3 || dctmode == 4) // check it
 		srcLuma = LUMA(pSrc[0], nSrcPitch[0]);
-#endif
+
 
 	// We treat zero alone
 	// Do we bias zero with not taking into account distorsion ?

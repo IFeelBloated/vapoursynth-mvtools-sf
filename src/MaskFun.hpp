@@ -1,26 +1,28 @@
+#pragma once
+#include <cstdint>
 #include <cstring>
 #include <cmath>
 #include <algorithm>
-#include <cstdint>
-#include "MaskFun.h"
+#include "MVClip.h"
+#include "MVFrame.h"
 #include "SADFunctions.hpp"
 
 template <typename PixelType>
-void RealMerge4PlanesToBig(uint8_t *pel2Plane_u8, int32_t pel2Pitch, const uint8_t *pPlane0_u8, const uint8_t *pPlane1_u8,
+static auto RealMerge4PlanesToBig(uint8_t *pel2Plane_u8, int32_t pel2Pitch, const uint8_t *pPlane0_u8, const uint8_t *pPlane1_u8,
 	const uint8_t *pPlane2_u8, const uint8_t * pPlane3_u8, int32_t width, int32_t height, int32_t pitch) {
 	for (auto h = 0; h<height; ++h) {
 		for (auto w = 0; w<width; ++w) {
-			PixelType *pel2Plane = (PixelType *)pel2Plane_u8;
-			const PixelType *pPlane0 = (const PixelType *)pPlane0_u8;
-			const PixelType *pPlane1 = (const PixelType *)pPlane1_u8;
+			auto pel2Plane = reinterpret_cast<PixelType *>(pel2Plane_u8);
+			auto pPlane0 = reinterpret_cast<const PixelType *>(pPlane0_u8);
+			auto pPlane1 = reinterpret_cast<const PixelType *>(pPlane1_u8);
 			pel2Plane[w << 1] = pPlane0[w];
 			pel2Plane[(w << 1) + 1] = pPlane1[w];
 		}
 		pel2Plane_u8 += pel2Pitch;
 		for (auto w = 0; w<width; ++w) {
-			PixelType *pel2Plane = (PixelType *)pel2Plane_u8;
-			const PixelType *pPlane2 = (const PixelType *)pPlane2_u8;
-			const PixelType *pPlane3 = (const PixelType *)pPlane3_u8;
+			auto pel2Plane = reinterpret_cast<PixelType *>(pel2Plane_u8);
+			auto pPlane2 = reinterpret_cast<const PixelType *>(pPlane2_u8);
+			auto pPlane3 = reinterpret_cast<const PixelType *>(pPlane3_u8);
 			pel2Plane[w << 1] = pPlane2[w];
 			pel2Plane[(w << 1) + 1] = pPlane3[w];
 		}
@@ -32,12 +34,12 @@ void RealMerge4PlanesToBig(uint8_t *pel2Plane_u8, int32_t pel2Pitch, const uint8
 	}
 }
 
-void Merge4PlanesToBig(uint8_t *pel2Plane, int32_t pel2Pitch, const uint8_t *pPlane0, const uint8_t *pPlane1, const uint8_t *pPlane2, const uint8_t *pPlane3, int32_t width, int32_t height, int32_t pitch) {
+static auto Merge4PlanesToBig(uint8_t *pel2Plane, int32_t pel2Pitch, const uint8_t *pPlane0, const uint8_t *pPlane1, const uint8_t *pPlane2, const uint8_t *pPlane3, int32_t width, int32_t height, int32_t pitch) {
 	RealMerge4PlanesToBig<float>(pel2Plane, pel2Pitch, pPlane0, pPlane1, pPlane2, pPlane3, width, height, pitch);
 }
 
 template <typename PixelType>
-void RealMerge16PlanesToBig(uint8_t *pel4Plane_u8, int32_t pel4Pitch,
+static void RealMerge16PlanesToBig(uint8_t *pel4Plane_u8, int32_t pel4Pitch,
 	const uint8_t *pPlane0_u8, const uint8_t *pPlane1_u8, const uint8_t *pPlane2_u8, const uint8_t * pPlane3_u8,
 	const uint8_t *pPlane4_u8, const uint8_t *pPlane5_u8, const uint8_t *pPlane6_u8, const uint8_t * pPlane7_u8,
 	const uint8_t *pPlane8_u8, const uint8_t *pPlane9_u8, const uint8_t *pPlane10_u8, const uint8_t * pPlane11_u8,
@@ -111,7 +113,7 @@ void RealMerge16PlanesToBig(uint8_t *pel4Plane_u8, int32_t pel4Pitch,
 	}
 }
 
-void Merge16PlanesToBig(uint8_t *pel4Plane, int32_t pel4Pitch,
+static void Merge16PlanesToBig(uint8_t *pel4Plane, int32_t pel4Pitch,
 	const uint8_t *pPlane0, const uint8_t *pPlane1, const uint8_t *pPlane2, const uint8_t * pPlane3,
 	const uint8_t *pPlane4, const uint8_t *pPlane5, const uint8_t *pPlane6, const uint8_t * pPlane7,
 	const uint8_t *pPlane8, const uint8_t *pPlane9, const uint8_t *pPlane10, const uint8_t * pPlane11,
@@ -120,7 +122,7 @@ void Merge16PlanesToBig(uint8_t *pel4Plane, int32_t pel4Pitch,
 	RealMerge16PlanesToBig<float>(pel4Plane, pel4Pitch, pPlane0, pPlane1, pPlane2, pPlane3, pPlane4, pPlane5, pPlane6, pPlane7, pPlane8, pPlane9, pPlane10, pPlane11, pPlane12, pPlane13, pPlane14, pPlane15, width, height, pitch);
 }
 
-void MakeVectorSmallMasks(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, int32_t *VXSmallY, int32_t pitchVXSmallY, int32_t *VYSmallY, int32_t pitchVYSmallY) {
+static void MakeVectorSmallMasks(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, int32_t *VXSmallY, int32_t pitchVXSmallY, int32_t *VYSmallY, int32_t pitchVYSmallY) {
 	for (auto by = 0; by < nBlkY; ++by)
 		for (auto bx = 0; bx < nBlkX; ++bx) {
 			auto i = bx + by * nBlkX;
@@ -132,7 +134,7 @@ void MakeVectorSmallMasks(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, int
 		}
 }
 
-void VectorSmallMaskYToHalfUV(int32_t *VSmallY, int32_t nBlkX, int32_t nBlkY, int32_t *VSmallUV, int32_t ratioUV) {
+static void VectorSmallMaskYToHalfUV(int32_t *VSmallY, int32_t nBlkX, int32_t nBlkY, int32_t *VSmallUV, int32_t ratioUV) {
 	if (ratioUV == 2) {
 		for (auto by = 0; by < nBlkY; ++by) {
 			for (auto bx = 0; bx < nBlkX; ++bx)
@@ -152,10 +154,9 @@ void VectorSmallMaskYToHalfUV(int32_t *VSmallY, int32_t nBlkX, int32_t nBlkY, in
 }
 
 template <typename PixelType>
-void RealBlend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int32_t height, int32_t width, int32_t dst_pitch, int32_t src_pitch, int32_t ref_pitch, int32_t time256) {
-	int32_t h, w;
-	for (h = 0; h<height; ++h) {
-		for (w = 0; w<width; ++w) {
+static void RealBlend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int32_t height, int32_t width, int32_t dst_pitch, int32_t src_pitch, int32_t ref_pitch, int32_t time256) {
+	for (auto h = 0; h<height; ++h) {
+		for (auto w = 0; w<width; ++w) {
 			const PixelType *psrc_ = (const PixelType *)psrc;
 			const PixelType *pref_ = (const PixelType *)pref;
 			PixelType *pdst_ = (PixelType *)pdst;
@@ -167,18 +168,18 @@ void RealBlend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int32
 	}
 }
 
-void Blend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int32_t height, int32_t width, int32_t dst_pitch, int32_t src_pitch, int32_t ref_pitch, int32_t time256) {
+static void Blend(uint8_t * pdst, const uint8_t * psrc, const uint8_t * pref, int32_t height, int32_t width, int32_t dst_pitch, int32_t src_pitch, int32_t ref_pitch, int32_t time256) {
 	RealBlend<float>(pdst, psrc, pref, height, width, dst_pitch, src_pitch, ref_pitch, time256);
 }
 
-inline void ByteOccMask(double *occMask, int32_t occlusion, double occnorm, double fGamma) {
+static inline void ByteOccMask(double *occMask, int32_t occlusion, double occnorm, double fGamma) {
 	if (fGamma == 1.0)
 		*occMask = std::max(*occMask, std::min((255. * occlusion * occnorm), 255.));
 	else
 		*occMask = std::max(*occMask, std::min((255. * pow(occlusion * occnorm, fGamma)), 255.));
 }
 
-void MakeVectorOcclusionMaskTime(MVClipBalls *mvClip, bool isb, int32_t nBlkX, int32_t nBlkY, double dMaskNormDivider, double fGamma, int32_t nPel, double *occMask, int32_t occMaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
+static void MakeVectorOcclusionMaskTime(MVClipBalls *mvClip, bool isb, int32_t nBlkX, int32_t nBlkY, double dMaskNormDivider, double fGamma, int32_t nPel, double *occMask, int32_t occMaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
 	for (auto i = 0; i < occMaskPitch * nBlkY; ++i)
 		occMask[i] = 0.;
 	int time4096X = time256 * 16 / (nBlkStepX * nPel);
@@ -224,7 +225,7 @@ static double ByteNorm(double sad, double dSADNormFactor, double fGamma) {
 	return (l > 255.) ? 255. : l;
 }
 
-void MakeSADMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, double dSADNormFactor, double fGamma, int32_t nPel, double *Mask, int32_t MaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
+static void MakeSADMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, double dSADNormFactor, double fGamma, int32_t nPel, double *Mask, int32_t MaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
 	for (auto i = 0; i < nBlkY * MaskPitch; ++i)
 		Mask[i] = 0.;
 	int32_t time4096X = (256 - time256) * 16 / (nBlkStepX * nPel);
@@ -248,14 +249,14 @@ void MakeSADMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, double d
 	}
 }
 
-inline float Median3r(float a, float b, float c) {
+static inline float Median3r(float a, float b, float c) {
 	if (b <= a) return a;
 	else  if (c <= b) return c;
 	else return b;
 }
 
 template <typename PixelType>
-void RealFlowInterExtra(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8, const uint8_t *prefF8, int32_t ref_pitch,
+static void RealFlowInterExtra(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8, const uint8_t *prefF8, int32_t ref_pitch,
 	int32_t *VXFullB, int32_t *VXFullF, int32_t *VYFullB, int32_t *VYFullF, double *MaskB, double *MaskF,
 	int32_t VPitch, int32_t width, int32_t height, int32_t time256, int32_t nPel,
 	int32_t *VXFullBB, int32_t *VXFullFF, int32_t *VYFullBB, int32_t *VYFullFF) {
@@ -279,7 +280,7 @@ void RealFlowInterExtra(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8
 				auto vyB = (VYFullB[w] * (256 - time256)) >> 8;
 				int32_t adrB = vyB*ref_pitch + vxB + w;
 				float dstB = prefB[adrB];
-				auto vxBB = (VXFullBB[w] * (256 - time256)) >> 8; 
+				auto vxBB = (VXFullBB[w] * (256 - time256)) >> 8;
 				auto vyBB = (VYFullBB[w] * (256 - time256)) >> 8;
 				int32_t adrBB = vyBB*ref_pitch + vxBB + w;
 				float dstBB = prefB[adrBB];
@@ -326,7 +327,7 @@ void RealFlowInterExtra(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8
 				auto vyB = (VYFullB[w] * (256 - time256)) >> 8;
 				int32_t adrB = vyB*ref_pitch + vxB + (w << 1);
 				float dstB = prefB[adrB];
-				auto vxBB = (VXFullBB[w] * (256 - time256)) >> 8; 
+				auto vxBB = (VXFullBB[w] * (256 - time256)) >> 8;
 				auto vyBB = (VYFullBB[w] * (256 - time256)) >> 8;
 				int32_t adrBB = vyBB*ref_pitch + vxBB + (w << 1);
 				float dstBB = prefB[adrBB];
@@ -370,7 +371,7 @@ void RealFlowInterExtra(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8
 				auto vxB = (VXFullB[w] * (256 - time256)) >> 8;
 				auto vyB = (VYFullB[w] * (256 - time256)) >> 8;
 				float dstB = prefB[vyB*ref_pitch + vxB + (w << 2)];
-				auto vxBB = (VXFullBB[w] * (256 - time256)) >> 8; 
+				auto vxBB = (VXFullBB[w] * (256 - time256)) >> 8;
 				auto vyBB = (VYFullBB[w] * (256 - time256)) >> 8;
 				float dstBB = prefB[vyBB*ref_pitch + vxBB + (w << 2)];
 				float minfb;
@@ -403,7 +404,7 @@ void RealFlowInterExtra(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8
 	}
 }
 
-void FlowInterExtra(uint8_t * pdst, int32_t dst_pitch, const uint8_t *prefB, const uint8_t *prefF, int32_t ref_pitch,
+static void FlowInterExtra(uint8_t * pdst, int32_t dst_pitch, const uint8_t *prefB, const uint8_t *prefF, int32_t ref_pitch,
 	int32_t *VXFullB, int32_t *VXFullF, int32_t *VYFullB, int32_t *VYFullF, double *MaskB, double *MaskF,
 	int32_t VPitch, int32_t width, int32_t height, int32_t time256, int32_t nPel,
 	int32_t *VXFullBB, int32_t *VXFullFF, int32_t *VYFullBB, int32_t *VYFullFF) {
@@ -411,7 +412,7 @@ void FlowInterExtra(uint8_t * pdst, int32_t dst_pitch, const uint8_t *prefB, con
 }
 
 template <typename PixelType>
-void RealFlowInter(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8, const uint8_t *prefF8, int32_t ref_pitch,
+static void RealFlowInter(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8, const uint8_t *prefF8, int32_t ref_pitch,
 	int32_t *VXFullB, int32_t *VXFullF, int32_t *VYFullB, int32_t *VYFullF, double *MaskB, double *MaskF,
 	int32_t VPitch, int32_t width, int32_t height, int32_t time256, int32_t nPel) {
 	const PixelType *prefB = reinterpret_cast<const PixelType *>(prefB8);
@@ -496,14 +497,14 @@ void RealFlowInter(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8, con
 	}
 }
 
-void FlowInter(uint8_t *pdst, int32_t dst_pitch, const uint8_t *prefB, const uint8_t *prefF, int32_t ref_pitch,
+static void FlowInter(uint8_t *pdst, int32_t dst_pitch, const uint8_t *prefB, const uint8_t *prefF, int32_t ref_pitch,
 	int32_t *VXFullB, int32_t *VXFullF, int32_t *VYFullB, int32_t *VYFullF, double *MaskB, double *MaskF,
 	int32_t VPitch, int32_t width, int32_t height, int32_t time256, int32_t nPel) {
 	RealFlowInter<float>(pdst, dst_pitch, prefB, prefF, ref_pitch, VXFullB, VXFullF, VYFullB, VYFullF, MaskB, MaskF, VPitch, width, height, time256, nPel);
 }
 
 template <typename PixelType>
-void RealFlowInterSimple(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8, const uint8_t *prefF8, int32_t ref_pitch,
+static void RealFlowInterSimple(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB8, const uint8_t *prefF8, int32_t ref_pitch,
 	int32_t *VXFullB, int32_t *VXFullF, int32_t *VYFullB, int32_t *VYFullF, double *MaskB, double *MaskF,
 	int32_t VPitch, int32_t width, int32_t height, int32_t time256, int32_t nPel) {
 	const PixelType *prefB = reinterpret_cast<const PixelType *>(prefB8);
@@ -663,8 +664,9 @@ void RealFlowInterSimple(uint8_t *pdst8, int32_t dst_pitch, const uint8_t *prefB
 	}
 }
 
-void FlowInterSimple(uint8_t *pdst, int32_t dst_pitch, const uint8_t *prefB, const uint8_t *prefF, int32_t ref_pitch,
+static void FlowInterSimple(uint8_t *pdst, int32_t dst_pitch, const uint8_t *prefB, const uint8_t *prefF, int32_t ref_pitch,
 	int32_t *VXFullB, int32_t *VXFullF, int32_t *VYFullB, int32_t *VYFullF, double *MaskB, double *MaskF,
 	int32_t VPitch, int32_t width, int32_t height, int32_t time256, int32_t nPel) {
 	RealFlowInterSimple<float>(pdst, dst_pitch, prefB, prefF, ref_pitch, VXFullB, VXFullF, VYFullB, VYFullF, MaskB, MaskF, VPitch, width, height, time256, nPel);
 }
+
