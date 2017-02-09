@@ -52,7 +52,9 @@ struct MVMaskData final {
 		fGamma = vsapi->propGetFloat(in, "gamma", 0, &err);
 		if (err)
 			fGamma = 1.;
-		kind = vsapi->propGetInt(in, "kind", 0, nullptr);
+		kind = vsapi->propGetInt(in, "kind", 0, &err);
+		if (err)
+			kind = 0;
 		auto time = vsapi->propGetFloat(in, "time", 0, &err);
 		if (err)
 			time = 100.;
@@ -62,7 +64,9 @@ struct MVMaskData final {
 			return;
 		}
 		time256 = static_cast<decltype(time256)>(time * 256. / 100.);
-		//nSceneChangeValue = static_cast<decltype(nSceneChangeValue)>(vsapi->propGetFloat(in, "ysc", 0, nullptr));
+		nSceneChangeValue = static_cast<decltype(nSceneChangeValue)>(vsapi->propGetFloat(in, "ysc", 0, &err));
+		if (err)
+			nSceneChangeValue = 0.f;
 		thscd1 = vsapi->propGetFloat(in, "thscd1", 0, &err);
 		if (err)
 			thscd1 = MV_DEFAULT_SCD1;
@@ -126,7 +130,7 @@ static auto VS_CC mvmaskInit(VSMap *in, VSMap *out, void **instanceData, VSNode 
 	vsapi->setVideoInfo(d->vi, 1, node);
 }
 
-static const VSFrameRef *VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
+static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi)->const VSFrameRef * {
 	auto d = reinterpret_cast<MVMaskData *>(*instanceData);
 	if (activationReason == arInitial) {
 		vsapi->requestFrameFilter(n, d->vectors, frameCtx);
@@ -183,7 +187,7 @@ static const VSFrameRef *VS_CC mvmaskGetFrame(int n, int activationReason, void 
 			};
 			switch (kind) {
 			case 0:
-				for (int i = 0; i < nBlkCount; ++i)
+				for (auto i = 0; i < nBlkCount; ++i)
 					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>(mvmaskLength(balls.GetBlock(0, i).GetMV()));
 				break;
 			case 1:
