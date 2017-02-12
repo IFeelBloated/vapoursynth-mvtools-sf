@@ -4,26 +4,24 @@ AM_CPPFLAGS = $(VapourSynth_CFLAGS) $(FFTW3_CFLAGS)
 
 lib_LTLIBRARIES = libmvtoolssf.la
 
-libmvtoolssf_la_SOURCES =	src/DCT.cpp \
-						src/DCTFFTW.cpp \
+libmvtoolssf_la_SOURCES =	 \
 						src/EntryPoint.cpp \
 						src/FakeBlockData.cpp \
 						src/FakeGroupOfPlanes.cpp \
 						src/FakePlaneOfBlocks.cpp \
 						src/GroupOfPlanes.cpp \
-						src/MaskFun.cpp \
 						src/MVAnalyze.cpp \
 						src/MVBlockFPS.cpp \
 						src/MVClip.cpp \
 						src/MVCompensate.cpp \
 						src/MVDegrains.cpp \
-						src/MVFilter.cpp \
 						src/MVFinest.cpp \
 						src/MVFlow.cpp \
 						src/MVFlowBlur.cpp \
 						src/MVFlowFPS.cpp \
 						src/MVFlowInter.cpp \
 						src/MVFrame.cpp \
+						src/MVMask.cpp \
 						src/MVRecalculate.cpp \
 						src/MVSCDetection.cpp \
 						src/MVSuper.cpp \
