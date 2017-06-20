@@ -73,7 +73,7 @@ public:
 		auto StreamCursor = reinterpret_cast<const VectorStructure *>(VectorStream);
 		for (auto i = 0; i < nBlkCount; ++i) {
 			blocks[i].Update(StreamCursor);
-			StreamCursor += 1;
+			++StreamCursor;
 		}
 	}
 	auto IsSceneChange(double nTh1, double nTh2) const {
