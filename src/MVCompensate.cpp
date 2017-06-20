@@ -172,7 +172,7 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 						const FakeBlockData &block = balls.GetBlock(0, i);
 						blx = static_cast<int32_t>(block.GetX() * nPel + static_cast<int64_t>(block.GetMV().x) * time256 / 256);
 						bly = static_cast<int32_t>(block.GetY() * nPel + static_cast<int64_t>(block.GetMV().y) * time256 / 256 + fieldShift);
-						if (_back2flt(block.GetSAD()) < thSAD) {
+						if (block.GetSAD() < thSAD) {
 							d->BLITLUMA(pDstCur[0] + xx, nDstPitches[0], pPlanes[0]->GetPointer(blx, bly), pPlanes[0]->GetPitch());
 							if (pPlanes[1]) d->BLITCHROMA(pDstCur[1] + (xx >> xSubUV), nDstPitches[1], pPlanes[1]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[1]->GetPitch());
 							if (pPlanes[2]) d->BLITCHROMA(pDstCur[2] + (xx >> xSubUV), nDstPitches[2], pPlanes[2]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[2]->GetPitch());
@@ -227,7 +227,7 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 						const FakeBlockData &block = balls.GetBlock(0, i);
 						blx = static_cast<int32_t>(block.GetX() * nPel + static_cast<int64_t>(block.GetMV().x) * time256 / 256);
 						bly = static_cast<int32_t>(block.GetY() * nPel + static_cast<int64_t>(block.GetMV().y) * time256 / 256 + fieldShift);
-						if (_back2flt(block.GetSAD()) < thSAD) {
+						if (block.GetSAD() < thSAD) {
 							d->OVERSLUMA(pDstTemp + xx * 2, dstTempPitch, pPlanes[0]->GetPointer(blx, bly), pPlanes[0]->GetPitch(), winOver, nBlkSizeX);
 							if (pPlanes[1]) d->OVERSCHROMA(pDstTempU + (xx >> xSubUV) * 2, dstTempPitchUV, pPlanes[1]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[1]->GetPitch(), winOverUV, nBlkSizeX >> xSubUV);
 							if (pPlanes[2]) d->OVERSCHROMA(pDstTempV + (xx >> xSubUV) * 2, dstTempPitchUV, pPlanes[2]->GetPointer(blx >> xSubUV, bly >> ySubUV), pPlanes[2]->GetPitch(), winOverUV, nBlkSizeX >> xSubUV);

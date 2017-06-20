@@ -243,7 +243,7 @@ static void MakeSADMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, d
 				byi = by;
 			}
 			int32_t i1 = bxi + byi * nBlkX;
-			double sad = _back2flt(mvClip->GetBlock(0, i1).GetSAD()) * 255.;
+			double sad = mvClip->GetBlock(0, i1).GetSAD() * 255.;
 			Mask[bx + by * MaskPitch] = ByteNorm(sad, dSADNormFactor, fGamma);
 		}
 	}

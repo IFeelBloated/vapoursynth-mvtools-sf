@@ -1,6 +1,6 @@
 #ifndef MVTOOLS_FAKEGROUPOFPLANES_H
 #define MVTOOLS_FAKEGROUPOFPLANES_H
-#include "FakePlaneOfBlocks.h"
+#include "FakePlaneOfBlocks.hpp"
 
 class FakeGroupOfPlanes {
 	int32_t nLvCount_;

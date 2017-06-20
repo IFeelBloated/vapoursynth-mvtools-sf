@@ -6,34 +6,35 @@
 #include "MaskFun.hpp"
 #include "MVFilter.hpp"
 #include "SimpleResize.hpp"
+#include "Cosmetics.hpp"
 
 struct MVMaskData final {
-	const VSAPI *vsapi = nullptr;
-	VSNodeRef *node = nullptr;
-	const VSVideoInfo *vi = nullptr;
-	VSNodeRef *vectors = nullptr;
-	MVFilter *bleh = nullptr;
-	MVClipDicks *mvClip = nullptr;
-	SimpleResize<float> *upsizer = nullptr;
-	SimpleResize<float> *upsizerUV = nullptr;
-	bool IsGray = false;
-	bool Illformed = false;
-	double ml = 0.;
-	double fGamma = 0.;
-	int64_t kind = 0;
-	int time256 = 0;
-	float nSceneChangeValue = 0.f;
-	double thscd1 = 0.;
-	double thscd2 = 0.;
-	double fMaskNormFactor = 0.;
-	double fMaskNormFactor2 = 0.;
-	double fHalfGamma = 0.;
-	int nWidthUV = 0;
-	int nHeightUV = 0;
-	int nWidthB = 0;
-	int nHeightB = 0;
-	int nWidthBUV = 0;
-	int nHeightBUV = 0;
+	self(vsapi, static_cast<const VSAPI *>(nullptr));
+	self(node, static_cast<VSNodeRef *>(nullptr));
+	self(vi, static_cast<const VSVideoInfo *>(nullptr));
+	self(vectors, static_cast<VSNodeRef *>(nullptr));
+	self(bleh, static_cast<MVFilter *>(nullptr));
+	self(mvClip, static_cast<MVClipDicks *>(nullptr));
+	self(upsizer, static_cast<SimpleResize<float> *>(nullptr));
+	self(upsizerUV, static_cast<SimpleResize<float> *>(nullptr));
+	self(IsGray, false);
+	self(Illformed, false);
+	self(ml, 0.);
+	self(fGamma, 0.);
+	self(kind, 0_i64);
+	self(time256, 0);
+	self(nSceneChangeValue, 0.f);
+	self(thscd1, 0.);
+	self(thscd2, 0.);
+	self(fMaskNormFactor, 0.);
+	self(fMaskNormFactor2, 0.);
+	self(fHalfGamma, 0.);
+	self(nWidthUV, 0);
+	self(nHeightUV, 0);
+	self(nWidthB, 0);
+	self(nHeightB, 0);
+	self(nWidthBUV, 0);
+	self(nHeightBUV, 0);
 	MVMaskData(const VSMap *in, VSMap *out, const VSAPI *api) {
 		vsapi = api;
 		node = vsapi->propGetNode(in, "clip", 0, nullptr);
@@ -130,7 +131,7 @@ static auto VS_CC mvmaskInit(VSMap *in, VSMap *out, void **instanceData, VSNode 
 	vsapi->setVideoInfo(d->vi, 1, node);
 }
 
-static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi)->const VSFrameRef * {
+static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
 	auto d = reinterpret_cast<MVMaskData *>(*instanceData);
 	if (activationReason == arInitial) {
 		vsapi->requestFrameFilter(n, d->vectors, frameCtx);
@@ -280,9 +281,9 @@ static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceDat
 			SceneChangeValueToChroma();
 		}
 		vsapi->freeFrame(src);
-		return dst;
+		return CastToConstantPointer(dst);
 	}
-	return nullptr;
+	return static_cast<const VSFrameRef *>(nullptr);
 }
 
 static auto VS_CC mvmaskFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {

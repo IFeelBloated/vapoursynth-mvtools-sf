@@ -46,7 +46,7 @@ void GroupOfPlanes::SearchMVs(MVGroupOfFrames *pSrcGOF, MVGroupOfFrames *pRefGOF
 	out += 2;
 	if (vecPrev) vecPrev += 2;
 	int32_t fieldShiftCur = (nLevelCount - 1 == 0) ? fieldShift : 0;
-	VECTOR globalMV;
+	VectorStructure globalMV;
 	globalMV.x = zeroMV.x;
 	globalMV.y = zeroMV.y;
 	globalMV.sad = zeroMV.sad;

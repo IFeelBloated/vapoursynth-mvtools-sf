@@ -96,9 +96,10 @@ static const VSFrameRef *VS_CC mvsuperGetFrame(int32_t n, int32_t activationReas
 	return nullptr;
 }
 
-static void VS_CC mvsuperFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
-	MVSuperData *d = reinterpret_cast<MVSuperData *>(instanceData);
+static auto VS_CC mvsuperFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
+	auto d = reinterpret_cast<MVSuperData *>(instanceData);
 	vsapi->freeNode(d->node);
+	vsapi->freeNode(d->pelclip);
 	delete d;
 }
 

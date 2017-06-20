@@ -37,7 +37,7 @@ class PlaneOfBlocks {
 	COPYFunction BLITCHROMA;
 	SADFunction SADCHROMA;
 	SADFunction SATD;
-	VECTOR *vectors;
+	VectorStructure *vectors;
 	bool smallestPlane;
 	bool chroma;
 	MVFrame *pSrcFrame;
@@ -45,11 +45,11 @@ class PlaneOfBlocks {
 	int32_t nSrcPitch[3];
 	const uint8_t* pSrc[3];
 	int32_t nRefPitch[3];
-	VECTOR bestMV;
+	VectorStructure bestMV;
 	int32_t nBestSad;
 	double nMinCost;
-	VECTOR predictor;
-	VECTOR predictors[MAX_PREDICTOR];
+	VectorStructure predictor;
+	VectorStructure predictors[MAX_PREDICTOR];
 	int32_t nDxMin;
 	int32_t nDyMin;
 	int32_t nDxMax;
@@ -74,8 +74,8 @@ class PlaneOfBlocks {
 	bool temporal;
 	bool tryMany;
 	int32_t iter;
-	VECTOR globalMVPredictor;
-	VECTOR zeroMVfieldShifted;
+	VectorStructure globalMVPredictor;
+	VectorStructure zeroMVfieldShifted;
 	DCTClass * DCT;
 	uint8_t * dctSrc;
 	uint8_t * dctRef;
@@ -245,7 +245,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
+			bestMV.sad = StoreAsInteger(static_cast<float>(sad + saduv));
 		}
 	}
 	inline void CheckMV(int32_t vx, int32_t vy) {
@@ -262,7 +262,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
+			bestMV.sad = StoreAsInteger(static_cast<float>(sad + saduv));
 		}
 	}
 	inline void CheckMV2(int32_t vx, int32_t vy, int32_t *dir, int32_t val) {
@@ -279,7 +279,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
+			bestMV.sad = StoreAsInteger(static_cast<float>(sad + saduv));
 			*dir = val;
 		}
 	}
@@ -295,7 +295,7 @@ class PlaneOfBlocks {
 			cost += saduv + ((penaltyNew*saduv) / 256);
 			if (cost >= nMinCost) return;
 			nMinCost = cost;
-			bestMV.sad = _fakeint(static_cast<float>(sad + saduv));
+			bestMV.sad = StoreAsInteger(static_cast<float>(sad + saduv));
 			*dir = val;
 		}
 	}
@@ -309,8 +309,8 @@ class PlaneOfBlocks {
 		else if (vy >= nDyMax) return nDyMax - 1;
 		else return vy;
 	}
-	inline VECTOR ClipMV(VECTOR v) {
-		VECTOR v2;
+	inline VectorStructure ClipMV(VectorStructure v) {
+		VectorStructure v2;
 		v2.x = ClipMVx(v.x);
 		v2.y = ClipMVy(v.y);
 		v2.sad = v.sad;
@@ -334,10 +334,10 @@ class PlaneOfBlocks {
 			(vx < nDxMax) &&
 			(vy < nDyMax));
 	}
-	static inline uint32_t SquareDifferenceNorm(const VECTOR& v1, const VECTOR& v2) {
+	static inline uint32_t SquareDifferenceNorm(const VectorStructure& v1, const VectorStructure& v2) {
 		return (v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y);
 	}
-	static inline uint32_t SquareDifferenceNorm(const VECTOR& v1, const int32_t v2x, const int32_t v2y) {
+	static inline uint32_t SquareDifferenceNorm(const VectorStructure& v1, const int32_t v2x, const int32_t v2y) {
 		return (v1.x - v2x) * (v1.x - v2x) + (v1.y - v2y) * (v1.y - v2y);
 	}
 	inline bool IsInFrame(int32_t i) {
@@ -357,14 +357,14 @@ public:
 	void CrossSearch(int32_t start, int32_t x_max, int32_t y_max, int32_t mvx, int32_t mvy);
 	void UMHSearch(int32_t i_me_range, int32_t omx, int32_t omy);
 	void SearchMVs(MVFrame *_pSrcFrame, MVFrame *_pRefFrame, SearchType st,
-		int32_t stp, double _lambda, double _lSAD, int32_t _pennew, int32_t _plevel, int32_t *out, VECTOR *globalMVec, int32_t * outfilebuf, int32_t _fieldShiftCur,
+		int32_t stp, double _lambda, double _lSAD, int32_t _pennew, int32_t _plevel, int32_t *out, VectorStructure *globalMVec, int32_t * outfilebuf, int32_t _fieldShiftCur,
 		DCTClass * _DCT, double *_meanLumaChange, int32_t _divideExtra,
 		int32_t _pzero, int32_t _pglobal, double badSAD, int32_t badrange, bool meander, int32_t *vecPrev, bool tryMany);
 	void InterpolatePrediction(const PlaneOfBlocks &pob);
 	void WriteHeaderToArray(int32_t *array);
 	int32_t WriteDefaultToArray(int32_t *array, int32_t divideExtra);
 	int32_t GetArraySize(int32_t divideExtra);
-	void EstimateGlobalMVDoubled(VECTOR *globalMVDoubled);
+	void EstimateGlobalMVDoubled(VectorStructure *globalMVDoubled);
 	inline int32_t GetnBlkX() { return nBlkX; }
 	inline int32_t GetnBlkY() { return nBlkY; }
 	void RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MVFrame *_pRefFrame, SearchType st,

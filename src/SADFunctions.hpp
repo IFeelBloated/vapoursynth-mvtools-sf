@@ -1,10 +1,32 @@
 #pragma once
 #include <cstdint>
 #include <cmath>
+#include "Cosmetics.hpp"
+
+using SADFunction = auto(*)(const uint8_t *, intptr_t, const uint8_t *, intptr_t)->double;
+
+#define HADAMARD4(d0, d1, d2, d3, s0, s1, s2, s3) { \
+	auto t0 = s0 + s1;                              \
+	auto t1 = s0 - s1;                              \
+	auto t2 = s2 + s3;                              \
+	auto t3 = s2 - s3;                              \
+	d0 = t0 + t2;                                   \
+	d2 = t0 - t2;                                   \
+	d1 = t1 + t3;                                   \
+	d3 = t1 - t3;                                   \
+}
+
+static auto StoreAsInteger = [](auto value) {
+	return reinterpret_cast<std::int32_t &>(value);
+};
+
+static auto CastBackToFloat = [](auto value) {
+	return reinterpret_cast<float &>(value);
+};
 
 struct dual_double final {
-	double msb = 0.;
-	double lsb = 0.;
+	self(msb, 0.);
+	self(lsb, 0.);
 	auto &lsb2msb() {
 		msb = lsb;
 		return *this;
@@ -24,16 +46,18 @@ struct dual_double final {
 	}
 	dual_double(const dual_double &) = default;
 	dual_double(dual_double &&) = default;
-	auto operator=(const dual_double &)->dual_double & = default;
-	auto operator=(dual_double &&)->dual_double & = default;
+	auto operator=(const dual_double &)->decltype(*this) = default;
+	auto operator=(dual_double &&)->decltype(*this) = default;
 	~dual_double() = default;
-	auto operator+=(const dual_double &val) {
+	auto &operator+=(const dual_double &val) {
 		msb += val.msb;
 		lsb += val.lsb;
+		return *this;
 	}
-	auto operator-=(const dual_double &val) {
+	auto &operator-=(const dual_double &val) {
 		msb -= val.msb;
 		lsb -= val.lsb;
+		return *this;
 	}
 };
 
@@ -53,17 +77,6 @@ static inline auto operator-(const dual_double &a, const dual_double &b) {
 	return tmp;
 }
 
-static inline auto _fakeint(float a) {
-	return reinterpret_cast<int32_t &>(a);
-}
-
-static inline auto _back2flt(int32_t a) {
-	return reinterpret_cast<float &>(a);
-}
-
-typedef auto (*SADFunction)(const uint8_t *pSrc, intptr_t nSrcPitch,
-	const uint8_t *pRef, intptr_t nRefPitch)->double;
-
 template<int nBlkWidth, int nBlkHeight, typename PixelType>
 auto Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
 	intptr_t nRefPitch) {
@@ -78,17 +91,6 @@ auto Sad_C(const uint8_t *pSrc8, intptr_t nSrcPitch, const uint8_t *pRef8,
 		pRef8 += nRefPitch;
 	}
 	return sum;
-}
-
-#define HADAMARD4(d0, d1, d2, d3, s0, s1, s2, s3) { \
-	auto t0 = s0 + s1;                              \
-	auto t1 = s0 - s1;                              \
-	auto t2 = s2 + s3;                              \
-	auto t3 = s2 - s3;                              \
-	d0 = t0 + t2;                                   \
-	d2 = t0 - t2;                                   \
-	d1 = t1 + t3;                                   \
-	d3 = t1 - t3;                                   \
 }
 
 template <typename PixelType>

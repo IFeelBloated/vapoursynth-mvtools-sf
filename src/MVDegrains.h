@@ -106,7 +106,7 @@ inline void useBlock(const uint8_t * &p, int32_t &np, double &WRef, bool isUsabl
 		int32_t bly = (block.GetY() << nLogPel) + block.GetMV().y;
 		p = pPlane->GetPointer(plane ? blx >> xSubUV : blx, plane ? bly >> ySubUV : bly);
 		np = pPlane->GetPitch();
-		double blockSAD = _back2flt(block.GetSAD());
+		double blockSAD = block.GetSAD();
 		WRef = DegrainWeight(thSAD[plane], blockSAD);
 	}
 	else {

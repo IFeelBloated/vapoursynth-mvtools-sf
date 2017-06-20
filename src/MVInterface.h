@@ -19,13 +19,13 @@
 constexpr auto MV_DEFAULT_SCD1 = 400.;
 constexpr auto MV_DEFAULT_SCD2 = 130.;
 
-struct VECTOR {
+struct VectorStructure {
 	int32_t x;
 	int32_t y;
 	int32_t sad;
 };
 
-inline void CopyVector(VECTOR *destVector, const VECTOR *srcVector) {
+inline void CopyVector(VectorStructure *destVector, const VectorStructure *srcVector) {
 	destVector->x = srcVector->x;
 	destVector->y = srcVector->y;
 	destVector->sad = srcVector->sad;
@@ -42,7 +42,7 @@ enum SearchType {
 	VSEARCH = 128
 };
 
-static const VECTOR zeroMV = { 0, 0, -1 };
+static const VectorStructure zeroMV = { 0, 0, -1 };
 
 class MVAnalysisData {
 public:

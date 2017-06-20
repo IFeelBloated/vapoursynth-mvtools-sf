@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-typedef auto (*LUMAFunction)(const uint8_t *, intptr_t)->double;
+using LUMAFunction = auto(*)(const uint8_t *, intptr_t)->double;
 
 template<int nBlkWidth, int nBlkHeight, typename PixelType>
 auto Luma_C(const uint8_t *pSrc8, intptr_t nSrcPitch) {

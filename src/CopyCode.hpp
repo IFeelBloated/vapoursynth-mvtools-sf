@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cstdint>
 
-typedef auto(*COPYFunction)(uint8_t *, intptr_t, const uint8_t *, intptr_t)->void;
+using COPYFunction = auto(*)(uint8_t *, intptr_t, const uint8_t *, intptr_t)->void;
 
 template<int nBlkWidth, int nBlkHeight, typename PixelType>
 auto Copy_C(uint8_t *pDst, intptr_t nDstPitch, const uint8_t *pSrc, intptr_t nSrcPitch) {

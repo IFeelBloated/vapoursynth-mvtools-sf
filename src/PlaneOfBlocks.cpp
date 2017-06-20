@@ -26,8 +26,8 @@ PlaneOfBlocks::PlaneOfBlocks(int32_t _nBlkX, int32_t _nBlkY, int32_t _nBlkSizeX,
 	globalMVPredictor.x = zeroMV.x;
 	globalMVPredictor.y = zeroMV.y;
 	globalMVPredictor.sad = zeroMV.sad;
-	vectors = new VECTOR[nBlkCount];
-	memset(vectors, 0, nBlkCount*sizeof(VECTOR));
+	vectors = new VectorStructure[nBlkCount];
+	memset(vectors, 0, nBlkCount*sizeof(VectorStructure));
 	static SADFunction sads[257][257];
 	static LUMAFunction lumas[257][257];
 	static COPYFunction blits[257][257];
@@ -171,7 +171,7 @@ PlaneOfBlocks::~PlaneOfBlocks()
 
 void PlaneOfBlocks::SearchMVs(MVFrame *_pSrcFrame, MVFrame *_pRefFrame,
 	SearchType st, int32_t stp, double lambda, double lsad, int32_t pnew,
-	int32_t plevel, int32_t *out, VECTOR * globalMVec,
+	int32_t plevel, int32_t *out, VectorStructure * globalMVec,
 	int32_t *outfilebuf, int32_t fieldShift, DCTClass *_DCT, double * pmeanLumaChange,
 	int32_t divideExtra, int32_t _pzero, int32_t _pglobal, double _badSAD, int32_t _badrange, bool meander, int32_t *vecPrev, bool _tryMany)
 {
@@ -185,7 +185,7 @@ void PlaneOfBlocks::SearchMVs(MVFrame *_pSrcFrame, MVFrame *_pRefFrame,
 	badrange = _badrange;
 	zeroMVfieldShifted.x = 0;
 	zeroMVfieldShifted.y = fieldShift;
-	zeroMVfieldShifted.sad = _fakeint(0.f);
+	zeroMVfieldShifted.sad = StoreAsInteger(0.f);
 	globalMVPredictor.x = nPel*globalMVec->x;// v1.8.2
 	globalMVPredictor.y = nPel*globalMVec->y + fieldShift;
 	globalMVPredictor.sad = globalMVec->sad;
@@ -318,7 +318,7 @@ void PlaneOfBlocks::SearchMVs(MVFrame *_pSrcFrame, MVFrame *_pRefFrame,
 			/* search the mv */
 			predictor = ClipMV(vectors[blkIdx]);
 			if (temporal)
-				predictors[4] = ClipMV(*reinterpret_cast<VECTOR*>(&vecPrev[blkIdx*N_PER_BLOCK])); // temporal predictor
+				predictors[4] = ClipMV(*reinterpret_cast<VectorStructure*>(&vecPrev[blkIdx*N_PER_BLOCK])); // temporal predictor
 			else
 				predictors[4] = ClipMV(zeroMV);
 
@@ -381,7 +381,7 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 	zeroMVfieldShifted.y = fieldShift;
 	globalMVPredictor.x = 0;//nPel*globalMVec->x;// there is no global
 	globalMVPredictor.y = fieldShift;//nPel*globalMVec->y + fieldShift;
-	globalMVPredictor.sad = _fakeint(9999999.f);//globalMVec->sad;
+	globalMVPredictor.sad = StoreAsInteger(9999999.f);//globalMVec->sad;
 
 											   // write the plane's header
 	WriteHeaderToArray(out);
@@ -516,28 +516,28 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 			int32_t blkyold1 = min(nBlkYold - 1, max(0, blkyold));
 			int32_t blkyold2 = min(nBlkYold - 1, max(0, blkyold + 1));
 
-			VECTOR vectorOld; // interpolated or nearest
+			VectorStructure vectorOld; // interpolated or nearest
 
 			if (smooth == 1) // interpolate
 			{
 
-				VECTOR vectorOld1 = mvClip.GetBlock(0, blkxold1 + blkyold1*nBlkXold).GetMV(); // 4 old nearest vectors (may coinside)
-				VECTOR vectorOld2 = mvClip.GetBlock(0, blkxold2 + blkyold1*nBlkXold).GetMV();
-				VECTOR vectorOld3 = mvClip.GetBlock(0, blkxold1 + blkyold2*nBlkXold).GetMV();
-				VECTOR vectorOld4 = mvClip.GetBlock(0, blkxold2 + blkyold2*nBlkXold).GetMV();
+				VectorStructure vectorOld1 = mvClip.GetBlock(0, blkxold1 + blkyold1*nBlkXold).GetMV(); // 4 old nearest vectors (may coinside)
+				VectorStructure vectorOld2 = mvClip.GetBlock(0, blkxold2 + blkyold1*nBlkXold).GetMV();
+				VectorStructure vectorOld3 = mvClip.GetBlock(0, blkxold1 + blkyold2*nBlkXold).GetMV();
+				VectorStructure vectorOld4 = mvClip.GetBlock(0, blkxold2 + blkyold2*nBlkXold).GetMV();
 
 				// interpolate
 				int32_t vector1_x = vectorOld1.x*nStepXold + deltaX*(vectorOld2.x - vectorOld1.x); // scaled by nStepXold to skip slow division
 				int32_t vector1_y = vectorOld1.y*nStepXold + deltaX*(vectorOld2.y - vectorOld1.y);
-				double vector1_sad = static_cast<double>(_back2flt(vectorOld1.sad)) *nStepXold + deltaX*(_back2flt(vectorOld2.sad) - _back2flt(vectorOld1.sad));
+				double vector1_sad = static_cast<double>(CastBackToFloat(vectorOld1.sad)) *nStepXold + deltaX*(CastBackToFloat(vectorOld2.sad) - CastBackToFloat(vectorOld1.sad));
 
 				int32_t vector2_x = vectorOld3.x*nStepXold + deltaX*(vectorOld4.x - vectorOld3.x);
 				int32_t vector2_y = vectorOld3.y*nStepXold + deltaX*(vectorOld4.y - vectorOld3.y);
-				double vector2_sad = static_cast<double>(_back2flt(vectorOld3.sad)) *nStepXold + deltaX*(_back2flt(vectorOld4.sad) - _back2flt(vectorOld3.sad));
+				double vector2_sad = static_cast<double>(CastBackToFloat(vectorOld3.sad)) *nStepXold + deltaX*(CastBackToFloat(vectorOld4.sad) - CastBackToFloat(vectorOld3.sad));
 
 				vectorOld.x = (vector1_x + deltaY*(vector2_x - vector1_x) / nStepYold) / nStepXold;
 				vectorOld.y = (vector1_y + deltaY*(vector2_y - vector1_y) / nStepYold) / nStepXold;
-				vectorOld.sad = _fakeint(static_cast<float>((vector1_sad + deltaY*(vector2_sad - vector1_sad) / nStepYold) / nStepXold));
+				vectorOld.sad = StoreAsInteger(static_cast<float>((vector1_sad + deltaY*(vector2_sad - vector1_sad) / nStepYold) / nStepXold));
 
 			}
 			else // nearest
@@ -557,7 +557,7 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 			vectorOld.y = vectorOld.y ? vectorOld.y / abs(vectorOld.y) * ((abs(vectorOld.y) << nLogPel) >> nLogPelold) : 0;
 
 			predictor = ClipMV(vectorOld); // predictor
-			predictor.sad = _fakeint(static_cast<float>(static_cast<double>(_back2flt(vectorOld.sad)) * (nBlkSizeX*nBlkSizeY) / (nBlkSizeXold*nBlkSizeYold))); // normalized to new block size
+			predictor.sad = StoreAsInteger(static_cast<float>(static_cast<double>(CastBackToFloat(vectorOld.sad)) * (nBlkSizeX*nBlkSizeY) / (nBlkSizeXold*nBlkSizeYold))); // normalized to new block size
 
 			bestMV.x = predictor.x;
 			bestMV.y = predictor.y;
@@ -577,11 +577,11 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 				+ SADCHROMA(pSrc[2], nSrcPitch[2], GetRefBlockV(predictor.x, predictor.y), nRefPitch[2]) : 0.f;
 			double sad = LumaSAD(GetRefBlock(predictor.x, predictor.y));
 			sad += saduv;
-			bestMV.sad = _fakeint(static_cast<float>(sad));
+			bestMV.sad = StoreAsInteger(static_cast<float>(sad));
 			nMinCost = sad;
 
 
-			if (_back2flt(bestMV.sad) > thSAD)// if old interpolated vector is bad
+			if (CastBackToFloat(bestMV.sad) > thSAD)// if old interpolated vector is bad
 			{
 				// then, we refine, according to the search type
 				if (searchType & ONETIME)
@@ -692,7 +692,7 @@ void PlaneOfBlocks::InterpolatePrediction(const PlaneOfBlocks &pob)
 	{
 		for (int32_t k = 0; k < nBlkX; k++, index++)
 		{
-			VECTOR v1, v2, v3, v4;
+			VectorStructure v1, v2, v3, v4;
 			int32_t i = k;
 			int32_t j = l;
 			if (i >= 2 * pob.nBlkX) i = 2 * pob.nBlkX - 1;
@@ -731,7 +731,7 @@ void PlaneOfBlocks::InterpolatePrediction(const PlaneOfBlocks &pob)
 			{
 				vectors[index].x = 9 * v1.x + 3 * v2.x + 3 * v3.x + v4.x;
 				vectors[index].y = 9 * v1.y + 3 * v2.y + 3 * v3.y + v4.y;
-				temp_sad = 9 * static_cast<double>(_back2flt(v1.sad)) + 3 * _back2flt(v2.sad) + 3 * _back2flt(v3.sad) + _back2flt(v4.sad);
+				temp_sad = 9 * static_cast<double>(CastBackToFloat(v1.sad)) + 3 * CastBackToFloat(v2.sad) + 3 * CastBackToFloat(v3.sad) + CastBackToFloat(v4.sad);
 			}
 			else if (nOverlapX <= (nBlkSizeX >> 1) && nOverlapY <= (nBlkSizeY >> 1)) // corrected in v1.4.11
 			{
@@ -743,18 +743,18 @@ void PlaneOfBlocks::InterpolatePrediction(const PlaneOfBlocks &pob)
 				int64_t a11 = ax1*ay1, a12 = ax1*ay2, a21 = ax2*ay1, a22 = ax2*ay2;
 				vectors[index].x = int32_t((a11*v1.x + a21*v2.x + a12*v3.x + a22*v4.x) / normov);
 				vectors[index].y = int32_t((a11*v1.y + a21*v2.y + a12*v3.y + a22*v4.y) / normov);
-				temp_sad = (a11* _back2flt(v1.sad) + a21* _back2flt(v2.sad) + a12* _back2flt(v3.sad) + a22* _back2flt(v4.sad)) / normov;
+				temp_sad = (a11* CastBackToFloat(v1.sad) + a21* CastBackToFloat(v2.sad) + a12* CastBackToFloat(v3.sad) + a22* CastBackToFloat(v4.sad)) / normov;
 			}
 			else // large overlap. Weights are not quite correct but let it be
 			{
 				// Dead branch. The overlap is no longer allowed to be more than half the block size.
 				vectors[index].x = (v1.x + v2.x + v3.x + v4.x) << 2;
 				vectors[index].y = (v1.y + v2.y + v3.y + v4.y) << 2;
-				temp_sad = (static_cast<double>(_back2flt(v1.sad)) + _back2flt(v2.sad) + _back2flt(v3.sad) + _back2flt(v4.sad)) * 4;
+				temp_sad = (static_cast<double>(CastBackToFloat(v1.sad)) + CastBackToFloat(v2.sad) + CastBackToFloat(v3.sad) + CastBackToFloat(v4.sad)) * 4;
 			}
 			vectors[index].x = vectors[index].x ? vectors[index].x / abs(vectors[index].x) * ((abs(vectors[index].x) >> normFactor) << mulFactor) : 0;
 			vectors[index].y = vectors[index].y ? vectors[index].y / abs(vectors[index].y) * ((abs(vectors[index].y) >> normFactor) << mulFactor) : 0;
-			vectors[index].sad = _fakeint(static_cast<float>(temp_sad / 16));
+			vectors[index].sad = StoreAsInteger(static_cast<float>(temp_sad / 16));
 		}
 	}
 }
@@ -771,7 +771,7 @@ int32_t PlaneOfBlocks::WriteDefaultToArray(int32_t *array, int32_t divideMode)
 	{
 		array[i + 1] = 0;
 		array[i + 2] = 0;
-		array[i + 3] = _fakeint(static_cast<float>(verybigSAD));
+		array[i + 3] = StoreAsInteger(static_cast<float>(verybigSAD));
 	}
 
 	if (nLogScale == 0)
@@ -783,7 +783,7 @@ int32_t PlaneOfBlocks::WriteDefaultToArray(int32_t *array, int32_t divideMode)
 			{
 				array[i + 1] = 0;
 				array[i + 2] = 0;
-				array[i + 3] = _fakeint(static_cast<float>(verybigSAD));
+				array[i + 3] = StoreAsInteger(static_cast<float>(verybigSAD));
 			}
 			array += array[0];
 		}
@@ -833,7 +833,7 @@ void PlaneOfBlocks::FetchPredictors()
 			//      predictors[0].sad = Median(predictors[1].sad, predictors[2].sad, predictors[3].sad);
 			// but it is not true median vector (x and y may be mixed) and not its sad ?!
 			// we really do not know SAD, here is more safe estimation especially for phaseshift method - v1.6.0
-			predictors[0].sad = _fakeint(max(_back2flt(predictors[1].sad), max(_back2flt(predictors[2].sad), _back2flt(predictors[3].sad))));
+			predictors[0].sad = StoreAsInteger(max(CastBackToFloat(predictors[1].sad), max(CastBackToFloat(predictors[2].sad), CastBackToFloat(predictors[3].sad))));
 		}
 		else {
 			//		predictors[0].x = (predictors[1].x + predictors[2].x + predictors[3].x);
@@ -848,7 +848,7 @@ void PlaneOfBlocks::FetchPredictors()
 		// if there are no other planes, predictor is the median
 		if (smallestPlane) 
 			predictor = predictors[0];
-		auto coeff = LSAD / (LSAD + _back2flt(predictor.sad) / 2.);
+		auto coeff = LSAD / (LSAD + CastBackToFloat(predictor.sad) / 2.);
 		nLambda *= coeff * coeff;
 }
 
@@ -930,10 +930,10 @@ void PlaneOfBlocks::PseudoEPZSearch()
 		+ SADCHROMA(pSrc[2], nSrcPitch[2], GetRefBlockV(0, 0), nRefPitch[2]) : 0.f;
 	sad = LumaSAD(GetRefBlock(0, zeroMVfieldShifted.y));
 	sad += saduv;
-	bestMV.sad = _fakeint(static_cast<float>(sad));
+	bestMV.sad = StoreAsInteger(static_cast<float>(sad));
 	nMinCost = sad + ((penaltyZero*sad) / 256); // v.1.11.0.2
 
-	VECTOR bestMVMany[8];
+	VectorStructure bestMVMany[8];
 	double nMinCostMany[8];
 
 	if (tryMany)
@@ -956,7 +956,7 @@ void PlaneOfBlocks::PseudoEPZSearch()
 	{
 		bestMV.x = globalMVPredictor.x;
 		bestMV.y = globalMVPredictor.y;
-		bestMV.sad = _fakeint(static_cast<float>(sad));
+		bestMV.sad = StoreAsInteger(static_cast<float>(sad));
 		nMinCost = cost;
 	}
 	if (tryMany)
@@ -976,7 +976,7 @@ void PlaneOfBlocks::PseudoEPZSearch()
 	{
 		bestMV.x = predictor.x;
 		bestMV.y = predictor.y;
-		bestMV.sad = _fakeint(static_cast<float>(sad));
+		bestMV.sad = StoreAsInteger(static_cast<float>(sad));
 		nMinCost = cost;
 	}
 	if (tryMany)
@@ -1023,7 +1023,7 @@ void PlaneOfBlocks::PseudoEPZSearch()
 		Refine();
 	}
 
-	float foundSAD = _back2flt(bestMV.sad);
+	float foundSAD = CastBackToFloat(bestMV.sad);
 
 #define BADCOUNT_LIMIT 16
 
@@ -1047,7 +1047,7 @@ void PlaneOfBlocks::PseudoEPZSearch()
 			for (int32_t i = 1; i < -badrange*nPel; i += nPel)// at radius
 			{
 				ExpandingSearch(i, nPel, 0, 0);
-				if (_back2flt(bestMV.sad) < foundSAD / 4) break; // stop search if rathe good is found
+				if (CastBackToFloat(bestMV.sad) < foundSAD / 4) break; // stop search if rathe good is found
 			}
 		}
 
@@ -1065,7 +1065,7 @@ void PlaneOfBlocks::PseudoEPZSearch()
 	vectors[blkIdx].y = bestMV.y;
 	vectors[blkIdx].sad = bestMV.sad;
 
-	planeSAD += _back2flt(bestMV.sad);
+	planeSAD += CastBackToFloat(bestMV.sad);
 
 }
 
@@ -1392,7 +1392,7 @@ void PlaneOfBlocks::UMHSearch(int32_t i_me_range, int32_t omx, int32_t omy) // r
 }
 //----------------------------------------------------------------
 
-void PlaneOfBlocks::EstimateGlobalMVDoubled(VECTOR *globalMVec)
+void PlaneOfBlocks::EstimateGlobalMVDoubled(VectorStructure *globalMVec)
 {
 	// estimate global motion from current plane vectors data for using on next plane - added by Fizick
 	// on input globalMVec is prev estimation
