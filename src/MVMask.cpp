@@ -149,7 +149,7 @@ static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceDat
 			nDstPitches[i] = vsapi->getStride(dst, i) / sizeof(float);
 		}
 		auto mvn = vsapi->getFrameFilter(n, d->vectors, frameCtx);
-		auto balls = MVClipBalls{ d->mvClip, vsapi };
+		auto &&balls = MVClipBalls{ d->mvClip, vsapi };
 		balls.Update(mvn);
 		vsapi->freeFrame(mvn);
 		auto kind = d->kind;

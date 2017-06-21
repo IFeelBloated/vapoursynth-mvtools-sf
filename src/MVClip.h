@@ -1,6 +1,6 @@
 #ifndef MVTOOLS_MVCLIP_H
 #define MVTOOLS_MVCLIP_H
-#include "FakeGroupOfPlanes.h"
+#include "FakeGroupOfPlanes.hpp"
 
 class MVClipDicks : public MVAnalysisData {
 	int32_t nBlkCount;
@@ -22,7 +22,10 @@ public:
 	MVClipBalls(MVClipDicks *_dicks, const VSAPI *_vsapi);
 	~MVClipBalls();
 	void Update(const VSFrameRef *fn);
-	inline const FakeBlockData& GetBlock(int32_t nLevel, int32_t nBlk) const { return GetPlane(nLevel)[nBlk]; }
+	inline const FakeBlockData& GetBlock(int32_t nLevel, int32_t nBlk) const {
+		auto &Self = *this;
+		return Self[nLevel][nBlk]; 
+	}
 	bool IsUsable() const;
 	bool IsSceneChange(double nSCD1, double nSCD2) const { return FakeGroupOfPlanes::IsSceneChange(nSCD1, nSCD2); }
 };

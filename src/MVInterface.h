@@ -1,7 +1,6 @@
 #ifndef __MV_INTERFACES_H__
 #define __MV_INTERFACES_H__
 #define MOTION_MAGIC_KEY 0x564D //'MV' is IMHO better 31415926 :)
-#define N_PER_BLOCK 3
 #define MAX(a,b) (((a) < (b)) ? (b) : (a))
 #define MIN(a,b) (((a) > (b)) ? (b) : (a))
 #define MOTION_IS_BACKWARD          0x00000002
@@ -24,6 +23,8 @@ struct VectorStructure {
 	int32_t y;
 	int32_t sad;
 };
+
+constexpr auto N_PER_BLOCK = sizeof(VectorStructure) / sizeof(std::int32_t);
 
 inline void CopyVector(VectorStructure *destVector, const VectorStructure *srcVector) {
 	destVector->x = srcVector->x;

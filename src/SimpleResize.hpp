@@ -14,12 +14,12 @@ class SimpleResize {
 	int32_t *horizontal_offsets;
 	double *horizontal_weights;
 	auto InitTables(int32_t *offsets, double *weights, int32_t out, int32_t in) {
-		double leftmost = 0.5;
-		double rightmost = in - 0.5;
-		int32_t leftmost_idx = std::max(static_cast<int32_t>(leftmost), 0);
-		int32_t rightmost_idx = std::min(static_cast<int32_t>(rightmost), in - 1);
+		auto leftmost = 0.5;
+		auto rightmost = in - 0.5;
+		auto leftmost_idx = std::max(static_cast<std::int32_t>(leftmost), 0);
+		auto rightmost_idx = std::min(static_cast<std::int32_t>(rightmost), in - 1);
 		for (auto i = 0; i < out; ++i) {
-			double position = (i + 0.5) * static_cast<double>(in) / static_cast<double>(out);
+			auto position = (i + 0.5) * in / out;
 			double weight;
 			int32_t offset;
 			if (position <= leftmost) {

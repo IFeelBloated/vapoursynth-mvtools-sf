@@ -4,7 +4,6 @@
 #include "FakeBlockData.hpp"
 #include "Cosmetics.hpp"
 #include "CommonFunctions.h"
-#include "SADFunctions.hpp"
 
 class FakePlaneOfBlocks final {
 	self(nWidth_Bi, 0_i32);
@@ -69,11 +68,10 @@ public:
 	~FakePlaneOfBlocks() {
 		delete[] blocks;
 	}
-	auto Update(const void *VectorStream) {
-		auto StreamCursor = reinterpret_cast<const VectorStructure *>(VectorStream);
+	auto Update(const VectorStructure *VectorStreamCursor) {
 		for (auto i = 0; i < nBlkCount; ++i) {
-			blocks[i].Update(StreamCursor);
-			++StreamCursor;
+			blocks[i].Update(VectorStreamCursor);
+			++VectorStreamCursor;
 		}
 	}
 	auto IsSceneChange(double nTh1, double nTh2) const {

@@ -421,7 +421,7 @@ void PlaneOfBlocks::RecalculateMVs(MVClipBalls & mvClip, MVFrame *_pSrcFrame, MV
 	double nLambdaLevel = lambda / (nPel * nPel);
 
 	// get old vectors plane
-	const FakePlaneOfBlocks &plane = mvClip.GetPlane(0);
+	const FakePlaneOfBlocks &plane = mvClip[0];
 	int32_t nBlkXold = plane.GetReducedWidth();
 	int32_t nBlkYold = plane.GetReducedHeight();
 	int32_t nBlkSizeXold = plane.GetBlockSizeX();

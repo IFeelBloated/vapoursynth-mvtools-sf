@@ -44,10 +44,9 @@ MVClipDicks::MVClipDicks(VSNodeRef *vectors, double _nSCD1, double _nSCD2, const
 
 MVClipDicks::~MVClipDicks() {}
 
-MVClipBalls::MVClipBalls(MVClipDicks *_dicks, const VSAPI *_vsapi) :
-	dicks(_dicks),
-	vsapi(_vsapi) {
-	FakeGroupOfPlanes::Create(dicks->GetBlkSizeX(), dicks->GetBlkSizeY(), dicks->GetLevelCount(), dicks->GetPel(), dicks->GetOverlapX(), dicks->GetOverlapY(), dicks->GetYRatioUV(), dicks->GetBlkX(), dicks->GetBlkY());
+MVClipBalls::MVClipBalls(MVClipDicks *_dicks, const VSAPI *_vsapi) :FakeGroupOfPlanes{ _dicks->GetBlkSizeX(), _dicks->GetBlkSizeY(), _dicks->GetLevelCount(), _dicks->GetPel(), _dicks->GetOverlapX(), _dicks->GetOverlapY(), _dicks->GetYRatioUV(), _dicks->GetBlkX(), _dicks->GetBlkY() } {
+	dicks = _dicks;
+	vsapi = _vsapi;
 }
 
 MVClipBalls::~MVClipBalls() {}
