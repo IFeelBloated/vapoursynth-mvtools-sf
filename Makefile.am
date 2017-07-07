@@ -6,7 +6,6 @@ lib_LTLIBRARIES = libmvtoolssf.la
 
 libmvtoolssf_la_SOURCES =	 \
 						src/EntryPoint.cpp \
-						src/FakeGroupOfPlanes.cpp \
 						src/GroupOfPlanes.cpp \
 						src/MVAnalyze.cpp \
 						src/MVBlockFPS.cpp \
