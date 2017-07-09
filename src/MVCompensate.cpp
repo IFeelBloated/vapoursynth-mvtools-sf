@@ -3,7 +3,7 @@
 #include "MVFilter.hpp"
 #include "CopyCode.hpp"
 #include "Overlap.h"
-#include "MVClip.h"
+#include "MVClip.hpp"
 #include "MVFrame.h"
 #include "SADFunctions.hpp"
 
@@ -169,7 +169,7 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 					int32_t xx = 0;
 					for (int32_t bx = 0; bx<nBlkX; ++bx) {
 						int32_t i = by*nBlkX + bx;
-						const FakeBlockData &block = balls.GetBlock(0, i);
+						auto &block = balls[0][i];
 						blx = static_cast<int32_t>(block.GetX() * nPel + static_cast<int64_t>(block.GetMV().x) * time256 / 256);
 						bly = static_cast<int32_t>(block.GetY() * nPel + static_cast<int64_t>(block.GetMV().y) * time256 / 256 + fieldShift);
 						if (block.GetSAD() < thSAD) {
@@ -224,7 +224,7 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 						if (nSuperModeYUV & UVPLANES)
 							winOverUV = OverWinsUV->GetWindow(wby + wbx);
 						int32_t i = by*nBlkX + bx;
-						const FakeBlockData &block = balls.GetBlock(0, i);
+						auto &block = balls[0][i];
 						blx = static_cast<int32_t>(block.GetX() * nPel + static_cast<int64_t>(block.GetMV().x) * time256 / 256);
 						bly = static_cast<int32_t>(block.GetY() * nPel + static_cast<int64_t>(block.GetMV().y) * time256 / 256 + fieldShift);
 						if (block.GetSAD() < thSAD) {
@@ -356,67 +356,67 @@ static void selectFunctions(MVCompensateData *d) {
 	static OverlapsFunction overs[257][257];
 	static COPYFunction copys[257][257];
 	overs[2][2] = Overlaps_C<2, 2, double, float>;
-	copys[2][2] = Copy_C<2, 2, float>;
+	copys[2][2] = Copy_C<2, 2>;
 	overs[2][4] = Overlaps_C<2, 4, double, float>;
-	copys[2][4] = Copy_C<2, 4, float>;
+	copys[2][4] = Copy_C<2, 4>;
 	overs[4][2] = Overlaps_C<4, 2, double, float>;
-	copys[4][2] = Copy_C<4, 2, float>;
+	copys[4][2] = Copy_C<4, 2>;
 	overs[4][4] = Overlaps_C<4, 4, double, float>;
-	copys[4][4] = Copy_C<4, 4, float>;
+	copys[4][4] = Copy_C<4, 4>;
 	overs[4][8] = Overlaps_C<4, 8, double, float>;
-	copys[4][8] = Copy_C<4, 8, float>;
+	copys[4][8] = Copy_C<4, 8>;
 	overs[8][1] = Overlaps_C<8, 1, double, float>;
-	copys[8][1] = Copy_C<8, 1, float>;
+	copys[8][1] = Copy_C<8, 1>;
 	overs[8][2] = Overlaps_C<8, 2, double, float>;
-	copys[8][2] = Copy_C<8, 2, float>;
+	copys[8][2] = Copy_C<8, 2>;
 	overs[8][4] = Overlaps_C<8, 4, double, float>;
-	copys[8][4] = Copy_C<8, 4, float>;
+	copys[8][4] = Copy_C<8, 4>;
 	overs[8][8] = Overlaps_C<8, 8, double, float>;
-	copys[8][8] = Copy_C<8, 8, float>;
+	copys[8][8] = Copy_C<8, 8>;
 	overs[8][16] = Overlaps_C<8, 16, double, float>;
-	copys[8][16] = Copy_C<8, 16, float>;
+	copys[8][16] = Copy_C<8, 16>;
 	overs[16][1] = Overlaps_C<16, 1, double, float>;
-	copys[16][1] = Copy_C<16, 1, float>;
+	copys[16][1] = Copy_C<16, 1>;
 	overs[16][2] = Overlaps_C<16, 2, double, float>;
-	copys[16][2] = Copy_C<16, 2, float>;
+	copys[16][2] = Copy_C<16, 2>;
 	overs[16][4] = Overlaps_C<16, 4, double, float>;
-	copys[16][4] = Copy_C<16, 4, float>;
+	copys[16][4] = Copy_C<16, 4>;
 	overs[16][8] = Overlaps_C<16, 8, double, float>;
-	copys[16][8] = Copy_C<16, 8, float>;
+	copys[16][8] = Copy_C<16, 8>;
 	overs[16][16] = Overlaps_C<16, 16, double, float>;
-	copys[16][16] = Copy_C<16, 16, float>;
+	copys[16][16] = Copy_C<16, 16>;
 	overs[16][32] = Overlaps_C<16, 32, double, float>;
-	copys[16][32] = Copy_C<16, 32, float>;
+	copys[16][32] = Copy_C<16, 32>;
 	overs[32][8] = Overlaps_C<32, 8, double, float>;
-	copys[32][8] = Copy_C<32, 8, float>;
+	copys[32][8] = Copy_C<32, 8>;
 	overs[32][16] = Overlaps_C<32, 16, double, float>;
-	copys[32][16] = Copy_C<32, 16, float>;
+	copys[32][16] = Copy_C<32, 16>;
 	overs[32][32] = Overlaps_C<32, 32, double, float>;
-	copys[32][32] = Copy_C<32, 32, float>;
+	copys[32][32] = Copy_C<32, 32>;
 	overs[32][64] = Overlaps_C<32, 64, double, float>;
-	copys[32][64] = Copy_C<32, 64, float>;
+	copys[32][64] = Copy_C<32, 64>;
 	overs[64][16] = Overlaps_C<64, 16, double, float>;
-	copys[64][16] = Copy_C<64, 16, float>;
+	copys[64][16] = Copy_C<64, 16>;
 	overs[64][32] = Overlaps_C<64, 32, double, float>;
-	copys[64][32] = Copy_C<64, 32, float>;
+	copys[64][32] = Copy_C<64, 32>;
 	overs[64][64] = Overlaps_C<64, 64, double, float>;
-	copys[64][64] = Copy_C<64, 64, float>;
+	copys[64][64] = Copy_C<64, 64>;
 	overs[64][128] = Overlaps_C<64, 128, double, float>;
-	copys[64][128] = Copy_C<64, 128, float>;
+	copys[64][128] = Copy_C<64, 128>;
 	overs[128][32] = Overlaps_C<128, 32, double, float>;
-	copys[128][32] = Copy_C<128, 32, float>;
+	copys[128][32] = Copy_C<128, 32>;
 	overs[128][64] = Overlaps_C<128, 64, double, float>;
-	copys[128][64] = Copy_C<128, 64, float>;
+	copys[128][64] = Copy_C<128, 64>;
 	overs[128][128] = Overlaps_C<128, 128, double, float>;
-	copys[128][128] = Copy_C<128, 128, float>;
+	copys[128][128] = Copy_C<128, 128>;
 	overs[128][256] = Overlaps_C<128, 256, double, float>;
-	copys[128][256] = Copy_C<128, 256, float>;
+	copys[128][256] = Copy_C<128, 256>;
 	overs[256][64] = Overlaps_C<256, 64, double, float>;
-	copys[256][64] = Copy_C<256, 64, float>;
+	copys[256][64] = Copy_C<256, 64>;
 	overs[256][128] = Overlaps_C<256, 128, double, float>;
-	copys[256][128] = Copy_C<256, 128, float>;
+	copys[256][128] = Copy_C<256, 128>;
 	overs[256][256] = Overlaps_C<256, 256, double, float>;
-	copys[256][256] = Copy_C<256, 256, float>;
+	copys[256][256] = Copy_C<256, 256>;
 	d->ToPixels = ToPixels<double, float>;
 	d->OVERSLUMA = overs[nBlkSizeX][nBlkSizeY];
 	d->BLITLUMA = copys[nBlkSizeX][nBlkSizeY];

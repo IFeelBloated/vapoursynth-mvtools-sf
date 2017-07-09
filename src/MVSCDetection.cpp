@@ -1,6 +1,6 @@
 #include "VapourSynth.h"
 #include "VSHelper.h"
-#include "MVClip.h"
+#include "MVClip.hpp"
 #include "MVFilter.hpp"
 
 struct MVSCDetectionData {

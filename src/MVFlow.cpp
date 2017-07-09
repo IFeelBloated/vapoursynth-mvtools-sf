@@ -174,7 +174,7 @@ else if (activationReason == arAllFramesReady) {
 		auto VYFullY = new int32_t[nHeightP * VPitchY];
 		auto VXSmallY = new int32_t[nBlkYP * nBlkXP];
 		auto VYSmallY = new int32_t[nBlkYP * nBlkXP];
-		MakeVectorSmallMasks(&balls, nBlkX, nBlkY, VXSmallY, nBlkXP, VYSmallY, nBlkXP);
+		MakeVectorSmallMasks(balls, nBlkX, nBlkY, VXSmallY, nBlkXP, VYSmallY, nBlkXP);
 		if (nBlkXP > nBlkX)
 			for (auto j = 0; j < nBlkY; ++j) {
 				VXSmallY[j * nBlkXP + nBlkX] = std::min(VXSmallY[j * nBlkXP + nBlkX - 1], 0);

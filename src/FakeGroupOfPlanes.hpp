@@ -48,9 +48,8 @@ public:
 			for (auto i = 0; i < nLvCount_; ++i)
 				delete planes[i];
 		delete[] planes;
-		planes = nullptr;
 	}
-	auto Update(const std::int32_t *VectorStream) {
+	auto UpdateAllLevels(const std::int32_t *VectorStream) {
 		constexpr auto StreamHeaderOffset = 2;
 		auto StreamCursor = VectorStream + StreamHeaderOffset;
 		auto GetValidity = [&]() {

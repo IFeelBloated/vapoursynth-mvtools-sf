@@ -172,8 +172,8 @@ static const VSFrameRef *VS_CC mvflowinterGetFrame(int32_t n, int32_t activation
 			double *MaskFullUVF = nullptr;
 
 
-			MakeVectorSmallMasks(&ballsB, nBlkX, nBlkY, VXSmallYB, nBlkXP, VYSmallYB, nBlkXP);
-			MakeVectorSmallMasks(&ballsF, nBlkX, nBlkY, VXSmallYF, nBlkXP, VYSmallYF, nBlkXP);
+			MakeVectorSmallMasks(ballsB, nBlkX, nBlkY, VXSmallYB, nBlkXP, VYSmallYB, nBlkXP);
+			MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYF, nBlkXP, VYSmallYF, nBlkXP);
 			if (nBlkXP > nBlkX) // fill right
 			{
 				for (int32_t j = 0; j<nBlkY; j++)
@@ -196,9 +196,9 @@ static const VSFrameRef *VS_CC mvflowinterGetFrame(int32_t n, int32_t activation
 			}
 			// analyze vectors field to detect occlusion
 			//      double occNormB = (256-time256)/(256*ml);
-			MakeVectorOcclusionMaskTime(&ballsB, true, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallB, nBlkXP, (256 - time256), nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+			MakeVectorOcclusionMaskTime(ballsB, true, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallB, nBlkXP, (256 - time256), nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 			//      double occNormF = time256/(256*ml);
-			MakeVectorOcclusionMaskTime(&ballsF, false, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+			MakeVectorOcclusionMaskTime(ballsF, false, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 			if (nBlkXP > nBlkX) // fill right
 			{
 				for (int32_t j = 0; j<nBlkY; j++)
@@ -272,8 +272,8 @@ static const VSFrameRef *VS_CC mvflowinterGetFrame(int32_t n, int32_t activation
 				auto VYSmallYFF = new int32_t[nBlkXP * nBlkYP];
 
 				// get vector mask from extra frames
-				MakeVectorSmallMasks(&ballsB, nBlkX, nBlkY, VXSmallYBB, nBlkXP, VYSmallYBB, nBlkXP);
-				MakeVectorSmallMasks(&ballsF, nBlkX, nBlkY, VXSmallYFF, nBlkXP, VYSmallYFF, nBlkXP);
+				MakeVectorSmallMasks(ballsB, nBlkX, nBlkY, VXSmallYBB, nBlkXP, VYSmallYBB, nBlkXP);
+				MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYFF, nBlkXP, VYSmallYFF, nBlkXP);
 				if (nBlkXP > nBlkX) // fill right
 				{
 					for (int32_t j = 0; j<nBlkY; j++)

@@ -289,8 +289,8 @@ static const VSFrameRef *VS_CC mvflowblurGetFrame(int32_t n, int32_t activationR
 			auto *VXSmallYF = new int32_t[nBlkX * nBlkY];
 			auto *VYSmallYF = new int32_t[nBlkX * nBlkY];
 
-			MakeVectorSmallMasks(&ballsB, nBlkX, nBlkY, VXSmallYB, nBlkX, VYSmallYB, nBlkX);
-			MakeVectorSmallMasks(&ballsF, nBlkX, nBlkY, VXSmallYF, nBlkX, VYSmallYF, nBlkX);
+			MakeVectorSmallMasks(ballsB, nBlkX, nBlkY, VXSmallYB, nBlkX, VYSmallYB, nBlkX);
+			MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYF, nBlkX, VYSmallYF, nBlkX);
 
 
 			d->upsizer->Resize(VXFullYB, VPitchY, VXSmallYB, nBlkX);

@@ -149,7 +149,7 @@ static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceDat
 			nDstPitches[i] = vsapi->getStride(dst, i) / sizeof(float);
 		}
 		auto mvn = vsapi->getFrameFilter(n, d->vectors, frameCtx);
-		auto &&balls = MVClipBalls{ d->mvClip, vsapi };
+		auto balls = MVClipBalls{ d->mvClip, vsapi };
 		balls.Update(mvn);
 		vsapi->freeFrame(mvn);
 		auto kind = d->kind;
@@ -189,29 +189,29 @@ static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceDat
 			switch (kind) {
 			case 0:
 				for (auto i = 0; i < nBlkCount; ++i)
-					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>(mvmaskLength(balls.GetBlock(0, i).GetMV()));
+					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>(mvmaskLength(balls[0][i].GetMV()));
 				break;
 			case 1:
-				MakeSADMaskTime(&balls, nBlkX, nBlkY, 4.0 * fMaskNormFactor / (nBlkSizeX * nBlkSizeY), fGamma, nPel, mask.get(), nBlkX, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+				MakeSADMaskTime(balls, nBlkX, nBlkY, 4.0 * fMaskNormFactor / (nBlkSizeX * nBlkSizeY), fGamma, nPel, mask.get(), nBlkX, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 				for (auto i = 0; i < nBlkX * nBlkY; ++i)
 					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>(mask[i] / 255.);
 				break;
 			case 2:
-				MakeVectorOcclusionMaskTime(&balls, d->mvClip->IsBackward(), nBlkX, nBlkY, 1.0 / fMaskNormFactor, fGamma, nPel, mask.get(), nBlkX, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+				MakeVectorOcclusionMaskTime(balls, d->mvClip->IsBackward(), nBlkX, nBlkY, 1.0 / fMaskNormFactor, fGamma, nPel, mask.get(), nBlkX, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 				for (auto i = 0; i < nBlkX * nBlkY; ++i)
 					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>(mask[i] / 255.);
 				break;
 			case 3:
 				for (auto i = 0; i < nBlkCount; ++i)
-					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>((balls.GetBlock(0, i).GetMV().x * fMaskNormFactor * 100. + 128.) / 255.);
+					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>((balls[0][i].GetMV().x * fMaskNormFactor * 100. + 128.) / 255.);
 				break;
 			case 4:
 				for (auto i = 0; i < nBlkCount; ++i)
-					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>((balls.GetBlock(0, i).GetMV().y * fMaskNormFactor * 100. + 128.) / 255.);
+					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>((balls[0][i].GetMV().y * fMaskNormFactor * 100. + 128.) / 255.);
 				break;
 			case 5:
 				for (auto i = 0; i < nBlkCount; ++i) {
-					auto &&v = balls.GetBlock(0, i).GetMV();
+					auto &&v = balls[0][i].GetMV();
 					smallMask[i] = static_cast<decltype(smallMask[0] + 0)>((v.x * fMaskNormFactor * 100. + 128.) / 255.);
 					smallMaskV[i] = static_cast<decltype(smallMask[0] + 0)>((v.y * fMaskNormFactor * 100. + 128.) / 255.);
 				}

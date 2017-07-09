@@ -1,6 +1,6 @@
 #ifndef __MV_INTERFACES_H__
 #define __MV_INTERFACES_H__
-#define MOTION_MAGIC_KEY 0x564D //'MV' is IMHO better 31415926 :)
+
 #define MAX(a,b) (((a) < (b)) ? (b) : (a))
 #define MIN(a,b) (((a) > (b)) ? (b) : (a))
 #define MOTION_IS_BACKWARD          0x00000002
@@ -8,7 +8,7 @@
 #define MOTION_USE_CHROMA_MOTION    0x00000008
 #define MOTION_USE_SSD              0x00000010
 #define MOTION_USE_SATD             0x00000020
-#define MVANALYSIS_DATA_VERSION 5
+
 #include <cstdint>
 #include <cstdio>
 #include <stdexcept>
@@ -17,6 +17,8 @@
 
 constexpr auto MV_DEFAULT_SCD1 = 400.;
 constexpr auto MV_DEFAULT_SCD2 = 130.;
+constexpr auto MotionMagicKey = 0x564D;
+constexpr auto MVAnalysisDataVersion = 5;
 
 struct VectorStructure {
 	int32_t x;

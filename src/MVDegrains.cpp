@@ -1,6 +1,6 @@
 #include "VapourSynth.h"
 #include "VSHelper.h"
-#include "MVClip.h"
+#include "MVClip.hpp"
 #include "MVDegrains.h"
 #include "MVFilter.hpp"
 #include "MVFrame.h"
@@ -477,7 +477,7 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 						int32_t strides[radius * 2];
 						double WSrc, WRefs[radius * 2];
 						for (int32_t r = 0; r < radius * 2; r++)
-							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, thSAD);
+							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r][0], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, thSAD);
 						normalizeWeights<radius>(WSrc, WRefs);
 						d->DEGRAIN[plane](pDstCur[plane] + xx, nDstPitches[plane], pSrcCur[plane] + xx, nSrcPitches[plane],
 							pointers, strides,
@@ -510,7 +510,7 @@ static const VSFrameRef *VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 						int32_t strides[radius * 2];
 						double WSrc, WRefs[radius * 2];
 						for (int32_t r = 0; r < radius * 2; r++)
-							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, thSAD);
+							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r][0], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, thSAD);
 						normalizeWeights<radius>(WSrc, WRefs);
 						d->DEGRAIN[plane](tmpBlock, tmpBlockPitch, pSrcCur[plane] + xx, nSrcPitches[plane],
 							pointers, strides,

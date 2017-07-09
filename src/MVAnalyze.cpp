@@ -340,8 +340,8 @@ static void VS_CC mvanalyzeCreate(const VSMap *in, VSMap *out, void *userData, V
 		d.nSearchParam = (d.searchparam < 0) ? 0 : d.searchparam;
 	else
 		d.nSearchParam = (d.searchparam < 1) ? 1 : d.searchparam;
-	d.analysisData.nMagicKey = MOTION_MAGIC_KEY;
-	d.analysisData.nVersion = MVANALYSIS_DATA_VERSION;
+	d.analysisData.nMagicKey = MotionMagicKey;
+	d.analysisData.nVersion = MVAnalysisDataVersion;
 	d.headerSize = VSMAX(4 + sizeof(d.analysisData), 256);
 	d.node = vsapi->propGetNode(in, "super", 0, 0);
 	d.supervi = vsapi->getVideoInfo(d.node);

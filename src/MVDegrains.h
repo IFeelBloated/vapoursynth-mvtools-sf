@@ -99,9 +99,9 @@ inline double DegrainWeight(double thSAD, double blockSAD) {
 	return (thSAD - blockSAD) * (thSAD + blockSAD) * 256 / (thSAD * thSAD + blockSAD * blockSAD);
 }
 
-inline void useBlock(const uint8_t * &p, int32_t &np, double &WRef, bool isUsable, const MVClipBalls *mvclip, int32_t i, const MVPlane *pPlane, const uint8_t **pSrcCur, int32_t xx, const int32_t *nSrcPitch, int32_t nLogPel, int32_t plane, int32_t xSubUV, int32_t ySubUV, const double *thSAD) {
+inline void useBlock(const uint8_t * &p, int32_t &np, double &WRef, bool isUsable, const MVClipBalls &mvclip, int32_t i, const MVPlane *pPlane, const uint8_t **pSrcCur, int32_t xx, const int32_t *nSrcPitch, int32_t nLogPel, int32_t plane, int32_t xSubUV, int32_t ySubUV, const double *thSAD) {
 	if (isUsable) {
-		const FakeBlockData &block = mvclip->GetBlock(0, i);
+		auto &block = mvclip[0][i];
 		int32_t blx = (block.GetX() << nLogPel) + block.GetMV().x;
 		int32_t bly = (block.GetY() << nLogPel) + block.GetMV().y;
 		p = pPlane->GetPointer(plane ? blx >> xSubUV : blx, plane ? bly >> ySubUV : bly);

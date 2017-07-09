@@ -330,12 +330,12 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 				smallMaskF = new double[nBlkXP * nBlkYP];
 				smallMaskO = new double[nBlkXP * nBlkYP];
 				if (mode <= 5) {
-					MakeVectorOcclusionMaskTime(&ballsF, false, nBlkX, nBlkY, ml, 1.0, nPel, smallMaskF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
-					MakeVectorOcclusionMaskTime(&ballsB, true, nBlkX, nBlkY, ml, 1.0, nPel, smallMaskB, nBlkXP, 256 - time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+					MakeVectorOcclusionMaskTime(ballsF, false, nBlkX, nBlkY, ml, 1.0, nPel, smallMaskF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+					MakeVectorOcclusionMaskTime(ballsB, true, nBlkX, nBlkY, ml, 1.0, nPel, smallMaskB, nBlkXP, 256 - time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 				}
 				else {
-					MakeSADMaskTime(&ballsF, nBlkX, nBlkY, 4.0 / (ml * nBlkSizeX * nBlkSizeY), 1.0, nPel, smallMaskF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
-					MakeSADMaskTime(&ballsB, nBlkX, nBlkY, 4.0 / (ml * nBlkSizeX * nBlkSizeY), 1.0, nPel, smallMaskB, nBlkXP, 256 - time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+					MakeSADMaskTime(ballsF, nBlkX, nBlkY, 4.0 / (ml * nBlkSizeX * nBlkSizeY), 1.0, nPel, smallMaskF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+					MakeSADMaskTime(ballsB, nBlkX, nBlkY, 4.0 / (ml * nBlkSizeX * nBlkSizeY), 1.0, nPel, smallMaskB, nBlkXP, 256 - time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 				}
 				if (nBlkXP > nBlkX)
 					for (int j = 0; j < nBlkY; ++j) {
@@ -376,8 +376,8 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 			}
 			if (nOverlapX == 0 && nOverlapY == 0) {
 				for (int32_t i = 0; i < blocks; i++) {
-					const FakeBlockData &blockB = ballsB.GetBlock(0, i);
-					const FakeBlockData &blockF = ballsF.GetBlock(0, i);
+					auto &blockB = ballsB[0][i];
+					auto &blockF = ballsF[0][i];
 					ResultBlock(pDst[0], nDstPitches[0],
 						pPlanesB[0]->GetPointer(blockB.GetX() * nPel + ((blockB.GetMV().x * (256 - time256)) >> 8), blockB.GetY() * nPel + ((blockB.GetMV().y * (256 - time256)) >> 8)),
 						pPlanesB[0]->GetPitch(),
@@ -552,8 +552,8 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 							winOverUV = OverWinsUV->GetWindow(wby + wbx);
 						int32_t i = by * nBlkX + bx;
 
-						const FakeBlockData &blockB = ballsB.GetBlock(0, i);
-						const FakeBlockData &blockF = ballsF.GetBlock(0, i);
+						auto &blockB = ballsB[0][i];
+						auto &blockF = ballsF[0][i];
 
 						// firstly calculate result block and write it to temporary place, not to dst
 						ResultBlock(TmpBlock, nBlkPitch,

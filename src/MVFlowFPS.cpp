@@ -261,7 +261,7 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 
 			if (nright != d->nrightLast) {
 
-				MakeVectorSmallMasks(&ballsB, nBlkX, nBlkY, VXSmallYB, nBlkXP, VYSmallYB, nBlkXP);
+				MakeVectorSmallMasks(ballsB, nBlkX, nBlkY, VXSmallYB, nBlkXP, VYSmallYB, nBlkXP);
 				if (nBlkXP > nBlkX) {// fill right
 					for (int32_t j = 0; j<nBlkY; j++) {
 						VXSmallYB[j*nBlkXP + nBlkX] = VSMIN(VXSmallYB[j*nBlkXP + nBlkX - 1], 0);
@@ -289,7 +289,7 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 			// analyze vectors field to detect occlusion
 			//        double occNormB = (256-time256)/(256*ml);
 			//        MakeVectorOcclusionMask(mvClipB, nBlkX, nBlkY, occNormB, 1.0, nPel, MaskSmallB, nBlkXP);
-			MakeVectorOcclusionMaskTime(&ballsB, true, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallB, nBlkXP, (256 - time256), nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+			MakeVectorOcclusionMaskTime(ballsB, true, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallB, nBlkXP, (256 - time256), nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 			if (nBlkXP > nBlkX) // fill right
 				for (int32_t j = 0; j<nBlkY; j++)
 					MaskSmallB[j*nBlkXP + nBlkX] = MaskSmallB[j*nBlkXP + nBlkX - 1];
@@ -304,7 +304,7 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 			d->nrightLast = nright;
 
 			if (nleft != d->nleftLast) {
-				MakeVectorSmallMasks(&ballsF, nBlkX, nBlkY, VXSmallYF, nBlkXP, VYSmallYF, nBlkXP);
+				MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYF, nBlkXP, VYSmallYF, nBlkXP);
 				if (nBlkXP > nBlkX) {// fill right
 					for (int32_t j = 0; j<nBlkY; j++) {
 						VXSmallYF[j*nBlkXP + nBlkX] = VSMIN(VXSmallYF[j*nBlkXP + nBlkX - 1], 0);
@@ -332,7 +332,7 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 			// analyze vectors field to detect occlusion
 			//        double occNormF = time256/(256*ml);
 			//        MakeVectorOcclusionMask(mvClipF, nBlkX, nBlkY, occNormF, 1.0, nPel, MaskSmallF, nBlkXP);
-			MakeVectorOcclusionMaskTime(&ballsF, false, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
+			MakeVectorOcclusionMaskTime(ballsF, false, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 			if (nBlkXP > nBlkX) // fill right
 				for (int32_t j = 0; j<nBlkY; j++)
 					MaskSmallF[j*nBlkXP + nBlkX] = MaskSmallF[j*nBlkXP + nBlkX - 1];
@@ -361,8 +361,8 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 
 			if (maskmode == 2 && isUsableB && isUsableF) {// slow method with extra frames
 														  // get vector mask from extra frames
-				MakeVectorSmallMasks(&ballsB, nBlkX, nBlkY, VXSmallYBB, nBlkXP, VYSmallYBB, nBlkXP);
-				MakeVectorSmallMasks(&ballsF, nBlkX, nBlkY, VXSmallYFF, nBlkXP, VYSmallYFF, nBlkXP);
+				MakeVectorSmallMasks(ballsB, nBlkX, nBlkY, VXSmallYBB, nBlkXP, VYSmallYBB, nBlkXP);
+				MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYFF, nBlkXP, VYSmallYFF, nBlkXP);
 				if (nBlkXP > nBlkX) {// fill right
 					for (int32_t j = 0; j<nBlkY; j++) {
 						VXSmallYBB[j*nBlkXP + nBlkX] = VSMIN(VXSmallYBB[j*nBlkXP + nBlkX - 1], 0);

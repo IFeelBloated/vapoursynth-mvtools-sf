@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
-#include "MVClip.h"
+#include "MVClip.hpp"
 #include "MVFrame.h"
 #include "SADFunctions.hpp"
 
@@ -122,11 +122,11 @@ static void Merge16PlanesToBig(uint8_t *pel4Plane, int32_t pel4Pitch,
 	RealMerge16PlanesToBig<float>(pel4Plane, pel4Pitch, pPlane0, pPlane1, pPlane2, pPlane3, pPlane4, pPlane5, pPlane6, pPlane7, pPlane8, pPlane9, pPlane10, pPlane11, pPlane12, pPlane13, pPlane14, pPlane15, width, height, pitch);
 }
 
-static void MakeVectorSmallMasks(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, int32_t *VXSmallY, int32_t pitchVXSmallY, int32_t *VYSmallY, int32_t pitchVYSmallY) {
+static void MakeVectorSmallMasks(MVClipBalls &mvClip, int32_t nBlkX, int32_t nBlkY, int32_t *VXSmallY, int32_t pitchVXSmallY, int32_t *VYSmallY, int32_t pitchVYSmallY) {
 	for (auto by = 0; by < nBlkY; ++by)
 		for (auto bx = 0; bx < nBlkX; ++bx) {
 			auto i = bx + by * nBlkX;
-			const FakeBlockData &block = mvClip->GetBlock(0, i);
+			auto &block = mvClip[0][i];
 			int32_t vx = block.GetMV().x;
 			int32_t vy = block.GetMV().y;
 			VXSmallY[bx + by*pitchVXSmallY] = vx;
@@ -179,7 +179,7 @@ static inline void ByteOccMask(double *occMask, int32_t occlusion, double occnor
 		*occMask = std::max(*occMask, std::min((255. * pow(occlusion * occnorm, fGamma)), 255.));
 }
 
-static void MakeVectorOcclusionMaskTime(MVClipBalls *mvClip, bool isb, int32_t nBlkX, int32_t nBlkY, double dMaskNormDivider, double fGamma, int32_t nPel, double *occMask, int32_t occMaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
+static void MakeVectorOcclusionMaskTime(MVClipBalls &mvClip, bool isb, int32_t nBlkX, int32_t nBlkY, double dMaskNormDivider, double fGamma, int32_t nPel, double *occMask, int32_t occMaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
 	for (auto i = 0; i < occMaskPitch * nBlkY; ++i)
 		occMask[i] = 0.;
 	int time4096X = time256 * 16 / (nBlkStepX * nPel);
@@ -190,12 +190,12 @@ static void MakeVectorOcclusionMaskTime(MVClipBalls *mvClip, bool isb, int32_t n
 	for (auto by = 0; by<nBlkY; ++by)
 		for (auto bx = 0; bx<nBlkX; ++bx) {
 			int32_t i = bx + by*nBlkX;
-			const FakeBlockData &block = mvClip->GetBlock(0, i);
+			auto &block = mvClip[0][i];
 			int32_t vx = block.GetMV().x;
 			int32_t vy = block.GetMV().y;
 			if (bx < nBlkX - 1) {
 				int32_t i1 = i + 1;
-				const FakeBlockData &block1 = mvClip->GetBlock(0, i1);
+				auto &block1 = mvClip[0][i1];
 				int32_t vx1 = block1.GetMV().x;
 				if (vx1<vx) {
 					occlusion = vx - vx1;
@@ -207,7 +207,7 @@ static void MakeVectorOcclusionMaskTime(MVClipBalls *mvClip, bool isb, int32_t n
 			}
 			if (by < nBlkY - 1) {
 				int32_t i1 = i + nBlkX;
-				const FakeBlockData &block1 = mvClip->GetBlock(0, i1);
+				auto &block1 = mvClip[0][i1];
 				int32_t vy1 = block1.GetMV().y;
 				if (vy1<vy) {
 					occlusion = vy - vy1;
@@ -225,7 +225,7 @@ static double ByteNorm(double sad, double dSADNormFactor, double fGamma) {
 	return (l > 255.) ? 255. : l;
 }
 
-static void MakeSADMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, double dSADNormFactor, double fGamma, int32_t nPel, double *Mask, int32_t MaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
+static void MakeSADMaskTime(MVClipBalls &mvClip, int32_t nBlkX, int32_t nBlkY, double dSADNormFactor, double fGamma, int32_t nPel, double *Mask, int32_t MaskPitch, int32_t time256, int32_t nBlkStepX, int32_t nBlkStepY) {
 	for (auto i = 0; i < nBlkY * MaskPitch; ++i)
 		Mask[i] = 0.;
 	int32_t time4096X = (256 - time256) * 16 / (nBlkStepX * nPel);
@@ -233,7 +233,7 @@ static void MakeSADMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, d
 	for (auto by = 0; by < nBlkY; ++by) {
 		for (auto bx = 0; bx < nBlkX; ++bx) {
 			auto i = bx + by * nBlkX;
-			const FakeBlockData &block = mvClip->GetBlock(0, i);
+			auto &block = mvClip[0][i];
 			int32_t vx = block.GetMV().x;
 			int32_t vy = block.GetMV().y;
 			int32_t bxi = bx - vx * time4096X / 4096;
@@ -243,7 +243,7 @@ static void MakeSADMaskTime(MVClipBalls *mvClip, int32_t nBlkX, int32_t nBlkY, d
 				byi = by;
 			}
 			int32_t i1 = bxi + byi * nBlkX;
-			double sad = mvClip->GetBlock(0, i1).GetSAD() * 255.;
+			auto sad = mvClip[0][i1].GetSAD() * 255.;
 			Mask[bx + by * MaskPitch] = ByteNorm(sad, dSADNormFactor, fGamma);
 		}
 	}

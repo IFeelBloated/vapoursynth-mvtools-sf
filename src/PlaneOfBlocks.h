@@ -5,7 +5,7 @@
 #define ALIGN_SOURCEBLOCK 16
 #include <cstdlib>
 #include <cmath>
-#include "MVClip.h"
+#include "MVClip.hpp"
 #include "MVFrame.h"
 #include "Interpolation.h"
 #include "CopyCode.hpp"
