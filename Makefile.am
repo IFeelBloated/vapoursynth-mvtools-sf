@@ -9,7 +9,6 @@ libmvtoolssf_la_SOURCES =	 \
 						src/GroupOfPlanes.cpp \
 						src/MVAnalyze.cpp \
 						src/MVBlockFPS.cpp \
-						src/MVClip.cpp \
 						src/MVCompensate.cpp \
 						src/MVDegrains.cpp \
 						src/MVFinest.cpp \
