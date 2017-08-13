@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -O2 -std=c++14 -msse2 -mfpmath=sse $(STACKREALIGN) -Wall -Wextra -Wno-unused-parameter -Wshadow
+AM_CXXFLAGS = -O2 -std=c++1z -msse2 -mfpmath=sse $(STACKREALIGN) -Wall -Wextra -Wno-unused-parameter -Wshadow
 
 AM_CPPFLAGS = $(VapourSynth_CFLAGS) $(FFTW3_CFLAGS)
 
