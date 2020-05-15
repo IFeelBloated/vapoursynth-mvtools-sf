@@ -168,3 +168,9 @@ void ToPixels(uint8_t *pDst8, int32_t nDstPitch, const uint8_t *pSrc8, int32_t n
 		pSrc8 += nSrcPitch;
 	}
 }
+
+auto CosineAnnealing(auto StartPoint, auto EndPoint, auto Position, auto Radius) {
+	auto x = (Position - 1) * MV_PI / (Radius - 1);
+	auto Ratio = (1. - cos(x)) * 0.5;
+	return StartPoint + Ratio * (EndPoint - StartPoint);
+}

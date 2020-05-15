@@ -88,7 +88,7 @@ struct MVDegrainData {
 	self(super, Clip{});
 	self(vectors, std::vector<Clip>{});
 	self(radius, 0);
-	double thSAD[3];
+	self(thSAD, std::vector<std::array<double, 3>>{});
 	int32_t YUVplanes;
 	double nLimit[3];
 	double nSCD1;
@@ -203,7 +203,6 @@ static const VSFrameRef* VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 		const int32_t* nBlkSizeY = d->nBlkSizeY;
 		const int32_t* nWidth_B = d->nWidth_B;
 		const int32_t* nHeight_B = d->nHeight_B;
-		const double* thSAD = d->thSAD;
 		const double* nLimit = d->nLimit;
 		auto pRefGOF = d->CreateArray<MVGroupOfFrames*>();
 		for (int32_t r = 0; r < d->radius * 2; r++)
@@ -246,7 +245,7 @@ static const VSFrameRef* VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 						double WSrc;
 						auto WRefs = d->CreateArray<double>();
 						for (int32_t r = 0; r < d->radius * 2; r++)
-							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r][0], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, thSAD);
+							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r][0], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, d->thSAD[r].data());
 						normalizeWeights(d->radius, WSrc, WRefs.data());
 						d->DEGRAIN[plane](d->radius, pDstCur[plane] + xx, nDstPitches[plane], pSrcCur[plane] + xx, nSrcPitches[plane],
 							pointers.data(), strides.data(),
@@ -280,7 +279,7 @@ static const VSFrameRef* VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 						double WSrc;
 						auto WRefs = d->CreateArray<double>();
 						for (int32_t r = 0; r < d->radius * 2; r++)
-							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r][0], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, thSAD);
+							useBlock(pointers[r], strides[r], WRefs[r], isUsable[r], balls[r][0], i, pPlanes[plane][r], pSrcCur, xx, nSrcPitches, nLogPel, plane, xSubUV, ySubUV, d->thSAD[r].data());
 						normalizeWeights(d->radius, WSrc, WRefs.data());
 						d->DEGRAIN[plane](d->radius, tmpBlock, tmpBlockPitch, pSrcCur[plane] + xx, nSrcPitches[plane],
 							pointers.data(), strides.data(),
@@ -414,29 +413,32 @@ static void VS_CC mvdegrainCreate(const VSMap* in, VSMap* out, void* userData, V
 	auto args = ArgumentList{ in };
 	auto Core = VaporCore{ core };
 	auto filter = "Degrain"s;
-	
+
 	MVDegrainData d;
 	MVDegrainData* data;
 	auto mvmulti = Clip{};
 	d.node = args["clip"];
 	mvmulti = args["mvmulti"];
 	auto radius = mvmulti.FrameCount / d.node.FrameCount / 2;
+	auto thsad = std::array<double, 3>{};
+	auto thsad2 = thsad;
 
 	d.radius = radius;
 	d.vectors.resize(2 * radius);
 	d.mvClips.resize(2 * radius);
+	d.thSAD.resize(2 * radius);
 
 	int err;
 	const int m = vsapi->propNumElements(in, "thsad");
 	const int n = vsapi->propNumElements(in, "limit");
 	for (int i = 0; i < 3; ++i) {
 		if (m == -1)
-			d.thSAD[0] = d.thSAD[1] = d.thSAD[2] = 400.;
+			thsad[0] = thsad[1] = thsad[2] = 400.;
 		else
 			if (i < m)
-				d.thSAD[i] = vsapi->propGetFloat(in, "thsad", i, nullptr);
+				thsad[i] = vsapi->propGetFloat(in, "thsad", i, nullptr);
 			else
-				d.thSAD[i] = d.thSAD[i - 1];
+				thsad[i] = thsad[i - 1];
 		if (n == -1)
 			d.nLimit[0] = d.nLimit[1] = d.nLimit[2] = 1.;
 		else
@@ -450,6 +452,19 @@ static void VS_CC mvdegrainCreate(const VSMap* in, VSMap* out, void* userData, V
 			else
 				d.nLimit[i] = d.nLimit[i - 1];
 	}
+
+	if (auto sad2Count = vsapi->propNumElements(in, "thsad2"); sad2Count == -1) {
+		thsad2[0] = thsad[0];
+		thsad2[1] = thsad[1];
+		thsad2[2] = thsad[2];
+	}
+	else
+		for (auto c : Range{ 3 })
+			if (c < sad2Count)
+				thsad2[c] = vsapi->propGetFloat(in, "thsad2", c, nullptr);
+			else
+				thsad2[c] = thsad2[c - 1];
+
 	int32_t plane = int64ToIntS(vsapi->propGetInt(in, "plane", 0, &err));
 	if (err)
 		plane = 4;
@@ -499,6 +514,8 @@ static void VS_CC mvdegrainCreate(const VSMap* in, VSMap* out, void* userData, V
 	for (auto r : Range{ radius }) {
 		d.vectors[2 * r] = bvn(r + 1);
 		d.vectors[2 * r + 1] = fvn(r + 1);
+		for (auto c : Range{ 3 })
+			d.thSAD[2 * r + 1][c] = d.thSAD[2 * r][c] = CosineAnnealing(thsad[c], thsad2[c], r + 1, radius);
 	}
 
 	for (int32_t r = 0; r < radius * 2; r++) {
@@ -527,8 +544,10 @@ static void VS_CC mvdegrainCreate(const VSMap* in, VSMap* out, void* userData, V
 		return;
 	}
 
-	d.thSAD[0] = d.thSAD[0] * d.mvClips[0].GetThSCD1() / d.nSCD1;
-	d.thSAD[1] = d.thSAD[2] = d.thSAD[1] * d.mvClips[0].GetThSCD1() / d.nSCD1;
+	for (auto& SADArray : d.thSAD) {
+		SADArray[0] = SADArray[0] * d.mvClips[0].GetThSCD1() / d.nSCD1;
+		SADArray[1] = SADArray[2] = SADArray[1] * d.mvClips[0].GetThSCD1() / d.nSCD1;
+	}
 
 	auto& supervi = d.super.ExposeVideoInfo();
 	int32_t nSuperWidth = supervi.width;
@@ -583,6 +602,7 @@ void mvdegrainRegister(VSRegisterFunction registerFunc, VSPlugin* plugin) {
 		"super:clip;"
 		"mvmulti:clip;"
 		"thsad:float[]:opt;"
+		"thsad2:float[]:opt;"
 		"plane:int:opt;"
 		"limit:float[]:opt;"
 		"thscd1:float:opt;"

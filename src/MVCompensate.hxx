@@ -542,13 +542,21 @@ static void VS_CC mvcompensateCreate(const VSMap* in, VSMap* out, void* userData
 	auto clip = Clip{};
 	auto vectors = Clip{};
 	auto cclip = Clip{};
+	auto thsad = 10000.;
+	auto thsad2 = thsad;
 	clip = args["clip"];
 	vectors = args["vectors"];
 	if (args["cclip"].Exists())
 		cclip = args["cclip"];
 	else
 		cclip = clip;
-	auto Eval = [&](auto&& vec) {
+	if (args["thsad"].Exists())
+		thsad = args["thsad"];
+	if (args["thsad2"].Exists())
+		thsad2 = args["thsad2"];
+	else
+		thsad2 = thsad;
+	auto Eval = [&](auto&& vec, auto sad) {
 		auto CreateArgumentMap = [&]() {
 			auto Map = vsapi->createMap();
 			for (auto x : Range{ vsapi->propNumKeys(in) }) {
@@ -571,8 +579,11 @@ static void VS_CC mvcompensateCreate(const VSMap* in, VSMap* out, void* userData
 				}
 			}
 			auto v = WritableItem{ Map, "vectors" };
+			auto sad_param = WritableItem{ Map, "thsad" };
 			v.Erase();
 			v = vec;
+			sad_param.Erase();
+			sad_param = sad;
 			return Map;
 		};
 		auto argMap = CreateArgumentMap();
@@ -603,14 +614,14 @@ static void VS_CC mvcompensateCreate(const VSMap* in, VSMap* out, void* userData
 		auto comps = std::vector<Clip>{};
 		comps.reserve(2 * radius + 1);
 		for (auto x : Range{ radius }) {
-			auto comp = Eval(Core["std"]["SelectEvery"]("clip", vectors, "cycle", 2 * radius, "offsets", x));
+			auto comp = Eval(Core["std"]["SelectEvery"]("clip", vectors, "cycle", 2 * radius, "offsets", x), CosineAnnealing(thsad, thsad2, radius - x, radius));
 			if (comp.ContainsVideoReference() == false)
 				return;
 			comps.push_back(std::move(comp));
 		}
 		comps.push_back(cclip);
 		for (auto x : Range{ radius, 2 * radius })
-			comps.push_back(Eval(Core["std"]["SelectEvery"]("clip", vectors, "cycle", 2 * radius, "offsets", x)));
+			comps.push_back(Eval(Core["std"]["SelectEvery"]("clip", vectors, "cycle", 2 * radius, "offsets", x), CosineAnnealing(thsad, thsad2, x - radius + 1, radius)));
 		auto compmulti = Core["std"]["Interleave"]("clips", comps);
 		VaporGlobals::API->propSetNode(out, "clip", compmulti.VideoNode, VSPropAppendMode::paAppend);
 	}
@@ -624,6 +635,7 @@ void mvcompensateRegister(VSRegisterFunction registerFunc, VSPlugin *plugin) {
 		"cclip:clip:opt;"
 		"scbehavior:int:opt;"
 		"thsad:float:opt;"
+		"thsad2:float:opt;"
 		"fields:int:opt;"
 		"time:float:opt;"
 		"thscd1:float:opt;"
