@@ -19,7 +19,7 @@ class OverlapWindows {
 	int32_t ox;
 	int32_t oy;
 	int32_t size;
-	int32_t * Overlap9Windows;
+	double *Overlap9Windows;
 	double *fWin1UVx;
 	double *fWin1UVxfirst;
 	double *fWin1UVxlast;
@@ -82,31 +82,31 @@ public:
 		}
 
 
-		Overlap9Windows = new int32_t[size * 9];
+		Overlap9Windows = new double[size * 9];
 
-		int32_t* winOverUVTL = Overlap9Windows;
-		int32_t* winOverUVTM = Overlap9Windows + size;
-		int32_t* winOverUVTR = Overlap9Windows + size * 2;
-		int32_t* winOverUVML = Overlap9Windows + size * 3;
-		int32_t* winOverUVMM = Overlap9Windows + size * 4;
-		int32_t* winOverUVMR = Overlap9Windows + size * 5;
-		int32_t* winOverUVBL = Overlap9Windows + size * 6;
-		int32_t* winOverUVBM = Overlap9Windows + size * 7;
-		int32_t* winOverUVBR = Overlap9Windows + size * 8;
+		auto winOverUVTL = Overlap9Windows;
+		auto winOverUVTM = Overlap9Windows + size;
+		auto winOverUVTR = Overlap9Windows + size * 2;
+		auto winOverUVML = Overlap9Windows + size * 3;
+		auto winOverUVMM = Overlap9Windows + size * 4;
+		auto winOverUVMR = Overlap9Windows + size * 5;
+		auto winOverUVBL = Overlap9Windows + size * 6;
+		auto winOverUVBM = Overlap9Windows + size * 7;
+		auto winOverUVBR = Overlap9Windows + size * 8;
 
 		for (int32_t j = 0; j < ny; j++)
 		{
 			for (int32_t i = 0; i < nx; i++)
 			{
-				winOverUVTL[i] = (int32_t)(fWin1UVyfirst[j] * fWin1UVxfirst[i] * 2048 + 0.5f);
-				winOverUVTM[i] = (int32_t)(fWin1UVyfirst[j] * fWin1UVx[i] * 2048 + 0.5f);
-				winOverUVTR[i] = (int32_t)(fWin1UVyfirst[j] * fWin1UVxlast[i] * 2048 + 0.5f);
-				winOverUVML[i] = (int32_t)(fWin1UVy[j] * fWin1UVxfirst[i] * 2048 + 0.5f);
-				winOverUVMM[i] = (int32_t)(fWin1UVy[j] * fWin1UVx[i] * 2048 + 0.5f);
-				winOverUVMR[i] = (int32_t)(fWin1UVy[j] * fWin1UVxlast[i] * 2048 + 0.5f);
-				winOverUVBL[i] = (int32_t)(fWin1UVylast[j] * fWin1UVxfirst[i] * 2048 + 0.5f);
-				winOverUVBM[i] = (int32_t)(fWin1UVylast[j] * fWin1UVx[i] * 2048 + 0.5f);
-				winOverUVBR[i] = (int32_t)(fWin1UVylast[j] * fWin1UVxlast[i] * 2048 + 0.5f);
+				winOverUVTL[i] = fWin1UVyfirst[j] * fWin1UVxfirst[i] * 2048;
+				winOverUVTM[i] = fWin1UVyfirst[j] * fWin1UVx[i] * 2048;
+				winOverUVTR[i] = fWin1UVyfirst[j] * fWin1UVxlast[i] * 2048;
+				winOverUVML[i] = fWin1UVy[j] * fWin1UVxfirst[i] * 2048;
+				winOverUVMM[i] = fWin1UVy[j] * fWin1UVx[i] * 2048;
+				winOverUVMR[i] = fWin1UVy[j] * fWin1UVxlast[i] * 2048;
+				winOverUVBL[i] = fWin1UVylast[j] * fWin1UVxfirst[i] * 2048;
+				winOverUVBM[i] = fWin1UVylast[j] * fWin1UVx[i] * 2048;
+				winOverUVBR[i] = fWin1UVylast[j] * fWin1UVxlast[i] * 2048;
 			}
 			winOverUVTL += nx;
 			winOverUVTM += nx;
@@ -131,20 +131,20 @@ public:
 	inline int32_t Getnx() const { return nx; }
 	inline int32_t Getny() const { return ny; }
 	inline int32_t GetSize() const { return size; }
-	inline int32_t *GetWindow(int32_t i) const { return Overlap9Windows + size*i; }
+	auto GetWindow(int32_t i) const { return Overlap9Windows + size*i; }
 };
 
 using OverlapsFunction = auto(*)(uint8_t *pDst, intptr_t nDstPitch,
 	const uint8_t *pSrc, intptr_t nSrcPitch,
-	int32_t *pWin, intptr_t nWinPitch)->void;
+	double *pWin, intptr_t nWinPitch)->void;
 
 template <int32_t blockWidth, int32_t blockHeight, typename PixelType2, typename PixelType>
-void Overlaps_C(uint8_t *pDst8, intptr_t nDstPitch, const uint8_t *pSrc8, intptr_t nSrcPitch, int32_t *pWin, intptr_t nWinPitch) {
+void Overlaps_C(uint8_t *pDst8, intptr_t nDstPitch, const uint8_t *pSrc8, intptr_t nSrcPitch, double *pWin, intptr_t nWinPitch) {
 	for (int32_t j = 0; j<blockHeight; j++) {
 		for (int32_t i = 0; i<blockWidth; i++) {
 			PixelType2 *pDst = (PixelType2 *)pDst8;
 			const PixelType *pSrc = (const PixelType *)pSrc8;
-			pDst[i] += ((static_cast<PixelType2>(pSrc[i]) * pWin[i]) / 64);
+			pDst[i] += (static_cast<PixelType2>(pSrc[i]) * pWin[i]) / 64.;
 		}
 		pDst8 += nDstPitch;
 		pSrc8 += nSrcPitch;

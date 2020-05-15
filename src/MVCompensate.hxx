@@ -220,8 +220,8 @@ static const VSFrameRef *VS_CC mvcompensateGetFrame(int32_t n, int32_t activatio
 					int32_t xx = 0;
 					for (int32_t bx = 0; bx<nBlkX; bx++) {
 						int32_t wbx = (bx + nBlkX - 3) / (nBlkX - 2);
-						int32_t *winOver = OverWins->GetWindow(wby + wbx);
-						int32_t *winOverUV = nullptr;
+						auto winOver = OverWins->GetWindow(wby + wbx);
+						auto winOverUV = static_cast<double*>(nullptr);
 						if (nSuperModeYUV & UVPLANES)
 							winOverUV = OverWinsUV->GetWindow(wby + wbx);
 						int32_t i = by*nBlkX + bx;
