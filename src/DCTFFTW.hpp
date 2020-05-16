@@ -6,9 +6,8 @@
 #include "DCT.hpp"
 #include "Include/Interface.hxx"
 
-static auto &&g_fftw_plans_mutex = std::mutex{};
-
 class DCTFFTW final :public DCTClass {
+	static inline auto g_fftw_plans_mutex = std::mutex{};
 	self(fSrc, static_cast<double *>(nullptr));
 	self(dctplan, static_cast<fftw_plan>(nullptr));
 	self(fSrcDCT, static_cast<double *>(nullptr));
@@ -38,7 +37,9 @@ public:
 	auto &operator=(DCTFFTW &&) = delete;
 	auto &operator=(const DCTFFTW &) = delete;
 	~DCTFFTW() override {
+		g_fftw_plans_mutex.lock();
 		fftw_destroy_plan(dctplan);
+		g_fftw_plans_mutex.unlock();
 		fftw_free(fSrc);
 		fftw_free(fSrcDCT);
 	}

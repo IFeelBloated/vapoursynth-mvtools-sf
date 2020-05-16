@@ -294,10 +294,10 @@ static const VSFrameRef *VS_CC mvflowblurGetFrame(int32_t n, int32_t activationR
 			MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYF, nBlkX, VYSmallYF, nBlkX);
 
 
-			d->upsizer->Resize(VXFullYB, VPitchY, VXSmallYB, nBlkX);
-			d->upsizer->Resize(VYFullYB, VPitchY, VYSmallYB, nBlkX);
-			d->upsizer->Resize(VXFullYF, VPitchY, VXSmallYF, nBlkX);
-			d->upsizer->Resize(VYFullYF, VPitchY, VYSmallYF, nBlkX);
+			d->upsizer->Resize(VXFullYB, VPitchY, VXSmallYB, nBlkX, true);
+			d->upsizer->Resize(VYFullYB, VPitchY, VYSmallYB, nBlkX, false);
+			d->upsizer->Resize(VXFullYF, VPitchY, VXSmallYF, nBlkX, true);
+			d->upsizer->Resize(VYFullYF, VPitchY, VYSmallYF, nBlkX, false);
 
 			FlowBlur(pDst[0], nDstPitches[0], pRef[0] + nOffsetY, nRefPitches[0],
 				VXFullYB, VXFullYF, VYFullYB, VYFullYF, VPitchY,
@@ -322,11 +322,11 @@ static const VSFrameRef *VS_CC mvflowblurGetFrame(int32_t n, int32_t activationR
 				VectorSmallMaskYToHalfUV(VXSmallYF, nBlkX, nBlkY, VXSmallUVF, xRatioUV);
 				VectorSmallMaskYToHalfUV(VYSmallYF, nBlkX, nBlkY, VYSmallUVF, yRatioUV);
 
-				d->upsizerUV->Resize(VXFullUVB, VPitchUV, VXSmallUVB, nBlkX);
-				d->upsizerUV->Resize(VYFullUVB, VPitchUV, VYSmallUVB, nBlkX);
+				d->upsizerUV->Resize(VXFullUVB, VPitchUV, VXSmallUVB, nBlkX, true);
+				d->upsizerUV->Resize(VYFullUVB, VPitchUV, VYSmallUVB, nBlkX, false);
 
-				d->upsizerUV->Resize(VXFullUVF, VPitchUV, VXSmallUVF, nBlkX);
-				d->upsizerUV->Resize(VYFullUVF, VPitchUV, VYSmallUVF, nBlkX);
+				d->upsizerUV->Resize(VXFullUVF, VPitchUV, VXSmallUVF, nBlkX, true);
+				d->upsizerUV->Resize(VYFullUVF, VPitchUV, VYSmallUVF, nBlkX, false);
 
 
 				FlowBlur(pDst[1], nDstPitches[1], pRef[1] + nOffsetUV, nRefPitches[1],
@@ -614,9 +614,9 @@ static void VS_CC mvflowblurCreate(const VSMap *in, VSMap *out, void *userData, 
 	d.nVPaddingUV = d.bleh->nVPadding / d.bleh->yRatioUV;
 	d.VPitchY = d.bleh->nWidth;
 	d.VPitchUV = d.nWidthUV;
-	d.upsizer = new SimpleResize<int32_t>(d.bleh->nWidth, d.bleh->nHeight, d.bleh->nBlkX, d.bleh->nBlkY);
+	d.upsizer = new SimpleResize<int32_t>(d.bleh->nWidth, d.bleh->nHeight, d.bleh->nBlkX, d.bleh->nBlkY, d.mvClipB->nWidth, d.mvClipB->nHeight, d.mvClipB->nPel);
 	if (d.vi->format->colorFamily != cmGray)
-		d.upsizerUV = new SimpleResize<int32_t>(d.nWidthUV, d.nHeightUV, d.bleh->nBlkX, d.bleh->nBlkY);
+		d.upsizerUV = new SimpleResize<int32_t>(d.nWidthUV, d.nHeightUV, d.bleh->nBlkX, d.bleh->nBlkY, d.nWidthUV, d.nHeightUV, d.mvClipB->nPel);
 	data = new MVFlowBlurData;
 	*data = d;
 	vsapi->createFilter(in, out, "FlowBlur", mvflowblurInit, mvflowblurGetFrame, mvflowblurFree, fmParallel, 0, data, core);

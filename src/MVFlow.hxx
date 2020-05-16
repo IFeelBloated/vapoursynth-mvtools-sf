@@ -176,16 +176,7 @@ else if (activationReason == arAllFramesReady) {
 		auto VXSmallY = new int32_t[nBlkYP * nBlkXP];
 		auto VYSmallY = new int32_t[nBlkYP * nBlkXP];
 		MakeVectorSmallMasks(balls, nBlkX, nBlkY, VXSmallY, nBlkXP, VYSmallY, nBlkXP);
-		if (nBlkXP > nBlkX)
-			for (auto j = 0; j < nBlkY; ++j) {
-				VXSmallY[j * nBlkXP + nBlkX] = std::min(VXSmallY[j * nBlkXP + nBlkX - 1], 0);
-				VYSmallY[j * nBlkXP + nBlkX] = VYSmallY[j * nBlkXP + nBlkX - 1];
-			}
-		if (nBlkYP > nBlkY)
-			for (auto i = 0; i < nBlkXP; ++i) {
-				VXSmallY[nBlkXP * nBlkY + i] = VXSmallY[nBlkXP * (nBlkY - 1) + i];
-				VYSmallY[nBlkXP * nBlkY + i] = std::min(VYSmallY[nBlkXP * (nBlkY - 1) + i], 0);
-			}
+		CheckAndPadSmallY(VXSmallY, VYSmallY, nBlkXP, nBlkYP, nBlkX, nBlkY);
 		auto fieldShift = 0;
 		if (d->fields && nPel > 1 && ((nref - n) % 2 != 0)) {
 			auto src = vsapi->getFrameFilter(n, d->finest, frameCtx);
@@ -216,8 +207,8 @@ else if (activationReason == arAllFramesReady) {
 		for (auto j = 0; j < nBlkYP; ++j)
 			for (auto i = 0; i < nBlkXP; ++i)
 				VYSmallY[j * nBlkXP + i] += fieldShift;
-		d->upsizer->Resize(VXFullY, VPitchY, VXSmallY, nBlkXP);
-		d->upsizer->Resize(VYFullY, VPitchY, VYSmallY, nBlkXP);
+		d->upsizer->Resize(VXFullY, VPitchY, VXSmallY, nBlkXP, true);
+		d->upsizer->Resize(VYFullY, VPitchY, VYSmallY, nBlkXP, false);
 		auto nOffsetY = nRefPitches[0] * nVPadding * nPel + nHPadding * bytesPerSample * nPel;
 		auto nOffsetUV = nRefPitches[1] * nVPaddingUV * nPel + nHPaddingUV * bytesPerSample * nPel;
 		if (static_cast<FlowModes>(d->mode) == FlowModes::Shift)
@@ -232,8 +223,8 @@ else if (activationReason == arAllFramesReady) {
 			auto VYSmallUV = new int32_t[nBlkYP * nBlkXP];
 			VectorSmallMaskYToHalfUV(VXSmallY, nBlkXP, nBlkYP, VXSmallUV, xRatioUV);
 			VectorSmallMaskYToHalfUV(VYSmallY, nBlkXP, nBlkYP, VYSmallUV, yRatioUV);
-			d->upsizerUV->Resize(VXFullUV, VPitchUV, VXSmallUV, nBlkXP);
-			d->upsizerUV->Resize(VYFullUV, VPitchUV, VYSmallUV, nBlkXP);
+			d->upsizerUV->Resize(VXFullUV, VPitchUV, VXSmallUV, nBlkXP, true);
+			d->upsizerUV->Resize(VYFullUV, VPitchUV, VYSmallUV, nBlkXP, false);
 			if (static_cast<FlowModes>(d->mode) == FlowModes::Shift) {
 				if (d->vi->format->colorFamily == cmRGB) {
 					flowMemset(pDst[1], 1.f, nHeightUV * nDstPitches[1]);
@@ -408,8 +399,12 @@ auto CreateFlow(auto in, auto out, auto core, auto vsapi) {
 		delete d.bleh;
 		return d;
 	}
-	d.nBlkXP = (d.bleh->nBlkX * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX < d.bleh->nWidth) ? d.bleh->nBlkX + 1 : d.bleh->nBlkX;
-	d.nBlkYP = (d.bleh->nBlkY * (d.bleh->nBlkSizeY - d.bleh->nOverlapY) + d.bleh->nOverlapY < d.bleh->nHeight) ? d.bleh->nBlkY + 1 : d.bleh->nBlkY;
+	d.nBlkXP = d.bleh->nBlkX;
+	while (d.nBlkXP * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX < d.bleh->nWidth)
+		d.nBlkXP++;
+	d.nBlkYP = d.bleh->nBlkY;
+	while (d.nBlkYP * (d.bleh->nBlkSizeY - d.bleh->nOverlapY) + d.bleh->nOverlapY < d.bleh->nHeight)
+		d.nBlkYP++;
 	d.nWidthP = d.nBlkXP * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX;
 	d.nHeightP = d.nBlkYP * (d.bleh->nBlkSizeY - d.bleh->nOverlapY) + d.bleh->nOverlapY;
 	d.nWidthPUV = d.nWidthP / d.bleh->xRatioUV;
@@ -420,9 +415,9 @@ auto CreateFlow(auto in, auto out, auto core, auto vsapi) {
 	d.nVPaddingUV = d.bleh->nVPadding / d.bleh->yRatioUV;
 	d.VPitchY = (d.nWidthP + 15) & (~15);
 	d.VPitchUV = (d.nWidthPUV + 15) & (~15);
-	d.upsizer = new SimpleResize<int32_t>(d.bleh->nWidth, d.bleh->nHeight, d.bleh->nBlkX, d.bleh->nBlkY);
+	d.upsizer = new SimpleResize<int32_t>(d.bleh->nWidth, d.bleh->nHeight, d.bleh->nBlkX, d.bleh->nBlkY, d.bleh->nWidth, d.bleh->nHeight, d.bleh->nPel);
 	if (d.vi->format->colorFamily != cmGray)
-		d.upsizerUV = new SimpleResize<int32_t>(d.nWidthUV, d.nHeightUV, d.bleh->nBlkX, d.bleh->nBlkY);
+		d.upsizerUV = new SimpleResize<int32_t>(d.nWidthUV, d.nHeightUV, d.bleh->nBlkX, d.bleh->nBlkY, d.nWidthUV, d.nHeightUV, d.bleh->nPel);
 	if (static_cast<FlowModes>(d.mode) == FlowModes::Fetch)
 		d.flow_function = flowFetch;
 	else if (static_cast<FlowModes>(d.mode) == FlowModes::Shift)

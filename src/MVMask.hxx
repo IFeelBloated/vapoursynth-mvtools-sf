@@ -110,8 +110,8 @@ struct MVMaskData final {
 		nWidthUV = bleh->nWidth / bleh->xRatioUV;
 		nHeightBUV = nHeightB / bleh->yRatioUV;
 		nWidthBUV = nWidthB / bleh->xRatioUV;
-		upsizer = new SimpleResize<float>(nWidthB, nHeightB, bleh->nBlkX, bleh->nBlkY);
-		upsizerUV = new SimpleResize<float>(nWidthBUV, nHeightBUV, bleh->nBlkX, bleh->nBlkY);
+		upsizer = new SimpleResize<float>(nWidthB, nHeightB, bleh->nBlkX, bleh->nBlkY, 0, 0, 0);
+		upsizerUV = new SimpleResize<float>(nWidthBUV, nHeightBUV, bleh->nBlkX, bleh->nBlkY, 0, 0, 0);
 	}
 	MVMaskData(const MVMaskData &) = delete;
 	MVMaskData(MVMaskData &&) = delete;
@@ -225,7 +225,7 @@ static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceDat
 			if (kind == 5)
 				std::memcpy(pDst[0], pSrc, nSrcPitch * nHeight * sizeof(float));
 			else {
-				upsizer->Resize(pDst[0], nDstPitches[0], smallMask.get(), nBlkX);
+				upsizer->Resize(pDst[0], nDstPitches[0], smallMask.get(), nBlkX, false);
 				if (nWidth > nWidthB)
 					for (auto h = 0; h < nHeight; ++h)
 						for (auto w = nWidthB; w < nWidth; ++w)
@@ -236,9 +236,9 @@ static auto VS_CC mvmaskGetFrame(int n, int activationReason, void **instanceDat
 		};
 		auto SmallMaskToChroma = [&]() {
 			if (!d->IsGray) {
-				upsizerUV->Resize(pDst[1], nDstPitches[1], smallMask.get(), nBlkX);
+				upsizerUV->Resize(pDst[1], nDstPitches[1], smallMask.get(), nBlkX, false);
 				if (kind == 5)
-					upsizerUV->Resize(pDst[2], nDstPitches[2], smallMaskV.get(), nBlkX);
+					upsizerUV->Resize(pDst[2], nDstPitches[2], smallMaskV.get(), nBlkX, false);
 				else
 					std::memcpy(pDst[2], pDst[1], nHeightUV * nDstPitches[1] * sizeof(float));
 				if (nWidthUV > nWidthBUV)

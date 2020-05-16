@@ -30,6 +30,6 @@ public:
 		return Vector; 
 	}
 	auto GetSAD() const {
-		return reinterpret_cast<const float &>(Vector.sad);
+		return Vector.sad;
 	}
 };

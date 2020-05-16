@@ -129,16 +129,16 @@ class PlaneOfBlocks {
 	inline const uint8_t* GetRefBlockV(int32_t nVx, int32_t nVy) {
 		if (nPel == 2)
 			return pRefFrame->GetPlane(VPLANE)->GetAbsolutePointerPel2(
-				x[1] * 2 + nVx / xRatioUV,
-				y[1] * 2 + nVy / yRatioUV);
+				x[2] * 2 + nVx / xRatioUV,
+				y[2] * 2 + nVy / yRatioUV);
 		else if (nPel == 1)
 			return pRefFrame->GetPlane(VPLANE)->GetAbsolutePointerPel1(
-				x[1] + nVx / xRatioUV,
-				y[1] + nVy / yRatioUV);
+				x[2] + nVx / xRatioUV,
+				y[2] + nVy / yRatioUV);
 		else
 			return pRefFrame->GetPlane(VPLANE)->GetAbsolutePointerPel4(
-				x[1] * 4 + nVx / xRatioUV,
-				y[1] * 4 + nVy / yRatioUV);
+				x[2] * 4 + nVx / xRatioUV,
+				y[2] * 4 + nVy / yRatioUV);
 	}
 	inline const uint8_t* GetSrcBlock(int32_t nX, int32_t nY) {
 		return pSrcFrame->GetPlane(YPLANE)->GetAbsolutePelPointer(nX, nY);
@@ -253,7 +253,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = static_cast<float>(sad + saduv);
+			bestMV.sad = sad + saduv;
 		}
 	}
 	inline void CheckMV(int32_t vx, int32_t vy) {
@@ -270,7 +270,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = static_cast<float>(sad + saduv);
+			bestMV.sad = sad + saduv;
 		}
 	}
 	inline void CheckMV2(int32_t vx, int32_t vy, int32_t* dir, int32_t val) {
@@ -287,7 +287,7 @@ class PlaneOfBlocks {
 			bestMV.x = vx;
 			bestMV.y = vy;
 			nMinCost = cost;
-			bestMV.sad = static_cast<float>(sad + saduv);
+			bestMV.sad = sad + saduv;
 			*dir = val;
 		}
 	}
@@ -303,7 +303,7 @@ class PlaneOfBlocks {
 			cost += saduv + ((penaltyNew * saduv) / 256);
 			if (cost >= nMinCost) return;
 			nMinCost = cost;
-			bestMV.sad = static_cast<float>(sad + saduv);
+			bestMV.sad = sad + saduv;
 			*dir = val;
 		}
 	}
@@ -528,7 +528,7 @@ public:
 		SATD = satds[nBlkSizeX][nBlkSizeY];
 		if (!chroma)
 			SADCHROMA = nullptr;
-		dctpitch = max(nBlkSizeX, 16) * 4;
+		dctpitch = nBlkSizeX * sizeof(float);
 		dctSrc = vs_aligned_malloc<uint8_t>(nBlkSizeY * dctpitch, ALIGN_PLANES);
 		dctRef = vs_aligned_malloc<uint8_t>(nBlkSizeY * dctpitch, ALIGN_PLANES);
 
@@ -542,7 +542,7 @@ public:
 
 		freqSize = 8192 * nPel * 2;
 		freqArray = new int32_t[freqSize];
-		verybigSAD = static_cast<double>(nBlkSizeX) * nBlkSizeY;
+		verybigSAD = 1. * nBlkSizeX * nBlkSizeY;
 	}
 	~PlaneOfBlocks() {
 		delete[] vectors;
@@ -805,7 +805,7 @@ public:
 			+ SADCHROMA(pSrc[2], nSrcPitch[2], GetRefBlockV(0, 0), nRefPitch[2]) : 0.f;
 		sad = LumaSAD(GetRefBlock(0, zeroMVfieldShifted.y));
 		sad += saduv;
-		bestMV.sad = static_cast<float>(sad);
+		bestMV.sad = sad;
 		nMinCost = sad + ((penaltyZero * sad) / 256); // v.1.11.0.2
 
 		VectorStructure bestMVMany[8];
@@ -831,7 +831,7 @@ public:
 		{
 			bestMV.x = globalMVPredictor.x;
 			bestMV.y = globalMVPredictor.y;
-			bestMV.sad = static_cast<float>(sad);
+			bestMV.sad = sad;
 			nMinCost = cost;
 		}
 		if (tryMany)
@@ -851,7 +851,7 @@ public:
 		{
 			bestMV.x = predictor.x;
 			bestMV.y = predictor.y;
-			bestMV.sad = static_cast<float>(sad);
+			bestMV.sad = sad;
 			nMinCost = cost;
 		}
 		if (tryMany)
@@ -864,11 +864,12 @@ public:
 
 		// then all the other predictors
 		int32_t npred = (temporal) ? 5 : 4;
+		constexpr auto epsilon = 1e-5;
 
 		for (int32_t i = 0; i < npred; i++)
 		{
 			if (tryMany)
-				nMinCost = verybigSAD;
+				nMinCost = verybigSAD + epsilon;
 			CheckMV0(predictors[i].x, predictors[i].y);
 			if (tryMany)
 			{
@@ -880,9 +881,8 @@ public:
 		}
 
 
-		if (tryMany)
-		{ // select best of multi best
-			nMinCost = verybigSAD;
+		if (tryMany) { // select best of multi best
+			nMinCost = verybigSAD + epsilon;
 			for (int32_t i = 0; i < npred + 3; i++)
 			{
 				if (nMinCostMany[i] < nMinCost)
@@ -1149,6 +1149,7 @@ public:
 		planeSAD = 0.0;
 		badcount = 0;
 		tryMany = _tryMany;
+		sumLumaChange = 0.;
 		// Functions using double must not be used here
 
 		for (blky = 0; blky < nBlkY; blky++)
@@ -1226,25 +1227,17 @@ public:
 				/* search the mv */
 				predictor = ClipMV(vectors[blkIdx]);
 				if (temporal)
-					predictors[4] = ClipMV(*reinterpret_cast<VectorStructure*>(&vecPrev[blkIdx * N_PER_BLOCK])); // temporal predictor
+					predictors[4] = ClipMV(reinterpret_cast<VectorStructure&>(vecPrev[blkIdx * N_PER_BLOCK])); // temporal predictor
 				else
 					predictors[4] = ClipMV(zeroMV);
 
 				PseudoEPZSearch();
 
-				if (outfilebuf != nullptr) // write vector to outfile
-				{
-					outfilebuf[blkx * 4 + 0] = bestMV.x;
-					outfilebuf[blkx * 4 + 1] = bestMV.y;
-					outfilebuf[blkx * 4 + 2] = reinterpret_cast<int32_t&>(bestMV.sad);
-					
-				}
 
 				/* write the results */
-				pBlkData[blkx * N_PER_BLOCK + 0] = bestMV.x;
-				pBlkData[blkx * N_PER_BLOCK + 1] = bestMV.y;
-				pBlkData[blkx * N_PER_BLOCK + 2] = reinterpret_cast<int32_t&>(bestMV.sad);
 
+				auto& BlockData = reinterpret_cast<VectorStructure&>(pBlkData[blkx * N_PER_BLOCK]);
+				BlockData = bestMV;
 
 
 				if (smallestPlane)
@@ -1261,8 +1254,6 @@ public:
 				}
 			}
 			pBlkData += nBlkX * N_PER_BLOCK;
-			if (outfilebuf != nullptr) // write vector to outfile
-				outfilebuf += nBlkX * 4;// 4 int32_t word per block
 
 			y[0] += (nBlkSizeY - nOverlapY);
 			if (pSrcFrame->GetMode() & UPLANE)
@@ -1327,7 +1318,7 @@ public:
 				{
 					vectors[index].x = 9 * v1.x + 3 * v2.x + 3 * v3.x + v4.x;
 					vectors[index].y = 9 * v1.y + 3 * v2.y + 3 * v3.y + v4.y;
-					temp_sad = 9 * static_cast<double>(v1.sad) + 3 * v2.sad + 3 * v3.sad + v4.sad;
+					temp_sad = 9 * v1.sad + 3 * v2.sad + 3 * v3.sad + v4.sad;
 				}
 				else if (nOverlapX <= (nBlkSizeX >> 1) && nOverlapY <= (nBlkSizeY >> 1)) // corrected in v1.4.11
 				{
@@ -1346,11 +1337,11 @@ public:
 					// Dead branch. The overlap is no longer allowed to be more than half the block size.
 					vectors[index].x = (v1.x + v2.x + v3.x + v4.x) << 2;
 					vectors[index].y = (v1.y + v2.y + v3.y + v4.y) << 2;
-					temp_sad = (static_cast<double>(v1.sad) + v2.sad + v3.sad + v4.sad) * 4;
+					temp_sad = (v1.sad + v2.sad + v3.sad + v4.sad) * 4;
 				}
 				vectors[index].x = vectors[index].x ? vectors[index].x / abs(vectors[index].x) * ((abs(vectors[index].x) >> normFactor) << mulFactor) : 0;
 				vectors[index].y = vectors[index].y ? vectors[index].y / abs(vectors[index].y) * ((abs(vectors[index].y) >> normFactor) << mulFactor) : 0;
-				vectors[index].sad = static_cast<float>(temp_sad / 16);
+				vectors[index].sad = temp_sad / 16;
 			}
 		}
 	}
@@ -1358,25 +1349,22 @@ public:
 		array[0] = nBlkCount * N_PER_BLOCK + 1;
 	}
 	auto WriteDefaultToArray(int32_t* array, int32_t divideMode) {
-		auto verybigSAD_f = static_cast<float>(verybigSAD);
 		array[0] = nBlkCount * N_PER_BLOCK + 1;
-		for (int32_t i = 0; i < nBlkCount * N_PER_BLOCK; i += N_PER_BLOCK)
-		{
-			array[i + 1] = 0;
-			array[i + 2] = 0;
-			array[i + 3] = reinterpret_cast<std::int32_t&>(verybigSAD_f);
+		for (auto i : Range{ 0, nBlkCount * N_PER_BLOCK, N_PER_BLOCK }) {
+			auto& BlockData = reinterpret_cast<VectorStructure&>(array[i + 1]);
+			BlockData.x = 0;
+			BlockData.y = 0;
+			BlockData.sad = verybigSAD;
 		}
-
-		if (nLogScale == 0)
-		{
+		if (nLogScale == 0) {
 			array += array[0];
 			if (divideMode) { // reserve space for divided subblocks extra level
 				array[0] = nBlkCount * N_PER_BLOCK * 4 + 1; // 4 subblocks
-				for (int32_t i = 0; i < nBlkCount * 4 * N_PER_BLOCK; i += N_PER_BLOCK)
-				{
-					array[i + 1] = 0;
-					array[i + 2] = 0;
-					array[i + 3] = reinterpret_cast<std::int32_t&>(verybigSAD_f);
+				for (auto i : Range{ 0, nBlkCount * 4 * N_PER_BLOCK, N_PER_BLOCK }) {
+					auto& BlockData = reinterpret_cast<VectorStructure&>(array[i + 1]);
+					BlockData.x = 0;
+					BlockData.y = 0;
+					BlockData.sad = verybigSAD;
 				}
 				array += array[0];
 			}
@@ -1632,15 +1620,15 @@ public:
 					// interpolate
 					int32_t vector1_x = vectorOld1.x * nStepXold + deltaX * (vectorOld2.x - vectorOld1.x); // scaled by nStepXold to skip slow division
 					int32_t vector1_y = vectorOld1.y * nStepXold + deltaX * (vectorOld2.y - vectorOld1.y);
-					auto vector1_sad = static_cast<double>(vectorOld1.sad) * nStepXold + deltaX * (vectorOld2.sad - vectorOld1.sad);
+					auto vector1_sad = vectorOld1.sad * nStepXold + deltaX * (vectorOld2.sad - vectorOld1.sad);
 
 					int32_t vector2_x = vectorOld3.x * nStepXold + deltaX * (vectorOld4.x - vectorOld3.x);
 					int32_t vector2_y = vectorOld3.y * nStepXold + deltaX * (vectorOld4.y - vectorOld3.y);
-					auto vector2_sad = static_cast<double>(vectorOld3.sad) * nStepXold + deltaX * (vectorOld4.sad - vectorOld3.sad);
+					auto vector2_sad = vectorOld3.sad * nStepXold + deltaX * (vectorOld4.sad - vectorOld3.sad);
 
 					vectorOld.x = (vector1_x + deltaY * (vector2_x - vector1_x) / nStepYold) / nStepXold;
 					vectorOld.y = (vector1_y + deltaY * (vector2_y - vector1_y) / nStepYold) / nStepXold;
-					vectorOld.sad = static_cast<float>((vector1_sad + deltaY * (vector2_sad - vector1_sad) / nStepYold) / nStepXold);
+					vectorOld.sad = (vector1_sad + deltaY * (vector2_sad - vector1_sad) / nStepYold) / nStepXold;
 
 				}
 				else // nearest
@@ -1660,7 +1648,7 @@ public:
 				vectorOld.y = vectorOld.y ? vectorOld.y / abs(vectorOld.y) * ((abs(vectorOld.y) << nLogPel) >> nLogPelold) : 0;
 
 				predictor = ClipMV(vectorOld); // predictor
-				predictor.sad = static_cast<float>(static_cast<double>(vectorOld.sad) * (nBlkSizeX * nBlkSizeY) / (nBlkSizeXold * nBlkSizeYold)); // normalized to new block size
+				predictor.sad = vectorOld.sad * (nBlkSizeX * nBlkSizeY) / (nBlkSizeXold * nBlkSizeYold); // normalized to new block size
 
 				bestMV.x = predictor.x;
 				bestMV.y = predictor.y;
@@ -1680,7 +1668,7 @@ public:
 					+ SADCHROMA(pSrc[2], nSrcPitch[2], GetRefBlockV(predictor.x, predictor.y), nRefPitch[2]) : 0.f;
 				double sad = LumaSAD(GetRefBlock(predictor.x, predictor.y));
 				sad += saduv;
-				bestMV.sad = static_cast<float>(sad);
+				bestMV.sad = sad;
 				nMinCost = sad;
 
 
@@ -1741,23 +1729,10 @@ public:
 				vectors[blkIdx].sad = bestMV.sad;
 
 
-				if (outfilebuf != nullptr) // write vector to outfile
-				{
-					outfilebuf[blkx * 4 + 0] = bestMV.x;
-					outfilebuf[blkx * 4 + 1] = bestMV.y;
-					outfilebuf[blkx * 4 + 2] = reinterpret_cast<int32_t&>(bestMV.sad);
-					
-				}
-
 				/* write the results */
-				pBlkData[blkx * N_PER_BLOCK + 0] = bestMV.x;
-				pBlkData[blkx * N_PER_BLOCK + 1] = bestMV.y;
-				pBlkData[blkx * N_PER_BLOCK + 2] = reinterpret_cast<int32_t&>(bestMV.sad);
+				auto& BlockData = reinterpret_cast<VectorStructure&>(pBlkData[blkx * N_PER_BLOCK]);
+				BlockData = bestMV;
 
-
-
-				if (smallestPlane)
-					sumLumaChange += LUMA(GetRefBlock(0, 0), nRefPitch[0]) - LUMA(pSrc[0], nSrcPitch[0]);
 
 				if (iblkx < nBlkX - 1)
 				{
@@ -1769,8 +1744,6 @@ public:
 				}
 			}
 			pBlkData += nBlkX * N_PER_BLOCK;
-			if (outfilebuf != nullptr) // write vector to outfile
-				outfilebuf += nBlkX * 4;// 4 int32_t word per block
 
 			y[0] += (nBlkSizeY - nOverlapY);
 			if (pSrcFrame->GetMode() & UPLANE)

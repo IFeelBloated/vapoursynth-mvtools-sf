@@ -261,89 +261,52 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 			int32_t nOffsetUV = nRefPitches[1] * nVPaddingUV * nPel + nHPaddingUV * bytesPerSample * nPel;
 
 			if (nright != d->nrightLast) {
-
 				MakeVectorSmallMasks(ballsB, nBlkX, nBlkY, VXSmallYB, nBlkXP, VYSmallYB, nBlkXP);
-				if (nBlkXP > nBlkX) {// fill right
-					for (int32_t j = 0; j<nBlkY; j++) {
-						VXSmallYB[j*nBlkXP + nBlkX] = VSMIN(VXSmallYB[j*nBlkXP + nBlkX - 1], 0);
-						VYSmallYB[j*nBlkXP + nBlkX] = VYSmallYB[j*nBlkXP + nBlkX - 1];
-					}
-				}
-				if (nBlkYP > nBlkY) {// fill bottom
-					for (int32_t i = 0; i<nBlkXP; i++) {
-						VXSmallYB[nBlkXP*nBlkY + i] = VXSmallYB[nBlkXP*(nBlkY - 1) + i];
-						VYSmallYB[nBlkXP*nBlkY + i] = VSMIN(VYSmallYB[nBlkXP*(nBlkY - 1) + i], 0);
-					}
-				}
-
-				upsizer->Resize(VXFullYB, VPitchY, VXSmallYB, nBlkXP);
-				upsizer->Resize(VYFullYB, VPitchY, VYSmallYB, nBlkXP);
+				CheckAndPadSmallY(VXSmallYB, VYSmallYB, nBlkXP, nBlkYP, nBlkX, nBlkY);
+				upsizer->Resize(VXFullYB, VPitchY, VXSmallYB, nBlkXP, true);
+				upsizer->Resize(VYFullYB, VPitchY, VYSmallYB, nBlkXP, false);
 
 				if (d->vi.format->colorFamily != cmGray) {
 					VectorSmallMaskYToHalfUV(VXSmallYB, nBlkXP, nBlkYP, VXSmallUVB, xRatioUV);
 					VectorSmallMaskYToHalfUV(VYSmallYB, nBlkXP, nBlkYP, VYSmallUVB, yRatioUV);
 
-					upsizerUV->Resize(VXFullUVB, VPitchUV, VXSmallUVB, nBlkXP);
-					upsizerUV->Resize(VYFullUVB, VPitchUV, VYSmallUVB, nBlkXP);
+					upsizerUV->Resize(VXFullUVB, VPitchUV, VXSmallUVB, nBlkXP, true);
+					upsizerUV->Resize(VYFullUVB, VPitchUV, VYSmallUVB, nBlkXP, false);
 				}
 			}
 			// analyze vectors field to detect occlusion
 			//        double occNormB = (256-time256)/(256*ml);
 			//        MakeVectorOcclusionMask(mvClipB, nBlkX, nBlkY, occNormB, 1.0, nPel, MaskSmallB, nBlkXP);
 			MakeVectorOcclusionMaskTime(ballsB, true, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallB, nBlkXP, (256 - time256), nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
-			if (nBlkXP > nBlkX) // fill right
-				for (int32_t j = 0; j<nBlkY; j++)
-					MaskSmallB[j*nBlkXP + nBlkX] = MaskSmallB[j*nBlkXP + nBlkX - 1];
-			if (nBlkYP > nBlkY) // fill bottom
-				for (int32_t i = 0; i<nBlkXP; i++)
-					MaskSmallB[nBlkXP*nBlkY + i] = MaskSmallB[nBlkXP*(nBlkY - 1) + i];
-
-			upsizer2->Resize(MaskFullYB, VPitchY, MaskSmallB, nBlkXP);
+			CheckAndPadMaskSmall(MaskSmallB, nBlkXP, nBlkYP, nBlkX, nBlkY);
+			upsizer2->Resize(MaskFullYB, VPitchY, MaskSmallB, nBlkXP, false);
 			if (d->vi.format->colorFamily != cmGray)
-				upsizerUV2->Resize(MaskFullUVB, VPitchUV, MaskSmallB, nBlkXP);
+				upsizerUV2->Resize(MaskFullUVB, VPitchUV, MaskSmallB, nBlkXP, false);
 
 			d->nrightLast = nright;
 
 			if (nleft != d->nleftLast) {
 				MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYF, nBlkXP, VYSmallYF, nBlkXP);
-				if (nBlkXP > nBlkX) {// fill right
-					for (int32_t j = 0; j<nBlkY; j++) {
-						VXSmallYF[j*nBlkXP + nBlkX] = VSMIN(VXSmallYF[j*nBlkXP + nBlkX - 1], 0);
-						VYSmallYF[j*nBlkXP + nBlkX] = VYSmallYF[j*nBlkXP + nBlkX - 1];
-					}
-				}
-				if (nBlkYP > nBlkY) {// fill bottom
-					for (int32_t i = 0; i<nBlkXP; i++) {
-						VXSmallYF[nBlkXP*nBlkY + i] = VXSmallYF[nBlkXP*(nBlkY - 1) + i];
-						VYSmallYF[nBlkXP*nBlkY + i] = VSMIN(VYSmallYF[nBlkXP*(nBlkY - 1) + i], 0);
-					}
-				}
-
-				upsizer->Resize(VXFullYF, VPitchY, VXSmallYF, nBlkXP);
-				upsizer->Resize(VYFullYF, VPitchY, VYSmallYF, nBlkXP);
+				CheckAndPadSmallY(VXSmallYF, VYSmallYF, nBlkXP, nBlkYP, nBlkX, nBlkY);
+				upsizer->Resize(VXFullYF, VPitchY, VXSmallYF, nBlkXP, true);
+				upsizer->Resize(VYFullYF, VPitchY, VYSmallYF, nBlkXP, false);
 
 				if (d->vi.format->colorFamily != cmGray) {
 					VectorSmallMaskYToHalfUV(VXSmallYF, nBlkXP, nBlkYP, VXSmallUVF, xRatioUV);
 					VectorSmallMaskYToHalfUV(VYSmallYF, nBlkXP, nBlkYP, VYSmallUVF, yRatioUV);
 
-					upsizerUV->Resize(VXFullUVF, VPitchUV, VXSmallUVF, nBlkXP);
-					upsizerUV->Resize(VYFullUVF, VPitchUV, VYSmallUVF, nBlkXP);
+					upsizerUV->Resize(VXFullUVF, VPitchUV, VXSmallUVF, nBlkXP, true);
+					upsizerUV->Resize(VYFullUVF, VPitchUV, VYSmallUVF, nBlkXP, false);
 				}
 			}
 			// analyze vectors field to detect occlusion
 			//        double occNormF = time256/(256*ml);
 			//        MakeVectorOcclusionMask(mvClipF, nBlkX, nBlkY, occNormF, 1.0, nPel, MaskSmallF, nBlkXP);
 			MakeVectorOcclusionMaskTime(ballsF, false, nBlkX, nBlkY, ml, 1.0, nPel, MaskSmallF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
-			if (nBlkXP > nBlkX) // fill right
-				for (int32_t j = 0; j<nBlkY; j++)
-					MaskSmallF[j*nBlkXP + nBlkX] = MaskSmallF[j*nBlkXP + nBlkX - 1];
-			if (nBlkYP > nBlkY) // fill bottom
-				for (int32_t i = 0; i<nBlkXP; i++)
-					MaskSmallF[nBlkXP*nBlkY + i] = MaskSmallF[nBlkXP*(nBlkY - 1) + i];
-
-			upsizer2->Resize(MaskFullYF, VPitchY, MaskSmallF, nBlkXP);
+			CheckAndPadMaskSmall(MaskSmallF, nBlkXP, nBlkYP, nBlkX, nBlkY);
+			upsizer2->Resize(MaskFullYF, VPitchY, MaskSmallF, nBlkXP, false);
 			if (d->vi.format->colorFamily != cmGray)
-				upsizerUV2->Resize(MaskFullUVF, VPitchUV, MaskSmallF, nBlkXP);
+				upsizerUV2->Resize(MaskFullUVF, VPitchUV, MaskSmallF, nBlkXP, false);
 
 			d->nleftLast = nleft;
 
@@ -364,28 +327,13 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 														  // get vector mask from extra frames
 				MakeVectorSmallMasks(ballsB, nBlkX, nBlkY, VXSmallYBB, nBlkXP, VYSmallYBB, nBlkXP);
 				MakeVectorSmallMasks(ballsF, nBlkX, nBlkY, VXSmallYFF, nBlkXP, VYSmallYFF, nBlkXP);
-				if (nBlkXP > nBlkX) {// fill right
-					for (int32_t j = 0; j<nBlkY; j++) {
-						VXSmallYBB[j*nBlkXP + nBlkX] = VSMIN(VXSmallYBB[j*nBlkXP + nBlkX - 1], 0);
-						VYSmallYBB[j*nBlkXP + nBlkX] = VYSmallYBB[j*nBlkXP + nBlkX - 1];
-						VXSmallYFF[j*nBlkXP + nBlkX] = VSMIN(VXSmallYFF[j*nBlkXP + nBlkX - 1], 0);
-						VYSmallYFF[j*nBlkXP + nBlkX] = VYSmallYFF[j*nBlkXP + nBlkX - 1];
-					}
-				}
-				if (nBlkYP > nBlkY) {// fill bottom
-					for (int32_t i = 0; i<nBlkXP; i++) {
-						VXSmallYBB[nBlkXP*nBlkY + i] = VXSmallYBB[nBlkXP*(nBlkY - 1) + i];
-						VYSmallYBB[nBlkXP*nBlkY + i] = VSMIN(VYSmallYBB[nBlkXP*(nBlkY - 1) + i], 0);
-						VXSmallYFF[nBlkXP*nBlkY + i] = VXSmallYFF[nBlkXP*(nBlkY - 1) + i];
-						VYSmallYFF[nBlkXP*nBlkY + i] = VSMIN(VYSmallYFF[nBlkXP*(nBlkY - 1) + i], 0);
-					}
-				}
+				CheckAndPadSmallY(VXSmallYBB, VYSmallYBB, nBlkXP, nBlkYP, nBlkX, nBlkY);
+				CheckAndPadSmallY(VXSmallYFF, VYSmallYFF, nBlkXP, nBlkYP, nBlkX, nBlkY);
+				upsizer->Resize(VXFullYBB, VPitchY, VXSmallYBB, nBlkXP, true);
+				upsizer->Resize(VYFullYBB, VPitchY, VYSmallYBB, nBlkXP, false);
 
-				upsizer->Resize(VXFullYBB, VPitchY, VXSmallYBB, nBlkXP);
-				upsizer->Resize(VYFullYBB, VPitchY, VYSmallYBB, nBlkXP);
-
-				upsizer->Resize(VXFullYFF, VPitchY, VXSmallYFF, nBlkXP);
-				upsizer->Resize(VYFullYFF, VPitchY, VYSmallYFF, nBlkXP);
+				upsizer->Resize(VXFullYFF, VPitchY, VXSmallYFF, nBlkXP, true);
+				upsizer->Resize(VYFullYFF, VPitchY, VYSmallYFF, nBlkXP, false);
 
 				FlowInterExtra(pDst[0], nDstPitches[0], pRef[0] + nOffsetY, pSrc[0] + nOffsetY, nRefPitches[0],
 					VXFullYB, VXFullYF, VYFullYB, VYFullYF, MaskFullYB, MaskFullYF, VPitchY,
@@ -396,11 +344,11 @@ static const VSFrameRef *VS_CC mvflowfpsGetFrame(int32_t n, int32_t activationRe
 					VectorSmallMaskYToHalfUV(VXSmallYFF, nBlkXP, nBlkYP, VXSmallUVFF, xRatioUV);
 					VectorSmallMaskYToHalfUV(VYSmallYFF, nBlkXP, nBlkYP, VYSmallUVFF, yRatioUV);
 
-					upsizerUV->Resize(VXFullUVBB, VPitchUV, VXSmallUVBB, nBlkXP);
-					upsizerUV->Resize(VYFullUVBB, VPitchUV, VYSmallUVBB, nBlkXP);
+					upsizerUV->Resize(VXFullUVBB, VPitchUV, VXSmallUVBB, nBlkXP, true);
+					upsizerUV->Resize(VYFullUVBB, VPitchUV, VYSmallUVBB, nBlkXP, false);
 
-					upsizerUV->Resize(VXFullUVFF, VPitchUV, VXSmallUVFF, nBlkXP);
-					upsizerUV->Resize(VYFullUVFF, VPitchUV, VYSmallUVFF, nBlkXP);
+					upsizerUV->Resize(VXFullUVFF, VPitchUV, VXSmallUVFF, nBlkXP, true);
+					upsizerUV->Resize(VYFullUVFF, VPitchUV, VYSmallUVFF, nBlkXP, false);
 
 					FlowInterExtra(pDst[1], nDstPitches[1], pRef[1] + nOffsetUV, pSrc[1] + nOffsetUV, nRefPitches[1],
 						VXFullUVB, VXFullUVF, VYFullUVB, VYFullUVF, MaskFullUVB, MaskFullUVF, VPitchUV,
@@ -858,8 +806,12 @@ static void VS_CC mvflowfpsCreate(const VSMap *in, VSMap *out, void *userData, V
 		return;
 	}
 
-	d.nBlkXP = (d.bleh->nBlkX * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX < d.bleh->nWidth) ? d.bleh->nBlkX + 1 : d.bleh->nBlkX;
-	d.nBlkYP = (d.bleh->nBlkY * (d.bleh->nBlkSizeY - d.bleh->nOverlapY) + d.bleh->nOverlapY < d.bleh->nHeight) ? d.bleh->nBlkY + 1 : d.bleh->nBlkY;
+	d.nBlkXP = d.bleh->nBlkX;
+	while (d.nBlkXP * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX < d.bleh->nWidth)
+		d.nBlkXP++;
+	d.nBlkYP = d.bleh->nBlkY;
+	while (d.nBlkYP * (d.bleh->nBlkSizeY - d.bleh->nOverlapY) + d.bleh->nOverlapY < d.bleh->nHeight)
+		d.nBlkYP++;
 	d.nWidthP = d.nBlkXP * (d.bleh->nBlkSizeX - d.bleh->nOverlapX) + d.bleh->nOverlapX;
 	d.nHeightP = d.nBlkYP * (d.bleh->nBlkSizeY - d.bleh->nOverlapY) + d.bleh->nOverlapY;
 
@@ -907,8 +859,8 @@ static void VS_CC mvflowfpsCreate(const VSMap *in, VSMap *out, void *userData, V
 	d.MaskSmallF = new double[d.nBlkXP * d.nBlkYP];
 	d.MaskFullYF = new double[d.nHeightP * d.VPitchY];
 
-	d.upsizer = new SimpleResize<int32_t>(d.nWidthP, d.nHeightP, d.nBlkXP, d.nBlkYP);
-	d.upsizer2 = new SimpleResize<double>(d.nWidthP, d.nHeightP, d.nBlkXP, d.nBlkYP);
+	d.upsizer = new SimpleResize<int32_t>(d.nWidthP, d.nHeightP, d.nBlkXP, d.nBlkYP, d.mvClipB->nWidth, d.mvClipB->nHeight, d.mvClipB->nPel);
+	d.upsizer2 = new SimpleResize<double>(d.nWidthP, d.nHeightP, d.nBlkXP, d.nBlkYP, 0, 0, 0);
 
 	if (d.vi.format->colorFamily != cmGray) {
 		d.VXFullUVB = new int32_t[d.nHeightPUV * d.VPitchUV];
@@ -934,8 +886,8 @@ static void VS_CC mvflowfpsCreate(const VSMap *in, VSMap *out, void *userData, V
 		d.MaskFullUVB = new double[d.nHeightPUV * d.VPitchUV];
 		d.MaskFullUVF = new double[d.nHeightPUV * d.VPitchUV];
 
-		d.upsizerUV = new SimpleResize<int32_t>(d.nWidthPUV, d.nHeightPUV, d.nBlkXP, d.nBlkYP);
-		d.upsizerUV2 = new SimpleResize<double>(d.nWidthPUV, d.nHeightPUV, d.nBlkXP, d.nBlkYP);
+		d.upsizerUV = new SimpleResize<int32_t>(d.nWidthPUV, d.nHeightPUV, d.nBlkXP, d.nBlkYP, d.nWidthUV, d.nHeightUV, d.mvClipB->nPel);
+		d.upsizerUV2 = new SimpleResize<double>(d.nWidthPUV, d.nHeightPUV, d.nBlkXP, d.nBlkYP, 0, 0, 0);
 	}
 
 

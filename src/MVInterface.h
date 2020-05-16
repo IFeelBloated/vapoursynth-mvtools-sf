@@ -23,7 +23,7 @@ constexpr auto MVAnalysisDataVersion = 5;
 struct VectorStructure {
 	self(x, 0_i32);
 	self(y, 0_i32);
-	self(sad, -1.f);
+	self(sad, -1.);
 };
 
 constexpr auto N_PER_BLOCK = sizeof(VectorStructure) / sizeof(std::int32_t);

@@ -338,28 +338,20 @@ static const VSFrameRef *VS_CC mvblockfpsGetFrame(int32_t n, int32_t activationR
 					MakeSADMaskTime(ballsF, nBlkX, nBlkY, 4.0 / (ml * nBlkSizeX * nBlkSizeY), 1.0, nPel, smallMaskF, nBlkXP, time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 					MakeSADMaskTime(ballsB, nBlkX, nBlkY, 4.0 / (ml * nBlkSizeX * nBlkSizeY), 1.0, nPel, smallMaskB, nBlkXP, 256 - time256, nBlkSizeX - nOverlapX, nBlkSizeY - nOverlapY);
 				}
-				if (nBlkXP > nBlkX)
-					for (int j = 0; j < nBlkY; ++j) {
-						smallMaskF[j * nBlkXP + nBlkX] = smallMaskF[j * nBlkXP + nBlkX - 1];
-						smallMaskB[j * nBlkXP + nBlkX] = smallMaskB[j * nBlkXP + nBlkX - 1];
-					}
-				if (nBlkYP > nBlkY)
-					for (int i = 0; i < nBlkXP; ++i) {
-						smallMaskF[nBlkXP * nBlkY + i] = smallMaskF[nBlkXP * (nBlkY - 1) + i];
-						smallMaskB[nBlkXP * nBlkY + i] = smallMaskB[nBlkXP * (nBlkY - 1) + i];
-					}
-				upsizer->Resize(MaskFullYF, nPitchY, smallMaskF, nBlkXP);
-				upsizer->Resize(MaskFullYB, nPitchY, smallMaskB, nBlkXP);
+				CheckAndPadMaskSmall(smallMaskF, nBlkXP, nBlkYP, nBlkX, nBlkY);
+				CheckAndPadMaskSmall(smallMaskB, nBlkXP, nBlkYP, nBlkX, nBlkY);
+				upsizer->Resize(MaskFullYF, nPitchY, smallMaskF, nBlkXP, false);
+				upsizer->Resize(MaskFullYB, nPitchY, smallMaskB, nBlkXP, false);
 				if (nSuperModeYUV & UVPLANES) {
-					upsizerUV->Resize(MaskFullUVF, nPitchUV, smallMaskF, nBlkXP);
-					upsizerUV->Resize(MaskFullUVB, nPitchUV, smallMaskB, nBlkXP);
+					upsizerUV->Resize(MaskFullUVF, nPitchUV, smallMaskF, nBlkXP, false);
+					upsizerUV->Resize(MaskFullUVB, nPitchUV, smallMaskB, nBlkXP, false);
 				}
 			}
 			if (mode == 4 || mode == 5 || mode == 7 || mode == 8) {
 				MultMasks(smallMaskF, smallMaskB, smallMaskO, nBlkXP, nBlkYP);
-				upsizer->Resize(MaskOccY, nPitchY, smallMaskO, nBlkXP);
+				upsizer->Resize(MaskOccY, nPitchY, smallMaskO, nBlkXP, false);
 				if (nSuperModeYUV & UVPLANES)
-					upsizerUV->Resize(MaskOccUV, nPitchUV, smallMaskO, nBlkXP);
+					upsizerUV->Resize(MaskOccUV, nPitchUV, smallMaskO, nBlkXP, false);
 			}
 			auto pMaskFullYB = MaskFullYB;
 			auto pMaskFullYF = MaskFullYF;
@@ -938,9 +930,9 @@ static void VS_CC mvblockfpsCreate(const VSMap *in, VSMap *out, void *userData, 
 	d.nWidthUV = d.bleh->nWidth / d.bleh->xRatioUV;
 	d.nPitchY = (d.nWidthP + 15) & (~15);
 	d.nPitchUV = (d.nWidthPUV + 15) & (~15);
-	d.upsizer = new SimpleResize<double>(d.nWidthP, d.nHeightP, d.nBlkXP, d.nBlkYP);
+	d.upsizer = new SimpleResize<double>(d.nWidthP, d.nHeightP, d.nBlkXP, d.nBlkYP, 0, 0, 0);
 	if (d.nSuperModeYUV & UVPLANES)
-		d.upsizerUV = new SimpleResize<double>(d.nWidthPUV, d.nHeightPUV, d.nBlkXP, d.nBlkYP);
+		d.upsizerUV = new SimpleResize<double>(d.nWidthPUV, d.nHeightPUV, d.nBlkXP, d.nBlkYP, 0, 0, 0);
 	if (d.bleh->nOverlapX || d.bleh->nOverlapY) {
 		d.OverWins = new OverlapWindows(d.bleh->nBlkSizeX, d.bleh->nBlkSizeY, d.bleh->nOverlapX, d.bleh->nOverlapY);
 		if (d.nSuperModeYUV & UVPLANES)
