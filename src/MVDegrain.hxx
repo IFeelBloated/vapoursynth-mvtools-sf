@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstring>
 #include <vector>
+#include <limits>
 #include "MVFrame.h"
 #include "SADFunctions.hpp"
 #include "Include/VapourSynth.h"
@@ -300,7 +301,7 @@ static const VSFrameRef* VS_CC mvdegrainGetFrame(int32_t n, int32_t activationRe
 						pSrc[plane] + nSrcPitches[plane] * nHeight_B[plane], nSrcPitches[plane],
 						nWidth[plane] * 4, nHeight[plane] - nHeight_B[plane]);
 			}
-			if (nLimit[plane] < 1.)
+			if (nLimit[plane] < std::numeric_limits<double>::infinity())
 				d->LimitChanges(pDst[plane], nDstPitches[plane],
 					pSrc[plane], nSrcPitches[plane],
 					nWidth[plane], nHeight[plane], nLimit[plane]);
@@ -440,12 +441,12 @@ static void VS_CC mvdegrainCreate(const VSMap* in, VSMap* out, void* userData, V
 			else
 				thsad[i] = thsad[i - 1];
 		if (n == -1)
-			d.nLimit[0] = d.nLimit[1] = d.nLimit[2] = 1.;
+			d.nLimit[0] = d.nLimit[1] = d.nLimit[2] = std::numeric_limits<double>::infinity();
 		else
 			if (i < n) {
 				d.nLimit[i] = vsapi->propGetFloat(in, "limit", i, nullptr);
-				if (d.nLimit[i] < 0. || d.nLimit[i] > 1.) {
-					vsapi->setError(out, (filter + ": limit must be between 0.0 and " + std::to_string(1.0) + " (inclusive).").c_str());
+				if (d.nLimit[i] < 0.) {
+					vsapi->setError(out, (filter + ": limit cannot be negative.").c_str());
 					return;
 				}
 			}
