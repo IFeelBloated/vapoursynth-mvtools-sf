@@ -469,24 +469,15 @@ static void mvanalyzeCreate(const VSMap* in, VSMap* out, void* userData, VSCore*
 			for (auto x : Range{ vsapi->propNumKeys(in) }) {
 				auto ItemSrc = ReadonlyItem{ in, vsapi->propGetKey(in, x) };
 				auto ItemDst = WritableItem{ Map, vsapi->propGetKey(in, x) };
-				if (ItemSrc.Type() == VSPropTypes::ptNode) {
-					auto val = Clip{};
-					val = ItemSrc;
-					ItemDst = val;
-				}
-				else if (ItemSrc.Type() == VSPropTypes::ptInt) {
-					auto val = 0_i64;
-					val = ItemSrc;
-					ItemDst = val;
-				}
-				else if (ItemSrc.Type() == VSPropTypes::ptFloat) {
-					auto val = 0.;
-					val = ItemSrc;
-					ItemDst = val;
-				}
+				if (ItemSrc.Type() == VSPropTypes::ptNode)
+					ItemDst = static_cast<Clip>(ItemSrc);
+				else if (ItemSrc.Type() == VSPropTypes::ptInt)
+					ItemDst = static_cast<std::int64_t>(ItemSrc);
+				else if (ItemSrc.Type() == VSPropTypes::ptFloat)
+					ItemDst = static_cast<double>(ItemSrc);
 			}
 			WritableItem{ Map, "isb" } = isb;
-			WritableItem{ Map,"delta" } = delta;
+			WritableItem{ Map, "delta" } = delta;
 			return Map;
 		};
 		auto argMap = CreateArgumentMap();

@@ -428,11 +428,9 @@ auto CreateFlow(auto in, auto out, auto core, auto vsapi) {
 static auto VS_CC mvflowCreate(const VSMap* in, VSMap* out, void* userData, VSCore* core, const VSAPI* vsapi) {
 	auto args = ArgumentList{ in };
 	auto Core = VaporCore{ core };
-	auto clip = Clip{};
-	auto vectors = Clip{};
+	auto clip = static_cast<Clip>(args["clip"]);
+	auto vectors = static_cast<Clip>(args["vectors"]);
 	auto cclip = Clip{};
-	clip = args["clip"];
-	vectors = args["vectors"];
 	if (args["cclip"].Exists())
 		cclip = args["cclip"];
 	else
@@ -443,21 +441,12 @@ static auto VS_CC mvflowCreate(const VSMap* in, VSMap* out, void* userData, VSCo
 			for (auto x : Range{ vsapi->propNumKeys(in) }) {
 				auto ItemSrc = ReadonlyItem{ in, vsapi->propGetKey(in, x) };
 				auto ItemDst = WritableItem{ Map, vsapi->propGetKey(in, x) };
-				if (ItemSrc.Type() == VSPropTypes::ptNode) {
-					auto val = Clip{};
-					val = ItemSrc;
-					ItemDst = val;
-				}
-				else if (ItemSrc.Type() == VSPropTypes::ptInt) {
-					auto val = 0_i64;
-					val = ItemSrc;
-					ItemDst = val;
-				}
-				else if (ItemSrc.Type() == VSPropTypes::ptFloat) {
-					auto val = 0.;
-					val = ItemSrc;
-					ItemDst = val;
-				}
+				if (ItemSrc.Type() == VSPropTypes::ptNode)
+					ItemDst = static_cast<Clip>(ItemSrc);
+				else if (ItemSrc.Type() == VSPropTypes::ptInt)
+					ItemDst = static_cast<std::int64_t>(ItemSrc);
+				else if (ItemSrc.Type() == VSPropTypes::ptFloat)
+					ItemDst = static_cast<double>(ItemSrc);
 			}
 			auto v = WritableItem{ Map, "vectors" };
 			v.Erase();

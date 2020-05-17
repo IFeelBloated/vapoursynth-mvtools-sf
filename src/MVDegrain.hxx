@@ -417,9 +417,8 @@ static void VS_CC mvdegrainCreate(const VSMap* in, VSMap* out, void* userData, V
 
 	MVDegrainData d;
 	MVDegrainData* data;
-	auto mvmulti = Clip{};
+	auto mvmulti = static_cast<Clip>(args["mvmulti"]);
 	d.node = args["clip"];
-	mvmulti = args["mvmulti"];
 	auto radius = mvmulti.FrameCount / d.node.FrameCount / 2;
 	auto thsad = std::array<double, 3>{};
 	auto thsad2 = thsad;
