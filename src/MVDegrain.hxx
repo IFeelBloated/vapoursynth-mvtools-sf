@@ -5,13 +5,13 @@
 #include <limits>
 #include "MVFrame.h"
 #include "SADFunctions.hpp"
-#include "Include/VapourSynth.h"
-#include "Include/VSHelper.h"
+#include "VapourSynth.h"
+#include "VSHelper.h"
 #include "MVClip.hpp"
 #include "MVFilter.hpp"
 #include "MVInterface.h"
 #include "Overlap.h"
-#include "Include/Interface.hxx"
+#include "Interface.vxx"
 
 using DenoiseFunction = auto(*)(int, uint8_t*, int32_t, const uint8_t*, int32_t, const uint8_t**, const int32_t*, double, const double*)->void;
 

@@ -11,7 +11,7 @@
 #include "Variance.hpp"
 #include "DCT.hpp"
 #include "Padding.h"
-#include "Include/VSHelper.h"
+#include "VSHelper.h"
 
 class PlaneOfBlocks {
 	static constexpr auto MAX_PREDICTOR = 20;

@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include "Include/VSHelper.h"
+#include "VSHelper.h"
 #include "DCTFFTW.hpp"
 #include "GroupOfPlanes.h"
 #include "MVInterface.h"

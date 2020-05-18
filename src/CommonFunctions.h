@@ -1,5 +1,5 @@
 #pragma once
-#include "Include/VapourSynth.h"
+#include "VapourSynth.h"
 
 static inline int32_t satz(int32_t a) {
 	return ~(a >> (sizeof(int32_t) * 8 - 1)) & a;

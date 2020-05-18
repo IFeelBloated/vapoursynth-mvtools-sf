@@ -2,7 +2,7 @@
 #include <utility>
 #include <type_traits>
 #include "FakePlaneOfBlocks.hpp"
-#include "Include/Interface.hxx"
+#include "Interface.vxx"
 
 class FakeGroupOfPlanes {
 	self(nLvCount_, 0_i32);

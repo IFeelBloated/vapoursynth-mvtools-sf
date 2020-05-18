@@ -2,12 +2,12 @@
 #include <array>
 #include <memory>
 #include <cmath>
-#include "Include/VapourSynth.h"
-#include "Include/VSHelper.h"
+#include "VapourSynth.h"
+#include "VSHelper.h"
 #include "MaskFun.hpp"
 #include "MVFilter.hpp"
 #include "SimpleResize.hpp"
-#include "Include/Interface.hxx"
+#include "Interface.vxx"
 
 struct MVMaskData final {
 	self(vsapi, static_cast<const VSAPI *>(nullptr));

@@ -1,6 +1,6 @@
 #pragma once
-#include "Include/VapourSynth.h"
-#include "Include/VSHelper.h"
+#include "VapourSynth.h"
+#include "VSHelper.h"
 #include "MaskFun.hpp"
 
 struct MVFinestData {

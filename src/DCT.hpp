@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include "Include/Interface.hxx"
+#include "Interface.vxx"
 
 struct DCTClass {
 	self(sizex, 0);

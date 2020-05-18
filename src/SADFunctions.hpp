@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <cmath>
 #include <array>
-#include "Include/Interface.hxx"
+#include "Interface.vxx"
 
 using SADFunction = auto(*)(const std::uint8_t *, std::intptr_t, const std::uint8_t *, std::intptr_t)->double;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "Include/VSHelper.h"
+#include "VSHelper.h"
 #include "MVClip.hpp"
 #include "MVFilter.hpp"
 

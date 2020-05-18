@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <cmath>
 #include <mutex>
-#include "Include/fftw3.h"
+#include "fftw3.h"
 #include "DCT.hpp"
-#include "Include/Interface.hxx"
+#include "Interface.vxx"
 
 class DCTFFTW final :public DCTClass {
 	static inline auto g_fftw_plans_mutex = std::mutex{};

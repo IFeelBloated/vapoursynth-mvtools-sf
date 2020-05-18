@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include <cstring>
 #include "Overlap.h"
-#include "Include/VapourSynth.h"
-#include "Include/VSHelper.h"
+#include "VapourSynth.h"
+#include "VSHelper.h"
 #include "CopyCode.hpp"
 #include "CommonFunctions.h"
 #include "MaskFun.hpp"

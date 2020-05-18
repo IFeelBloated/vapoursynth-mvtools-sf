@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <cstdio>
-#include "Include/VSHelper.h"
+#include "VSHelper.h"
 #include "Padding.h"
 #include "Interpolation.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "MVInterface.h"
-#include "Include/Interface.hxx"
+#include "Interface.vxx"
 
 class FakeBlockData final {
 	self(x, 0_i32);

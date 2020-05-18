@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include "Include/VapourSynth.h"
-#include "Include/VSHelper.h"
+#include "VapourSynth.h"
+#include "VSHelper.h"
 #include "DCTFFTW.hpp"
 #include "GroupOfPlanes.h"
 #include "MVInterface.h"

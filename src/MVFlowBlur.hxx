@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include "Include/VapourSynth.h"
-#include "Include/VSHelper.h"
+#include "VapourSynth.h"
+#include "VSHelper.h"
 #include "MaskFun.hpp"
 #include "MVFilter.hpp"
 #include "SimpleResize.hpp"
