@@ -66,3 +66,11 @@ static inline void setFPS(VSVideoInfo* vi, int64_t num, int64_t den) {
 		vi->fpsDen = den / x;
 	}
 }
+
+auto max(auto a, auto b) {
+	return a > b ? a : b;
+}
+
+auto min(auto a, auto b) {
+	return a > b ? b : a;
+}

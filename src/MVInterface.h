@@ -1,20 +1,13 @@
-#ifndef __MV_INTERFACES_H__
-#define __MV_INTERFACES_H__
-
-#define MAX(a,b) (((a) < (b)) ? (b) : (a))
-#define MIN(a,b) (((a) > (b)) ? (b) : (a))
-#define MOTION_IS_BACKWARD          0x00000002
-#define MOTION_SMALLEST_PLANE       0x00000004
-#define MOTION_USE_CHROMA_MOTION    0x00000008
-#define MOTION_USE_SSD              0x00000010
-#define MOTION_USE_SATD             0x00000020
-
+#pragma once
 #include <cstdint>
 #include <cstdio>
 #include <stdexcept>
 #include <string>
 #include "Include/Interface.hxx"
 
+constexpr auto MOTION_IS_BACKWARD = 0x00000002;
+constexpr auto MOTION_SMALLEST_PLANE = 0x00000004;
+constexpr auto MOTION_USE_CHROMA_MOTION = 0x00000008;
 constexpr auto MV_DEFAULT_SCD1 = 400.;
 constexpr auto MV_DEFAULT_SCD2 = 130.;
 constexpr auto MotionMagicKey = 0x564D;
@@ -90,5 +83,3 @@ public:
 	MVException(const char *descr) : std::runtime_error(descr) {}
 	MVException(const std::string &descr) : std::runtime_error(descr) {}
 };
-
-#endif

@@ -13,14 +13,6 @@
 #include "Padding.h"
 #include "Include/VSHelper.h"
 
-auto max(auto a, auto b) {
-	return a > b ? a : b;
-}
-
-auto min(auto a, auto b) {
-	return a > b ? b : a;
-}
-
 class PlaneOfBlocks {
 	static constexpr auto MAX_PREDICTOR = 20;
 	int32_t nBlkX;

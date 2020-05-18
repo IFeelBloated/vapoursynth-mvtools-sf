@@ -1,11 +1,6 @@
-#ifndef __INTERPOL__
-#define __INTERPOL__
-
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
+#pragma once
 #include <cstdint>
+#include "CommonFunctions.h"
 
 template <typename PixelType>
 void VerticalBilinear(uint8_t *pDst8, const uint8_t *pSrc8, int32_t nDstPitch,
@@ -507,9 +502,3 @@ void Average2(uint8_t *pDst8, const uint8_t *pSrc18, const uint8_t *pSrc28,
 		pSrc2 += nPitch;
 	}
 }
-
-#ifdef max
-#undef max
-#endif
-
-#endif

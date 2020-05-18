@@ -1,5 +1,4 @@
-#ifndef __SIMPLERESIZE__
-#define __SIMPLERESIZE__
+#pragma once
 #include <cstdint>
 #include <algorithm>
 
@@ -111,5 +110,3 @@ public:
 		delete[] workp;
 	}
 };
-
-#endif

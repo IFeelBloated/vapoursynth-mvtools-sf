@@ -1,5 +1,4 @@
-#ifndef __PADDING_H__
-#define __PADDING_H__
+#pragma once
 
 template <typename PixelType>
 void PadCorner(PixelType *p, PixelType v, int32_t hPad, int32_t vPad, int32_t refPitch) {
@@ -52,5 +51,3 @@ void PadReferenceFrame(uint8_t *refFrame8, int32_t refPitch, int32_t hPad, int32
 		}
 	}
 }
-
-#endif

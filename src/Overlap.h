@@ -1,8 +1,8 @@
 #pragma once
 #include <cmath>
 #include <cstdint>
+#include <numbers>
 
-constexpr auto MV_PI = 3.1415926535897932384626433832795;
 constexpr auto OW_TL = 0;
 constexpr auto OW_TM = 1;
 constexpr auto OW_TR = 2;
@@ -38,7 +38,7 @@ public:
 		fWin1UVxlast = new double[nx];
 		for (int32_t i = 0; i < ox; i++)
 		{
-			fWin1UVx[i] = cos(MV_PI * (i - ox + 0.5f) / (ox * 2));
+			fWin1UVx[i] = cos(std::numbers::pi * (i - ox + 0.5f) / (ox * 2));
 			fWin1UVx[i] = fWin1UVx[i] * fWin1UVx[i];// left window (rised cosine)
 			fWin1UVxfirst[i] = 1; // very first window
 			fWin1UVxlast[i] = fWin1UVx[i]; // very last
@@ -51,7 +51,7 @@ public:
 		}
 		for (int32_t i = nx - ox; i < nx; i++)
 		{
-			fWin1UVx[i] = cos(MV_PI * (i - nx + ox + 0.5f) / (ox * 2));
+			fWin1UVx[i] = cos(std::numbers::pi * (i - nx + ox + 0.5f) / (ox * 2));
 			fWin1UVx[i] = fWin1UVx[i] * fWin1UVx[i];// right window (falled cosine)
 			fWin1UVxfirst[i] = fWin1UVx[i]; // very first window
 			fWin1UVxlast[i] = 1; // very last
@@ -62,7 +62,7 @@ public:
 		fWin1UVylast = new double[ny];
 		for (int32_t i = 0; i < oy; i++)
 		{
-			fWin1UVy[i] = cos(MV_PI * (i - oy + 0.5f) / (oy * 2));
+			fWin1UVy[i] = cos(std::numbers::pi * (i - oy + 0.5f) / (oy * 2));
 			fWin1UVy[i] = fWin1UVy[i] * fWin1UVy[i];// left window (rised cosine)
 			fWin1UVyfirst[i] = 1; // very first window
 			fWin1UVylast[i] = fWin1UVy[i]; // very last
@@ -75,7 +75,7 @@ public:
 		}
 		for (int32_t i = ny - oy; i < ny; i++)
 		{
-			fWin1UVy[i] = cos(MV_PI * (i - ny + oy + 0.5f) / (oy * 2));
+			fWin1UVy[i] = cos(std::numbers::pi * (i - ny + oy + 0.5f) / (oy * 2));
 			fWin1UVy[i] = fWin1UVy[i] * fWin1UVy[i];// right window (falled cosine)
 			fWin1UVyfirst[i] = fWin1UVy[i]; // very first window
 			fWin1UVylast[i] = 1; // very last
@@ -170,7 +170,7 @@ void ToPixels(uint8_t *pDst8, int32_t nDstPitch, const uint8_t *pSrc8, int32_t n
 }
 
 auto CosineAnnealing(auto StartPoint, auto EndPoint, auto Position, auto Radius) {
-	auto x = (Position - 1) * MV_PI / (Radius - 1);
+	auto x = (Position - 1) * std::numbers::pi / (Radius - 1);
 	auto Ratio = (1. - cos(x)) * 0.5;
 	return StartPoint + Ratio * (EndPoint - StartPoint);
 }
