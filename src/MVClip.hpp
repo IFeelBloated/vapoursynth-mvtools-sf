@@ -13,7 +13,7 @@ public:
 	MVClipDicks(VSNodeRef *vectors, double _nSCD1, double _nSCD2, const VSAPI *vsapi) {
 		using namespace std::literals;
 		constexpr auto MaxErrorLength = 1024;
-		constexpr auto maxSAD = 256. * 256. * 255.;
+		constexpr auto maxSAD = 8. * 8. * 255.;
 		constexpr auto referenceBlockSize = 8 * 8;
 		constexpr auto HeaderOffset = sizeof(std::int32_t);
 		auto errorMsg = ""s;
@@ -50,7 +50,6 @@ public:
 		nSCD1 = _nSCD1 * (nBlkSizeX * nBlkSizeY) / referenceBlockSize;
 		if (pAnalyzeFilter->IsChromaMotion())
 			nSCD1 += nSCD1 / (xRatioUV * yRatioUV) * 2;
-		nSCD1 = nSCD1 / 255.;
 		nSCD2 = _nSCD2 * nBlkCount / 256.;
 		vsapi->freeFrame(evil);
 	}

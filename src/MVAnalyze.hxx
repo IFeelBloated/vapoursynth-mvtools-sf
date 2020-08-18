@@ -343,7 +343,14 @@ auto CreateVector(auto in, auto out, auto core, auto vsapi) {
 	d.analysisData.nMagicKey = MotionMagicKey;
 	d.analysisData.nVersion = MVAnalysisDataVersion;
 	d.headerSize = VSMAX(4 + sizeof(d.analysisData), 256);
-	d.node = vsapi->propGetNode(in, "super", 0, 0);
+
+	auto args = ArgumentList{ in };
+	auto Core = VaporCore{ core };
+	auto sup = static_cast<Clip>(args["super"]);
+	sup = Core["std"]["Expr"]("clips", sup, "expr", "x 255 *");
+	d.node = sup.VideoNode;
+	sup.VideoNode = nullptr;
+
 	d.supervi = vsapi->getVideoInfo(d.node);
 	d.vi = *d.supervi;
 	if (!isConstantFormat(&d.vi) || d.vi.format->bitsPerSample < 32 || d.vi.format->sampleType != stFloat) {
@@ -356,9 +363,6 @@ auto CreateVector(auto in, auto out, auto core, auto vsapi) {
 	if (d.vi.format->colorFamily == cmRGB)
 		d.chroma = 1;
 	d.nModeYUV = d.chroma ? YUVPLANES : YPLANE;
-	d.lsad = d.lsad / 255.;
-	d.nLambda /= 255.;
-	d.badSAD = d.badSAD / 255.;
 	d.lsad = d.lsad * (d.blksize * d.blksizev) / 64;
 	d.badSAD = d.badSAD * (d.blksize * d.blksizev) / 64;
 	d.analysisData.nMotionFlags = 0;

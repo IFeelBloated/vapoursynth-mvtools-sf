@@ -169,7 +169,7 @@ static void VS_CC mvrecalculateFree(void *instanceData, VSCore *core, const VSAP
 	delete d;
 }
 
-auto CreateVector(auto in, auto out, auto vsapi) {
+auto RecalcVector(auto in, auto out, auto core, auto vsapi) {
 	MVRecalculateData d;
 	int err;
 	d.thSAD = vsapi->propGetFloat(in, "thsad", 0, &err);
@@ -280,7 +280,14 @@ auto CreateVector(auto in, auto out, auto vsapi) {
 	d.analysisData.nMagicKey = MotionMagicKey;
 	d.analysisData.nVersion = MVAnalysisDataVersion;
 	d.headerSize = VSMAX(4 + sizeof(d.analysisData), 256);
-	d.node = vsapi->propGetNode(in, "super", 0, 0);
+
+	auto args = ArgumentList{ in };
+	auto Core = VaporCore{ core };
+	auto sup = static_cast<Clip>(args["super"]);
+	sup = Core["std"]["Expr"]("clips", sup, "expr", "x 255 *");
+	d.node = sup.VideoNode;
+	sup.VideoNode = nullptr;
+
 	d.supervi = vsapi->getVideoInfo(d.node);
 	if (d.overlap % (1 << d.supervi->format->subSamplingW) ||
 		d.overlapv % (1 << d.supervi->format->subSamplingH)) {
@@ -343,8 +350,6 @@ auto CreateVector(auto in, auto out, auto vsapi) {
 	d.analysisData.nDeltaFrame = pAnalyzeFilter->GetDeltaFrame();
 	d.analysisData.isBackward = pAnalyzeFilter->IsBackward();
 	vsapi->freeFrame(evil);
-	d.thSAD = d.thSAD / 255.;
-	d.nLambda /= 255.;
 	int32_t referenceBlockSize = 8 * 8;
 	d.thSAD = d.thSAD * (d.analysisData.nBlkSizeX * d.analysisData.nBlkSizeY) / referenceBlockSize;
 	if (d.chroma)
@@ -414,7 +419,7 @@ static void VS_CC mvrecalculateCreate(const VSMap* in, VSMap* out, void* userDat
 		};
 		auto argMap = CreateArgumentMap();
 		auto evalMap = vsapi->createMap();
-		auto data = new MVRecalculateData{ CreateVector(argMap, out, vsapi) };
+		auto data = new MVRecalculateData{ RecalcVector(argMap, out, core, vsapi) };
 		if (vsapi->getError(out) != nullptr) {
 			delete data;
 			vsapi->freeMap(argMap);
@@ -428,7 +433,7 @@ static void VS_CC mvrecalculateCreate(const VSMap* in, VSMap* out, void* userDat
 		return Clip{ refined_vec };
 	};
 	if (super.FrameCount == vectors.FrameCount) {
-		auto data = new MVRecalculateData{ CreateVector(in, out, vsapi) };
+		auto data = new MVRecalculateData{ RecalcVector(in, out, core, vsapi) };
 		if (vsapi->getError(out) != nullptr) {
 			delete data;
 			return;
