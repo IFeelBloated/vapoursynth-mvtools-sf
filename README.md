@@ -1,6 +1,8 @@
 # MVTools-Float
 Single Precision MVTools
 
+Requires libfftw3-3.dll to be in the search path. http://www.fftw.org/install/windows.html
+
 ## Compilation
 
 ### Linux
